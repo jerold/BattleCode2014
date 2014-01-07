@@ -243,7 +243,8 @@ public class Utilities
                 Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
                 if (nearbyEnemies.length > 0)
                 {
-                    rc.attackSquare(rc.senseLocationOf(nearbyEnemies[0]));
+                    Shooter shooter = new Shooter(rc);
+                    shooter.fire();
                 }
                 // if we can move towards target and we haven't been on the square recently then lets move
 				else if (rc.canMove(dir) && !MapLocationInArray(rc, rc.getLocation().add(dir), pastLocations))

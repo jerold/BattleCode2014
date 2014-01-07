@@ -71,7 +71,8 @@ static int countofBestSpots;
 						Direction dir;
 						if (nearbyEnemies.length > 0)
 						{
-							rc.attackSquare(rc.senseLocationOf(nearbyEnemies[0]));
+							Shooter shooter = new Shooter(rc);
+                            shooter.fire();
 						}
 						else if (myType == 1)
 						{
