@@ -2,6 +2,7 @@ package firstTest;
 
 import java.util.Random;
 
+
 import battlecode.common.Direction;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
