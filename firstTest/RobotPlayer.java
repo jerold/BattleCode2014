@@ -18,65 +18,18 @@ static int myType = 0;
 static int x = 0;
 static int y = 0;
 static MapLocation target;
+static MapLocation[] bestSpots;
+static int countofBestSpots;
 	
 	public static void run(RobotController rc) {
 		rand = new Random();
-		Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
 		
 		while(true) {
 			if (rc.getType() == RobotType.HQ) {
 				try {					
 					//Check if a robot is spawnable and spawn one if it is
-					/*
-					double growthRates[][] = rc.senseCowGrowth();
-					int countofBestSpots = 0;
-					double best = 0.0001;
-					for (int i = 0; i < rc.getMapWidth(); i++)
-					{
-						for (int k = 0; k < rc.getMapHeight(); k++)
-						{
-							if (growthRates[i][k] > best)
-							{
-								best = growthRates[i][k];
-								countofBestSpots = 1;
-							}
-							else if (growthRates[i][k] == best)
-							{
-								countofBestSpots++;
-							}
-						}
-					}
-					
-					MapLocation[] bestSpots = new MapLocation[countofBestSpots];
-					int index = 0;
-					for (int i = 0; i < rc.getMapWidth(); i++)
-					{
-						for (int k = 0; k < rc.getMapHeight(); k++)
-						{
-							if (growthRates[i][k] == best)
-							{
-								bestSpots[index] = new MapLocation(i,k);
-								index++;
-							}
-						}
-					}	
-					
-					for (int i = 1; i < countofBestSpots; i++)
-					{
-						for (int j = i; j < countofBestSpots; j++)
-						{
-							int dist1 = rc.getLocation().distanceSquaredTo(bestSpots[j]);
-							int dist2 = rc.getLocation().distanceSquaredTo(bestSpots[j]);
-							
-							if (dist1 < dist2)
-							{
-								MapLocation temp = bestSpots[j];
-								bestSpots[j] = bestSpots[j-1];
-								bestSpots[j-1] = temp;
-							}
-						}
-					}
-					*/
+					bestSpots = Utilities.BestPastureSpots(rc);
+                    countofBestSpots = bestSpots.length;
 					
 					if (rc.isActive() && rc.senseRobotCount() < 25) {
 						
@@ -86,11 +39,11 @@ static MapLocation target;
 							rc.spawn(toEnemy);
 							rc.broadcast(1, numbOfSoldiers);
 							numbOfSoldiers++;
-							/*if (numbOfSoldiers / 2 < countofBestSpots)
+							if (numbOfSoldiers / 2 < countofBestSpots)
 							{
 								rc.broadcast(2, bestSpots[numbOfSoldiers/2].x);
 								rc.broadcast(3, bestSpots[numbOfSoldiers/2].y);
-							}*/
+							}
 							
 						}
 					}
@@ -107,7 +60,7 @@ static MapLocation target;
 							myType = rc.readBroadcast(1);
 							if (myType % 2 == 0)
 							{
-								myType = 2;
+								myType = 1;
 							}
 							else
 							{
@@ -126,10 +79,11 @@ static MapLocation target;
 							{
 								x = rc.readBroadcast(2);
 								y = rc.readBroadcast(3);
+                                myType = 2;
 								target = new MapLocation(x,y);
 							}
 							
-							if (rc.getLocation() != target)
+							else if (rc.getLocation() != target)
 							{
 								dir = rc.getLocation().directionTo(target);
 								Utilities.MoveDirection(rc, dir, true);

@@ -14,8 +14,51 @@ public class Utilities
 {
 	static Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
 	static Random rand;
-	
-	public static MapLocation[] BestPastureSpots(RobotController rc)
+
+    // In this function the HQ spawns a soldier ideally toward the enemy base but in any direction otherwise
+	public static void SpawnSoldiers(RobotController rc)
+    {
+        try
+        {
+            if (rc.isActive() && rc.getType() == RobotType.HQ)
+            {
+                Direction toEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
+                if (rc.senseObjectAtLocation(rc.getLocation().add(toEnemy)) == null) {}
+                else
+                {
+                    for (int i = 0; i < 7; i++)
+                    {
+                        toEnemy = toEnemy.rotateLeft();
+
+                        if (rc.senseObjectAtLocation(rc.getLocation().add(toEnemy)) == null)
+                        {
+                            i = 47;
+                        }
+                        else if (i == 6)
+                        {
+                            toEnemy = Direction.NONE;
+                        }
+                    }
+                }
+
+                if (toEnemy != Direction.NONE)
+                {
+                    if (rc.isActive())
+                    {
+                        if (rc.getType() == RobotType.HQ)
+                        {
+                            rc.spawn(toEnemy);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e)
+        {
+            System.out.println("Utility Exception");
+        }
+    }
+
+    public static MapLocation[] BestPastureSpots(RobotController rc)
 	{
 		MapLocation[] empty = new MapLocation[1];
 		try 
@@ -37,6 +80,8 @@ public class Utilities
 					{
 						countofBestSpots++;
 					}
+
+                    SpawnSoldiers(rc);
 				}
 			}
 			
@@ -51,6 +96,8 @@ public class Utilities
 						bestSpots[index] = new MapLocation(i,k);
 						index++;
 					}
+
+                    SpawnSoldiers(rc);
 				}
 			}	
 			
@@ -67,6 +114,8 @@ public class Utilities
 						bestSpots[j] = bestSpots[j-1];
 						bestSpots[j-1] = temp;
 					}
+
+                    SpawnSoldiers(rc);
 				}
 			}
 			return bestSpots;
@@ -189,8 +238,15 @@ public class Utilities
 			{
 				dir = rc.getLocation().directionTo(target);
 				newDir = Direction.NONE;
-				// if we can move towards target and we haven't been on the square recently then lets move
-				if (rc.canMove(dir) && !MapLocationInArray(rc, rc.getLocation().add(dir), pastLocations))
+
+                // simple shoot at an enemy if we see one will need to be improved later
+                Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
+                if (nearbyEnemies.length > 0)
+                {
+                    rc.attackSquare(rc.senseLocationOf(nearbyEnemies[0]));
+                }
+                // if we can move towards target and we haven't been on the square recently then lets move
+				else if (rc.canMove(dir) && !MapLocationInArray(rc, rc.getLocation().add(dir), pastLocations))
 				{
 					newDir = dir;
 					//System.out.println("if Statement");
