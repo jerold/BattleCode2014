@@ -31,9 +31,17 @@ static int countofBestSpots;
 					//Check if a robot is spawnable and spawn one if it is
 					//bestSpots = Utilities.BestPastureSpots(rc);
                     //countofBestSpots = bestSpots.length;
-					
-					if (rc.isActive() && rc.senseRobotCount() < 25)
+
+                    Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
+                    Direction dir;
+                    if (nearbyEnemies.length > 0)
                     {
+                        Shooter shooter = new Shooter(rc);
+                        shooter.fire();
+                    }
+					else if (rc.isActive() && rc.senseRobotCount() < 25)
+                    {
+
 					    Utilities.SpawnSoldiers(rc);
                         numbOfSoldiers++;
                         rc.broadcast(1, numbOfSoldiers);
@@ -46,20 +54,7 @@ static int countofBestSpots;
                             }
                             rc.broadcast(2, numbOfShepards);
                         }
-						/*
-						Direction toEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-						if (rc.senseObjectAtLocation(rc.getLocation().add(toEnemy)) == null) {
-							rc.spawn(toEnemy);
-							rc.broadcast(1, numbOfSoldiers);
-							numbOfSoldiers++;
-							if (numbOfSoldiers / 2 < countofBestSpots)
-							{
-								rc.broadcast(2, bestSpots[numbOfSoldiers/2].x);
-								rc.broadcast(3, bestSpots[numbOfSoldiers/2].y);
-							}
-							
-						}
-						*/
+
 					}
 				} catch (Exception e) {
 					System.out.println("HQ Exception");
@@ -117,43 +112,6 @@ static int countofBestSpots;
                                 Utilities.MoveMapLocation(rc, rc.senseEnemyHQLocation(), true);
                             }
                         }
-
-                        /*
-						Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
-						Direction dir;
-						if (nearbyEnemies.length > 0)
-						{
-							Shooter shooter = new Shooter(rc);
-                            shooter.fire();
-						}
-						else if (myType == 1)
-						{
-							if (x == 0)
-							{
-								x = rc.readBroadcast(2);
-								y = rc.readBroadcast(3);
-                                myType = 2;
-								target = new MapLocation(x,y);
-							}
-							
-							else if (rc.getLocation() != target)
-							{
-								dir = rc.getLocation().directionTo(target);
-								Utilities.MoveDirection(rc, dir, true);
-							}
-							else
-							{
-								rc.construct(RobotType.PASTR);
-							}
-						}
-						else
-						{
-							dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-							//move(rc, dir);
-							//Utilities.MoveDirection(rc, dir, true);
-							Utilities.MoveMapLocation(rc, rc.senseEnemyHQLocation(), true);
-						}
-						*/
 					}
 				} catch (Exception e) {
 					System.out.println("Soldier Exception");

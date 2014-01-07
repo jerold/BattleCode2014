@@ -19,6 +19,11 @@ public class Shepherd
     GameObject leader = null;
     int shepardCount = 0;
     int robotCount = -1;
+    MapLocation[] leaderSpots = new MapLocation[4];
+    boolean orbit = false;
+    MapLocation originalTarget;
+    MapLocation newTarget;
+    int moveAmount = 1;
 
     // currently two "squads" of shepards are sent out one to the right and one to the left as directed by HQ
     public Shepherd(boolean right, RobotController rc)
@@ -42,6 +47,13 @@ public class Shepherd
         {
             target = target.add(dir);
         }
+
+        originalTarget = target;
+
+        for (int i = 0; i < leaderSpots.length; i++)
+        {
+            leaderSpots[i] = target;
+        }
     }
 
     public void run(RobotController rc)
@@ -56,9 +68,9 @@ public class Shepherd
                     shepardCount = rc.readBroadcast(2);
                 }
 
-                if (shepardCount == 3)
+                if (shepardCount == 3 && robotCount == -1)
                 {
-                    robotCount = rc.senseRobotCount();
+                    robotCount = rc.readBroadcast(1);
                 }
                 // if we are the fist shepherd then we will be the ones to set up the pasture
                 if (shepardCount == 1)
@@ -83,14 +95,17 @@ public class Shepherd
                     Shooter shooter = new Shooter(rc);
                     shooter.fire();
                 }
-                else if (robotCount > 0 && (robotCount+1) <= rc.senseRobotCount())
+                else if (robotCount > 0 && (robotCount+1) <= rc.readBroadcast(1))
                 {
                     if (isPasture)
                     {
                         // in here we will try to find a good place for a pasture
-                        if (rc.senseCowsAtLocation(rc.getLocation()) > 150  && numbOfMoves > 5)
+                        if (rc.senseCowsAtLocation(rc.getLocation()) > 150  && numbOfMoves > 5 && (rc.senseTerrainTile(rc.getLocation()) != TerrainTile.ROAD))
                         {
-                            rc.construct(RobotType.PASTR);
+                            if (rc.isActive())
+                            {
+                                rc.construct(RobotType.PASTR);
+                            }
                         }
                         else
                         {
@@ -107,8 +122,9 @@ public class Shepherd
                             {
                                 if (rc.isActive())
                                 {
-                                    Direction dir2 = directions[rand.nextInt(8)];
-                                    Utilities.MoveDirection(rc, dir2, true);
+                                    //Direction dir2 = directions[rand.nextInt(8)];
+                                    //Utilities.MoveDirection(rc, dir2, true);
+                                    Utilities.MoveDirection(rc, dir, true);
                                     numbOfMoves++;
                                 }
                             }
@@ -116,17 +132,82 @@ public class Shepherd
                     }
                     else
                     {
-                        if (leader == null)
+                        if (!orbit)
                         {
-                            Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                            if ((leaderSpots[0].equals(leaderSpots[1])) && leaderSpots[1].equals(leaderSpots[2]) && leaderSpots[2].equals(leaderSpots[3]) && !(leaderSpots[3].equals(originalTarget)))
+                            {
+                                orbit = true;
+                            }
+                            else if (leader == null)
+                            {
+                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                            }
+                            else
+                            {
+                                target = rc.senseLocationOf(leader);
+                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), true);
+                                if (Clock.getRoundNum() % 4 == 0)
+                                {
+                                    for (int i = 1; i < leaderSpots.length; i++)
+                                    {
+                                        leaderSpots[i-1] = leaderSpots[i];
+                                    }
+                                    leaderSpots[(leaderSpots.length-1)] = target;
+                                }
+                            }
                         }
                         else
                         {
-                            target = rc.senseLocationOf(leader);
-                            Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), true);
+                            if (newTarget == null)
+                            {
+                                Direction direction = leaderSpots[0].directionTo(rc.senseHQLocation());
+                                newTarget = leaderSpots[0];
+
+                                for (int i = 0; i < 6; i++)
+                                {
+                                    newTarget.add(direction);
+                                }
+                                int k = 0;
+                                while (k < 4)
+                                {
+                                    try
+                                    {
+                                        if (rc.isActive())
+                                        {
+                                            Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseHQLocation()), true);
+                                            rc.yield();
+                                            k++;
+                                        }
+                                    } catch(Exception e)
+                                    {
+                                        // print some stuff so we can see the error produced
+                                        e.printStackTrace();
+                                        rc.yield();
+                                    }
+
+                                }
+                            }
+                            else
+                            {
+
+                                Direction direction = rc.getLocation().directionTo(leaderSpots[0]);
+                                if (moveAmount % 10 == 0 && moveAmount > 15)
+                                {
+                                    direction = direction.rotateRight();
+                                }
+                                else
+                                {
+                                    direction = direction.rotateRight().rotateRight();
+
+                                }
+                                if (rc.isActive())
+                                {
+                                    moveAmount++;
+                                }
+                                Utilities.MoveDirection(rc, direction, false);
+                            }
                         }
                     }
-
                 }
                 else
                 {
