@@ -15,16 +15,24 @@ public class SoundTower
 		corner = findBestCorner();
 		width = rc.getMapWidth();
 		height = rc.getMapHeight();
-		MapLocation[] one = {new MapLocation(0, 10), new MapLocation(5, 10), new MapLocation(10, 10), 
+		MapLocation[] one = {new MapLocation(0, 13), new MapLocation(4, 13), new MapLocation(10, 13),
+							 new MapLocation(13, 10), new MapLocation(13, 4), new MapLocation(13, 0),
+							 new MapLocation(0, 10), new MapLocation(5, 10), new MapLocation(10, 10), 
 							 new MapLocation(10, 5), new MapLocation(10, 0), new MapLocation(2, 8),
 							 new MapLocation(8, 8), new MapLocation(8, 2)};
-		MapLocation[] two = {new MapLocation(width - 1, 10), new MapLocation(width - 6, 10), new MapLocation(width - 11, 10), 
+		MapLocation[] two = {new MapLocation(width - 1, 13), new MapLocation(width - 5, 13), new MapLocation(width - 11, 13),
+				 			 new MapLocation(width - 14, 10), new MapLocation(width - 14, 4), new MapLocation(width - 14, 0),
+				 			 new MapLocation(width - 1, 10), new MapLocation(width - 6, 10), new MapLocation(width - 11, 10), 
 				 			 new MapLocation(width - 11, 5), new MapLocation(width - 11, 0), new MapLocation(width - 3, 8),
 				 			 new MapLocation(width - 9, 8), new MapLocation(width - 9, 2)};
-		MapLocation[] three = {new MapLocation(0, height - 11), new MapLocation(5, height - 11), new MapLocation(10, height - 11), 
+		MapLocation[] three = {new MapLocation(0, height - 14), new MapLocation(4, height - 14), new MapLocation(10, height - 14),
+				 			   new MapLocation(13, height - 11), new MapLocation(13, height - 5), new MapLocation(13, height - 1),
+				 			   new MapLocation(0, height - 11), new MapLocation(5, height - 11), new MapLocation(10, height - 11), 
 				 			   new MapLocation(10, height - 6), new MapLocation(10, height - 1), new MapLocation(2, height - 9),
 				 			   new MapLocation(8, height - 9), new MapLocation(8, height - 3)};
-		MapLocation[] four = {new MapLocation(width - 1, height - 11), new MapLocation(width - 6, height - 11), new MapLocation(width - 11, height - 11), 
+		MapLocation[] four = {new MapLocation(width - 1, height - 14), new MapLocation(width - 5, height - 14), new MapLocation(width - 11, height - 14),
+							  new MapLocation(width - 14, height - 11), new MapLocation(width - 14, height - 5), new MapLocation(width - 14, height - 1),
+							  new MapLocation(width - 1, height - 11), new MapLocation(width - 6, height - 11), new MapLocation(width - 11, height - 11), 
 							  new MapLocation(width - 11, height - 6), new MapLocation(width - 11, height - 1), new MapLocation(width - 3, height - 9),
 							  new MapLocation(width - 9, height - 9), new MapLocation(width - 9, height - 3)};
 		this.one = one;
@@ -39,30 +47,30 @@ public class SoundTower
 		{
 			if(rc.getType() == RobotType.SOLDIER)
 			{
-				switch(corner)
+				try
 				{
-					case 1:
-						Utilities.MoveMapLocation(rc, new MapLocation(5, 5), true);
-						break;
-					case 2:
-						Utilities.MoveMapLocation(rc, new MapLocation(rc.getMapWidth() - 6, 5), true);
-						break;
-					case 3:
-						Utilities.MoveMapLocation(rc, new MapLocation(5, rc.getMapHeight() - 6), true);
-						break;
-					default:
-						Utilities.MoveMapLocation(rc, new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6), true);
-						break;
-				}
-				
-				if(rc.isActive())
-				{
-					try
+					switch(corner)
+					{
+						case 1:
+							Utilities.MoveMapLocation(rc, new MapLocation(5, 5), true);
+							break;
+						case 2:
+							Utilities.MoveMapLocation(rc, new MapLocation(rc.getMapWidth() - 6, 5), true);
+							break;
+						case 3:
+							Utilities.MoveMapLocation(rc, new MapLocation(5, rc.getMapHeight() - 6), true);
+							break;
+						default:
+							Utilities.MoveMapLocation(rc, new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6), true);
+							break;
+					}
+					
+					if(rc.isActive())
 					{
 						rc.construct(RobotType.NOISETOWER);
 					}
-					catch(Exception e){}
 				}
+				catch(Exception e){}
 			}
 			else
 			{
@@ -75,22 +83,22 @@ public class SoundTower
 							case 1:
 								rc.attackSquare(one[iteration]);
 								iteration++;
-								iteration %= 8;
+								iteration %= one.length;
 								break;
 							case 2:
 								rc.attackSquare(two[iteration]);
 								iteration++;
-								iteration %= 8;
+								iteration %= two.length;
 								break;
 							case 3:
 								rc.attackSquare(three[iteration]);
 								iteration++;
-								iteration %= 8;
+								iteration %= three.length;
 								break;
 							default:
 								rc.attackSquare(four[iteration]);
 								iteration++;
-								iteration %= 8;
+								iteration %= four.length;
 								break;
 						}
 					}
