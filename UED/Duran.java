@@ -91,7 +91,12 @@ public class Duran
                                 var++;
                                 target = new MapLocation(var, rc.getMapHeight() - var);
                             }
-                            Utilities.MoveMapLocation(rc, target, false);
+                            while (enemyPastrs.length == 0)
+                            {
+                            	enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                            	Utilities.avoidEnemiesMove(rc, target);
+                            }
+                            //Utilities.MoveMapLocation(rc, target, false);
                         }
                         // if we see enemyPastrs then lets head towards the nearest one
                         else
@@ -110,7 +115,7 @@ public class Duran
                             target = target.subtract((rc.getLocation().directionTo(target))).subtract((rc.getLocation().directionTo(target)));
                             while (rc.getLocation().distanceSquaredTo(target) > 35)
                             {
-                                Utilities.MoveMapLocation(rc, target, false);
+                                Utilities.avoidEnemiesMove(rc, target);
                             }
 
                             firstEnemyPastr = enemyPastrs[enemyPastrsIndex];
@@ -144,6 +149,24 @@ public class Duran
                                     System.out.println("Duran Exception");
                                 }
                             }
+                            
+                            /*
+                            GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+                            
+                            while (nearByBots.length > 0)
+                            {
+                            	if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(nearByBots[0])) > 10)
+                            	{
+                            		Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByBots[0])), false);
+                            	}
+                            	else
+                            	{
+                            		Utilities.fire(rc);
+                            	}
+                            	nearByBots = rc.senseNearbyGameObjects(Robot.class, 15, rc.getTeam().opponent());
+                            	
+                            }
+                            */
                         }
                     }
                 }

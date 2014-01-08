@@ -45,7 +45,11 @@ public class Ghost
             {
                 GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
 
-                if (nearByBots.length > 0)
+                if (!rc.getLocation().isAdjacentTo(rc.senseLocationOf(Samir)))
+                {
+                	Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(Samir)), false);
+                }
+                else if (nearByBots.length > 0)
                 {
                     Utilities.fire(rc);
                 }

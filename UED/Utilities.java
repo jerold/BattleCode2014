@@ -11,6 +11,7 @@ public class Utilities
 {
     static Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
     static Random rand;
+    static boolean goneRight = false;
 
     // In this function the HQ spawns a soldier ideally toward the enemy base but in any direction otherwise
     public static void SpawnSoldiers(RobotController rc)
@@ -433,14 +434,15 @@ public class Utilities
         {
             // first we will find all enemy bots near us
             GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 15, rc.getTeam().opponent());
-            Direction direction = null;
+            Direction direction = rc.getLocation().directionTo(target);
 
             // if we don't see anything then lets head towards target
             if (nearByBots.length == 0)
             {
                 rc.setIndicatorString(2, "No enemies detected");
+                rc.setIndicatorString(1, "x: "+target.x + " y: " + target.y);
                 direction = rc.getLocation().directionTo(target);
-                if (rc.canMove(direction) && !rc.senseTerrainTile(rc.getLocation().add(direction).add(direction)).equals(TerrainTile.VOID))
+                if (rc.canMove(direction))// && !rc.senseTerrainTile(rc.getLocation().add(direction).add(direction)).equals(TerrainTile.VOID))
                 {
                     if (rc.isActive())
                     {
@@ -449,8 +451,24 @@ public class Utilities
                 }
                 else
                 {
+                	MapLocation target2 = rc.getLocation().add(direction);
+                	if (rc.senseTerrainTile(target2).equals(TerrainTile.VOID))
+                	{
+                		int j = 0;
+                		while (rc.senseTerrainTile(target2).equals(TerrainTile.VOID))
+                		{
+                			rc.setIndicatorString(0, ""+j);
+                			j++;
+                			
+                			target2 = target2.add(direction);
+                		}
+                		Utilities.MoveMapLocation(rc, target2, false);
+                	}
+                	/*
+                	int distanceRight = 0;
+                	int distanceLeft = 0;
                     direction = direction.rotateRight();
-                    while (!rc.canMove(direction))
+                    while (!rc.canMove(direction) && rc.senseTerrainTile(rc.getLocation().add(direction)).equals(TerrainTile.VOID))
                     {
                         direction = direction.rotateRight();
                     }
@@ -461,90 +479,7 @@ public class Utilities
                             rc.move(direction);
                         }
                     }
-                    /*
-                    rc.setIndicatorString(2, "Calc faster Way");
-                    if (rc.senseObjectAtLocation(rc.getLocation().add(direction)) == null)
-                    {
-                        MoveDirection(rc, direction, false);
-                    }
-                    else
-                    {
-                        // now we will calculate if it is faster to go left or right
-                        MapLocation currentSlot = rc.getLocation().add(direction);
-                        int numbOfMoves = 0;
-                        int numbOfMovesLeft = 0;
-                        // first we will look to the right
-                        Direction dir = rc.getLocation().directionTo(currentSlot).rotateRight().rotateRight();
-                        Direction dir2 = dir.rotateRight().rotateRight();
-                        currentSlot = currentSlot.add(dir);
-
-                        while (rc.senseTerrainTile(currentSlot).equals(TerrainTile.VOID))
-                        {
-                            if (rc.senseTerrainTile(currentSlot.add(dir2)).equals(TerrainTile.VOID))
-                            {
-                                numbOfMoves += 2;
-                                currentSlot = currentSlot.add(dir2);
-                            }
-                            else
-                            {
-                                currentSlot = currentSlot.add(dir);
-                                numbOfMoves++;
-                            }
-                        }
-
-                        dir = rc.getLocation().directionTo(currentSlot).rotateLeft().rotateLeft();
-                        dir2 = dir.rotateLeft().rotateLeft();
-                        currentSlot = rc.getLocation().add(direction);
-                        currentSlot = currentSlot.add(dir);
-
-                        while (rc.senseTerrainTile(currentSlot).equals(TerrainTile.VOID))
-                        {
-                            if (rc.senseTerrainTile(currentSlot.add(dir2)).equals(TerrainTile.VOID))
-                            {
-                                numbOfMovesLeft += 2;
-                                currentSlot = currentSlot.add(dir2);
-                            }
-                            else
-                            {
-                                currentSlot = currentSlot.add(dir);
-                                numbOfMovesLeft++;
-                            }
-                        }
-
-                        // if shorter to go left
-                        if (numbOfMovesLeft < numbOfMoves)
-                        {
-                            while (!rc.canMove(direction))
-                            {
-                                direction = direction.rotateLeft();
-                            }
-                            if (rc.isActive())
-                            {
-                                if (rc.canMove(direction))
-                                {
-                                    rc.move(direction);
-                                }
-                            }
-                        }
-                        // otherwise it is shorter to go right
-                        else
-                        {
-                            while (!rc.canMove(direction))
-                            {
-                                direction = direction.rotateRight();
-                            }
-                            if (rc.isActive())
-                            {
-                                if (rc.canMove(direction))
-                                {
-                                    rc.move(direction);
-                                }
-                            }
-                        }
-
-
-                    }*/
-
+                    */
                 }
             }
             // otherwise we need to avoid them

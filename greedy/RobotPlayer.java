@@ -48,7 +48,7 @@ public class RobotPlayer
                         if (myType == PASTR)
                         {
                             PASTR pastr;
-                            if (rc.readBroadcast(0) % 2 == 0)
+                            if (rc.readBroadcast(0) < 5)
                             {
                                 pastr = new PASTR(rc, true);
                             }
