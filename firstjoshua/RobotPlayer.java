@@ -12,7 +12,7 @@ public class RobotPlayer
 		}
 		else
 		{
-			new Soldier().run(rc);
+			new SoundTower(rc).run();
 		}
 	}
 }
