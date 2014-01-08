@@ -61,6 +61,11 @@ public class Marine
                         nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,100,rc.getTeam().opponent());
                         while (nearbyEnemies.length > 1)
                         {
+                            //if the pasture is about to die, commit suicide and kill it to keep the other team from getting milk
+                            if(rc.senseRobotInfo(rc.senseNearbyGameObjects(Robot.class, target, 1, rc.getTeam())[0]).health <= 30)
+                            {
+                            	rc.selfDestruct();
+                            }
                             nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
                             if (nearbyEnemies.length > 1)
                             {
