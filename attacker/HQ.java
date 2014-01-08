@@ -1,4 +1,4 @@
-package pastrattacker;
+package attacker;
 
 import battlecode.common.*;
 
@@ -19,7 +19,7 @@ public class HQ
 					rc.spawn(dirs[k]);
 					k = (k + 1) % 8;
 				}
-				if(rc.isActive())
+				else if(rc.isActive())
 				{
 					shooter.fire();
 				}

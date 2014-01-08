@@ -1,4 +1,4 @@
-package pastrattacker;
+package attacker;
 
 import battlecode.common.*;
 
@@ -28,7 +28,7 @@ public class Shooter
 		{
 			if(hq)
 			{
-				radius = 100;
+				radius = 16;
 				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
 				Direction[] dirs = Direction.values();
 				Robot target = null;
@@ -69,19 +69,22 @@ public class Shooter
 			}
 			else
 			{
-				radius = 100;
+				radius = 10;
 				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
 				Robot target = null;
 				
 				for(int k = 0; k < enemies.length; k++)
 				{
-					if(target == null)
+					if(rc.senseRobotInfo(enemies[k]).type != RobotType.HQ)
 					{
-						target = enemies[k];
-					}
-					else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health)
-					{
-						target = enemies[k];
+						if(target == null)
+						{
+							target = enemies[k];
+						}
+						else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health)
+						{
+							target = enemies[k];
+						}
 					}
 				}
 				

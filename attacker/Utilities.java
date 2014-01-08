@@ -1,4 +1,4 @@
-package pastrattacker;
+package attacker;
 
 import java.util.Random;
 

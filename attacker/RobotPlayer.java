@@ -1,4 +1,4 @@
-package pastrattacker;
+package attacker;
 
 import battlecode.common.*;
 
@@ -12,7 +12,7 @@ public class RobotPlayer
 		}
 		else if(rc.getType() == RobotType.SOLDIER)
 		{
-			new Soldier().run(rc);
+			new HQCircle(rc).run();
 		}
 	}
 }
