@@ -1,14 +1,11 @@
-package firstTest;
+package UED;
 
+/**
+ * Created by fredkneeland on 1/7/14.
+ */
 import java.util.Random;
 
-import battlecode.common.Clock;
-import battlecode.common.Direction;
-import battlecode.common.MapLocation;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 public class Utilities
 {
@@ -428,4 +425,200 @@ public class Utilities
         }
         catch(Exception e){}
     }
+
+    // this method will advance one square towards a target and try to avoid enemies as much as possible
+    public static void avoidEnemiesMove(RobotController rc, MapLocation target)
+    {
+        try
+        {
+            // first we will find all enemy bots near us
+            GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 15, rc.getTeam().opponent());
+            Direction direction = null;
+
+            // if we don't see anything then lets head towards target
+            if (nearByBots.length == 0)
+            {
+                rc.setIndicatorString(2, "No enemies detected");
+                direction = rc.getLocation().directionTo(target);
+                if (rc.canMove(direction) && !rc.senseTerrainTile(rc.getLocation().add(direction).add(direction)).equals(TerrainTile.VOID))
+                {
+                    if (rc.isActive())
+                    {
+                        rc.move(direction);
+                    }
+                }
+                else
+                {
+                    direction = direction.rotateRight();
+                    while (!rc.canMove(direction))
+                    {
+                        direction = direction.rotateRight();
+                    }
+                    if (rc.isActive())
+                    {
+                        if (rc.canMove(direction))
+                        {
+                            rc.move(direction);
+                        }
+                    }
+                    /*
+                    rc.setIndicatorString(2, "Calc faster Way");
+                    if (rc.senseObjectAtLocation(rc.getLocation().add(direction)) == null)
+                    {
+                        MoveDirection(rc, direction, false);
+                    }
+                    else
+                    {
+                        // now we will calculate if it is faster to go left or right
+                        MapLocation currentSlot = rc.getLocation().add(direction);
+                        int numbOfMoves = 0;
+                        int numbOfMovesLeft = 0;
+                        // first we will look to the right
+                        Direction dir = rc.getLocation().directionTo(currentSlot).rotateRight().rotateRight();
+                        Direction dir2 = dir.rotateRight().rotateRight();
+                        currentSlot = currentSlot.add(dir);
+
+                        while (rc.senseTerrainTile(currentSlot).equals(TerrainTile.VOID))
+                        {
+                            if (rc.senseTerrainTile(currentSlot.add(dir2)).equals(TerrainTile.VOID))
+                            {
+                                numbOfMoves += 2;
+                                currentSlot = currentSlot.add(dir2);
+                            }
+                            else
+                            {
+                                currentSlot = currentSlot.add(dir);
+                                numbOfMoves++;
+                            }
+                        }
+
+                        dir = rc.getLocation().directionTo(currentSlot).rotateLeft().rotateLeft();
+                        dir2 = dir.rotateLeft().rotateLeft();
+                        currentSlot = rc.getLocation().add(direction);
+                        currentSlot = currentSlot.add(dir);
+
+                        while (rc.senseTerrainTile(currentSlot).equals(TerrainTile.VOID))
+                        {
+                            if (rc.senseTerrainTile(currentSlot.add(dir2)).equals(TerrainTile.VOID))
+                            {
+                                numbOfMovesLeft += 2;
+                                currentSlot = currentSlot.add(dir2);
+                            }
+                            else
+                            {
+                                currentSlot = currentSlot.add(dir);
+                                numbOfMovesLeft++;
+                            }
+                        }
+
+                        // if shorter to go left
+                        if (numbOfMovesLeft < numbOfMoves)
+                        {
+                            while (!rc.canMove(direction))
+                            {
+                                direction = direction.rotateLeft();
+                            }
+                            if (rc.isActive())
+                            {
+                                if (rc.canMove(direction))
+                                {
+                                    rc.move(direction);
+                                }
+                            }
+                        }
+                        // otherwise it is shorter to go right
+                        else
+                        {
+                            while (!rc.canMove(direction))
+                            {
+                                direction = direction.rotateRight();
+                            }
+                            if (rc.isActive())
+                            {
+                                if (rc.canMove(direction))
+                                {
+                                    rc.move(direction);
+                                }
+                            }
+                        }
+
+
+                    }*/
+
+                }
+            }
+            // otherwise we need to avoid them
+            else
+            {
+                rc.setIndicatorString(2, "Avoiding enemies");
+                rc.setIndicatorString(1, "Numb of Enemies: "+nearByBots.length);
+                // now we will calculate the distance form all 5 spots towards are target and the distance from that spot to all enemies we can see
+                // we will pick the one with the greatest distance
+                int[] distancesToLocations = new int[5];
+
+                for (int k = 0; k < distancesToLocations.length; k++)
+                {
+                    distancesToLocations[k] = 0;
+                }
+                MapLocation spot;
+                Direction newDir;
+
+                // first we look 90 to our right
+                newDir = direction.rotateRight().rotateRight();
+                for (int j = 0; j < 5; j++)
+                {
+                    if (rc.canMove(newDir))
+                    {
+                        spot = rc.getLocation().add(newDir);
+                        for (int i = 0; i < nearByBots.length; i++)
+                        {
+                            //System.out.println("entering for loop");
+                            distancesToLocations[j] += spot.distanceSquaredTo(rc.senseLocationOf(nearByBots[i]));
+                        }
+                    }
+                    else
+                    {
+                        distancesToLocations[j] = -123;
+                    }
+                    // every time through the loop we look one further to the left
+                    newDir.rotateLeft();
+                }
+
+                int indexOfLargest = 0;
+                int largest = distancesToLocations[0];
+                for (int j = 1; j < distancesToLocations.length; j++)
+                {
+                    if (largest < distancesToLocations[j])
+                    {
+                        indexOfLargest = j;
+                        largest = distancesToLocations[j];
+                    }
+                }
+
+                // now we orientate newDir to the right spot
+                newDir = direction.rotateRight().rotateRight();
+                for (int i = 0; i <= indexOfLargest; i++)
+                {
+                    newDir = newDir.rotateLeft();
+                }
+
+                while (!rc.isActive())
+                {
+                    rc.yield();
+                }
+
+                // now we can finally move
+                if (rc.isActive())
+                {
+                    if (rc.canMove(newDir))
+                    {
+                        rc.move(newDir);
+                    }
+                }
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 }
+

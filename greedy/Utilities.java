@@ -364,7 +364,7 @@ public class Utilities
         {
             if(rc.getType() == RobotType.HQ)
             {
-                radius = 100;
+                radius = 15;
                 Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
                 Direction[] dirs = Direction.values();
                 Robot target = null;

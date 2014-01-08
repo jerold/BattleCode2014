@@ -56,7 +56,7 @@ public class Marauder
                         {
                             Utilities.fire(rc);
                         }
-                        nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,100,rc.getTeam().opponent());
+                        nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,35,rc.getTeam().opponent());
                         while (nearbyEnemies.length > 1)
                         {
                             nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
@@ -66,7 +66,7 @@ public class Marauder
                             }
                             else
                             {
-                                nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,100,rc.getTeam().opponent());
+                                nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,35,rc.getTeam().opponent());
                                 Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearbyEnemies[0])), false);
                             }
                             nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,100,rc.getTeam().opponent());
