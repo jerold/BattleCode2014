@@ -19,7 +19,7 @@ public class Duran
     Direction direction;
     boolean arrived = false;
     boolean supportTeamUp = false;
-    int numbOfGhosts = 0;
+    int numbOfGhosts = 3;
     MapLocation[] enemyPastrs;
     MapLocation target;
     MapLocation frontOfEnemy;
