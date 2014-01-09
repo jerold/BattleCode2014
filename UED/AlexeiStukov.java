@@ -38,8 +38,9 @@ public class AlexeiStukov {
                             //ghostSendOuts++;
                             // for now we broadcast 0 other soldiers going with Duran
                             rc.broadcast(2, ghostSendOuts);
+                            rc.broadcast(4,  0);
                         }
-                        else if (numbOfSoldiers  < (ghostSendOuts))
+                        else if (numbOfSoldiers  <= (ghostSendOuts))
                         {
                             rc.broadcast(1, GHOST);
                             // reset Goliath squad

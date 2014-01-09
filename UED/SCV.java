@@ -23,7 +23,7 @@ public class SCV
 
         if (corner == 0)
         {
-            goToSpot = new MapLocation(rc.getMapWidth()/10, rc.getMapHeight());
+            goToSpot = new MapLocation(rc.getMapWidth()/10, rc.getMapHeight() -10);
         }
         else if (corner == 1)
         {
@@ -31,11 +31,11 @@ public class SCV
         }
         else if (corner == 2)
         {
-            goToSpot = new MapLocation(rc.getMapWidth(), rc.getMapHeight());
+            goToSpot = new MapLocation(rc.getMapWidth()-10, rc.getMapHeight()-10);
         }
         else
         {
-            goToSpot = new MapLocation(rc.getMapWidth(), rc.getMapHeight()/10);
+            goToSpot = new MapLocation(rc.getMapWidth()-10, rc.getMapHeight()/10);
         }
 
         while (rc.senseTerrainTile(goToSpot).equals(TerrainTile.VOID) || rc.senseTerrainTile(goToSpot).equals(TerrainTile.OFF_MAP))
@@ -56,7 +56,7 @@ public class SCV
                     Utilities.MoveMapLocation(rc, goToSpot, false);
                     if (rc.getLocation().equals(goToSpot))
                     {
-                        arrived = false;
+                        arrived = true;
                     }
                 }
                 else

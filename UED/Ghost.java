@@ -60,43 +60,76 @@ public class Ghost
             {
                 if (!gotToWaitingZone)
                 {
-                    target = target.subtract(rc.getLocation().directionTo(target)).subtract(rc.getLocation().directionTo(target));
-                    Utilities.MoveMapLocation(rc, target, false);
-                    if (rc.getLocation().equals(target))
-                    {
-                        gotToWaitingZone = true;
+                	if (rc.readBroadcast(4) == 5)
+                	{
+                		gotToWaitingZone = true;
                         Samir = rc.senseObjectAtLocation(waitingZone);
-                    }
+                        rc.setIndicatorString(3, "Got Message");
+                	}
+                	else
+                	{
+	                    target = target.subtract(rc.getLocation().directionTo(target)).subtract(rc.getLocation().directionTo(target));
+	                    if (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+	                    {
+	                    	target = target.add(rc.getLocation().directionTo(waitingZone));
+	                    }
+	                    Utilities.MoveMapLocation(rc, target, false);
+	                    if (rc.getLocation().equals(target))
+	                    {
+	                        gotToWaitingZone = true;
+	                        if (rc.senseObjectAtLocation(waitingZone) != null)
+	                        {
+	                        	Samir = rc.senseObjectAtLocation(waitingZone);
+	                        }
+	                        else
+	                        {
+	                        	rc.broadcast(2, 0);
+	                        	Duran Samir = new Duran(rc);
+	                        	Samir.run();
+	                        }
+	                    }
+                	}
 
                 }
                 else
                 {
-                    GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
-
-                    if (rc.getHealth() < 20)
-                    {
-                        if (Utilities.turnNuke(rc))
-                        {
-
-                        }
-                        else
-                        {
-                            SCV scv = new SCV(rc);
-                            scv.run();
-                        }
-                    }
-                    else if (!rc.getLocation().isAdjacentTo(rc.senseLocationOf(Samir)))
-                    {
-                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(Samir)), false);
-                    }
-                    else if (nearByBots.length > 0)
-                    {
-                        Utilities.fire(rc);
-                    }
-                    else
-                    {
-                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(Samir)), false);
-                    }
+                	if (rc.canSenseObject(Samir))
+                	{
+	                	rc.setIndicatorString(1, "Made It to rally");
+	                    GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
+	
+	                    if (rc.getHealth() < 20)
+	                    {
+	                        if (Utilities.turnNuke(rc))
+	                        {
+	
+	                        }
+	                        else
+	                        {
+	                            SCV scv = new SCV(rc);
+	                            scv.run();
+	                        }
+	                    }
+	                    else if (!rc.getLocation().isAdjacentTo(rc.senseLocationOf(Samir)))
+	                    {
+	                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(Samir)), false);
+	                    }
+	                    else if (nearByBots.length > 0)
+	                    {
+	                        Utilities.fire(rc);
+	                    }
+	                    else
+	                    {
+	                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(Samir)), false);
+	                    }
+                	}
+                	else
+                	{
+                		rc.broadcast(2, 0);
+                		Duran Samir = new Duran(rc);
+                		
+                		Samir.run();
+                	}
                 }
             } catch (Exception e)
             {

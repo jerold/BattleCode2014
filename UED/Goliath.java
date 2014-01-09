@@ -21,7 +21,7 @@ import battlecode.common.TerrainTile;
  */
 public class Goliath 
 {
-	Random rand;
+	Random rand = new Random();
 	Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
 	RobotController rc;
 	MapLocation targetZone;
@@ -195,7 +195,7 @@ public class Goliath
 							}
 							else
 							{
-								GameObject[] nearByBots2 = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam());
+								GameObject[] nearByBots2 = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
 								target = rc.senseLocationOf(leader);
 								
 								if (rc.getLocation().distanceSquaredTo(target) > 10)

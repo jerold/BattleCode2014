@@ -19,11 +19,12 @@ public class Duran
     Direction direction;
     boolean arrived = false;
     boolean supportTeamUp = false;
-    int numbOfGhosts = 3;
+    int numbOfGhosts = 0;
     MapLocation[] enemyPastrs;
     MapLocation target;
     MapLocation frontOfEnemy;
     MapLocation firstEnemyPastr;
+    int arrivedTime = 0;
 
     public Duran(RobotController rc)
     {
@@ -73,10 +74,11 @@ public class Duran
                     if (rc.getLocation().equals(waitingZone))
                     {
                         arrived = true;
+                        arrivedTime = Clock.getRoundNum();
                     }
                     else
                     {
-                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(waitingZone), false);
+                        Utilities.MoveMapLocation(rc, (waitingZone), false);
                     }
                 }
                 else
@@ -84,9 +86,15 @@ public class Duran
                     // now we need to wait till all supporting ghosts arrive
                     if (!supportTeamUp)
                     {
-                        if (numbOfGhosts <= rc.senseNearbyGameObjects(Robot.class, 6, rc.getTeam()).length)
+                        if (numbOfGhosts <= rc.senseNearbyGameObjects(Robot.class, 6, rc.getTeam()).length || (arrivedTime > Clock.getRoundNum() - 75*numbOfGhosts))
                         {
                             supportTeamUp = true;
+                            rc.broadcast(4, 5);
+                            for (int i = 0; i < 10; i++)
+                            {
+                            	rc.yield();
+                            }
+                            
                         }
                     }
                     else
@@ -96,6 +104,13 @@ public class Duran
                         // if we don't see any pastrs then we will advance toward the enemy HQ till we start getting close
                         if (enemyPastrs.length == 0)
                         {
+                        	GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
+
+                            if (nearByBots.length > 0 && rc.senseRobotInfo((Robot) nearByBots[0]).health < 201)
+                            {
+                                Utilities.fire(rc);
+                            }
+                        	/*
                             int var = 5;
                             target = new MapLocation(var, rc.getMapHeight() - var);
                             while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
@@ -109,6 +124,7 @@ public class Duran
                             	//Utilities.avoidEnemiesMove(rc, target);
                             	Utilities.MoveMapLocation(rc, target, false);
                             }
+                            */
                             //Utilities.MoveMapLocation(rc, target, false);
                         }
                         // if we see enemyPastrs then lets head towards the nearest one
@@ -125,11 +141,13 @@ public class Duran
                                 }
                             }
                             //target = enemyPastrs[0].subtract(rc.getLocation().directionTo(enemyPastrs[0])).subtract(rc.getLocation().directionTo(enemyPastrs[0]));
-                            target = target.subtract((rc.getLocation().directionTo(target))).subtract((rc.getLocation().directionTo(target)));
+                            //target = target.subtract((rc.getLocation().directionTo(target))).subtract((rc.getLocation().directionTo(target)));
                             /*while (rc.getLocation().distanceSquaredTo(target) > 35)
                             {
                                 Utilities.avoidEnemiesMove(rc, target);
                             }*/
+                            
+                            
                             
                             Utilities.MoveMapLocation(rc, target, false);
 
@@ -141,8 +159,9 @@ public class Duran
                                 try
                                 {
                                     GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
-
-                                    if (nearByBots.length > 0)
+                                    
+                                   
+                                    if (nearByBots.length > 0  && rc.senseRobotInfo((Robot) nearByBots[0]).health < 201)
                                     {
                                         Utilities.fire(rc);
                                     }
@@ -163,6 +182,7 @@ public class Duran
                                     e.printStackTrace();
                                     System.out.println("Duran Exception");
                                 }
+                                rc.yield();
                             }
                             
                             /*
