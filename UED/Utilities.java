@@ -555,5 +555,67 @@ public class Utilities
             e.printStackTrace();
         }
     }
+
+    public static boolean turnNuke(RobotController rc)
+    {
+        boolean nuke = false;
+
+        GameObject[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+        GameObject[] nearByFriends;
+
+        if (nearByEnemies.length == 0)
+        {
+
+        }
+        else
+        {
+            MapLocation[] nearBySpots = new MapLocation[8];
+
+            Direction dir = rc.getLocation().directionTo(rc.senseHQLocation());
+
+            for (int i = 0; i < nearBySpots.length; i++)
+            {
+                nearBySpots[i] = rc.getLocation().add(dir);
+                dir.rotateLeft();
+            }
+
+            int[] damage = new int[8];
+
+            for (int i = 0; i < damage.length; i++)
+            {
+                nearByEnemies = rc.senseNearbyGameObjects(Robot.class, nearBySpots[i], 2, rc.getTeam().opponent());
+                nearByFriends = rc.senseNearbyGameObjects(Robot.class, nearBySpots[i], 2, rc.getTeam());
+
+                int total = nearByEnemies.length - nearByFriends.length;
+                damage[i] = total;
+            }
+
+            int largest = damage[0];
+            int index = 0;
+
+            for (int k = 1; k < damage.length; k++)
+            {
+                if (largest < damage[k])
+                {
+                    largest = damage[k];
+                    index = k;
+                }
+            }
+
+            if (largest > 1)
+            {
+                Nuke nuker = new Nuke(rc, nearBySpots[index]);
+                nuker.run();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+
+        }
+        return nuke;
+    }
 }
 

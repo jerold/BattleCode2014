@@ -15,7 +15,7 @@ public class AlexeiStukov {
     static final int GOLIATH = 1;
     static final int GHOST = 2;
     static final int DURAN = 3;
-    static int ghostSendOuts = 3;
+    static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
     public static void run(RobotController rc)
     {
@@ -35,13 +35,15 @@ public class AlexeiStukov {
                         if (numbOfSoldiers == 0)
                         {
                             rc.broadcast(1, DURAN);
-                            ghostSendOuts++;
+                            //ghostSendOuts++;
                             // for now we broadcast 0 other soldiers going with Duran
                             rc.broadcast(2, ghostSendOuts);
                         }
                         else if (numbOfSoldiers  < (ghostSendOuts))
                         {
                             rc.broadcast(1, GHOST);
+                            // reset Goliath squad
+                            rc.broadcast(3, 0);
                         }
                         else
                         {

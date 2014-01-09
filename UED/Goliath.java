@@ -89,11 +89,25 @@ public class Goliath
 							rc.yield();
 						}
 						amLeader = true;
+                        rc.setIndicatorString(0, "Goliath Leader");
 					}
 					else
 					{
-						// if we are the leader then we start heading toward the enemy HQ
-						if (amLeader)
+						// if we have low health either we go nuke or we slip away to build a pastr
+                        if (rc.getHealth() < 20)
+                        {
+                            if (Utilities.turnNuke(rc))
+                            {
+
+                            }
+                            else
+                            {
+                                SCV scv = new SCV(rc);
+                                scv.run();
+                            }
+                        }
+                        // if we are the leader then we start heading toward the enemy HQ
+						else if (amLeader)
 						{
 							Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
 							
@@ -143,7 +157,7 @@ public class Goliath
 					                		{	
 					                			target2 = target2.add(dir);
 					                		}
-					                		Utilities.MoveMapLocation(rc, target2, false);
+					                		Utilities.MoveMapLocation(rc, target2, true);
 					                	}
 									}
 									else
@@ -170,7 +184,14 @@ public class Goliath
 							}
 							else if (rc.senseLocationOf(leader) == null)
 							{
-								Utilities.MoveDirection(rc, rc.getLocation().directionTo(pastLeaderSpot), false);
+                                if (rc.senseObjectAtLocation(pastLeaderSpot) != null)
+                                {
+                                    leader = rc.senseObjectAtLocation(pastLeaderSpot);
+                                }
+                                else
+                                {
+								    Utilities.MoveDirection(rc, rc.getLocation().directionTo(pastLeaderSpot), false);
+                                }
 							}
 							else
 							{

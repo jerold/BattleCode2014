@@ -41,10 +41,22 @@ public class Duran
             System.out.println("Duran Exception");
         }
 
+        int var = 5;
+        target = new MapLocation(var, rc.getMapHeight() - var);
+        while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+        {
+            var++;
+            target = new MapLocation(var, rc.getMapHeight() - var);
+        }
+
+        waitingZone = target;
+        /*
+
         for (int i = 0; i < 3; i++)
         {
             waitingZone = waitingZone.add(direction);
         }
+        */
 
         frontOfEnemy = rc.senseEnemyHQLocation().subtract(rc.getLocation().directionTo(rc.senseHQLocation())).subtract(rc.getLocation().directionTo(rc.senseHQLocation())).subtract(rc.getLocation().directionTo(rc.senseHQLocation())).subtract(rc.getLocation().directionTo(rc.senseHQLocation()));
     }
