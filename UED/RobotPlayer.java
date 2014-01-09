@@ -15,7 +15,10 @@ public class RobotPlayer
     static final int GOLIATH = 1;
     static final int GHOST = 2;
     static final int DURAN = 3;
-
+    static final int SUPPLY_DEPOT = 4;
+    static final int MULECALLDOWN = 5;
+    static final int SENSORTOWER = 6;
+    static final int MARINES = 7;
 
     public static void run(RobotController rc)
     {
@@ -31,6 +34,10 @@ public class RobotPlayer
                     e.printStackTrace();
                     System.out.println("HQ Exception");
                 }
+            }
+            else if(rc.getType() == RobotType.NOISETOWER)
+            {
+                new SensorTower(rc).run();
             }
             if (rc.getType() == RobotType.SOLDIER)
             {
@@ -54,6 +61,26 @@ public class RobotPlayer
                             Ghost ghost = new Ghost(rc);
                             ghost.run();
 
+                        }
+                        else if (myType == SUPPLY_DEPOT)
+                        {
+                            SupplyDepot supplyDepot = new SupplyDepot(rc);
+                            supplyDepot.run();
+                        }
+                        else if (myType == MULECALLDOWN)
+                        {
+                            MULE mule = new MULE(rc);
+                            mule.run();
+                        }
+                        else if (myType == SENSORTOWER)
+                        {
+                            SensorTower sensorTower = new SensorTower(rc);
+                            sensorTower.run();
+                        }
+                        else if (myType == MARINES)
+                        {
+                            Marines marines = new Marines(rc);
+                            marines.run();
                         }
                         //Duran leader to kill enemy pastr
                         else

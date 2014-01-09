@@ -1,7 +1,6 @@
 package UED;
 
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 /**
  * Created by fredkneeland on 1/7/14.
@@ -15,8 +14,17 @@ public class AlexeiStukov {
     static final int GOLIATH = 1;
     static final int GHOST = 2;
     static final int DURAN = 3;
+    static final int SUPPLY_DEPOT = 4;
+    static final int MULECALLDOWN = 5;
+    static final int SENSORTOWER = 6;
+    static final int MARINES = 7;
     static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
+    static boolean putUpDistractor = false;
+    static boolean putUpMule = false;
+    static boolean putUpSensorTower = false;
+    static boolean firstRound = true;
+
     public static void run(RobotController rc)
     {
         while(true) {
@@ -24,13 +32,17 @@ public class AlexeiStukov {
             {
                 try
                 {
-                    if (rc.isActive())
+                    rc.setIndicatorString(0, ""+rc.getActionDelay());
+                    rc.setIndicatorString(1, ""+rc.isActive());
+
+                    GameObject[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 15, rc.getTeam().opponent());
+                    if (nearByEnemies.length > 0)
                     {
                         Utilities.fire(rc);
+                        //nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 15, rc.getTeam().opponent());
                     }
                     if (rc.isActive())
                     {
-
                         // after spawing soldiers we tell them what to be
                         if (numbOfSoldiers == 0)
                         {
@@ -38,7 +50,7 @@ public class AlexeiStukov {
                             //ghostSendOuts++;
                             // for now we broadcast 0 other soldiers going with Duran
                             rc.broadcast(2, ghostSendOuts);
-                            rc.broadcast(4,  0);
+                            rc.broadcast(4, 0);
                         }
                         else if (numbOfSoldiers  <= (ghostSendOuts))
                         {
@@ -46,23 +58,67 @@ public class AlexeiStukov {
                             // reset Goliath squad
                             rc.broadcast(3, 0);
                         }
-                        else
+                        // we output 2 goliaths to  keep base from being overwhelmed
+                        else if (numbOfSoldiers == ghostSendOuts+2)
                         {
                             rc.broadcast(1, GOLIATH);
                         }
-                        Utilities.SpawnSoldiers(rc);
-                        numbOfSoldiers++;
-                        if ((numbOfSoldiers - ghostSendOuts) >= GOLIATH_SIZE)
+                        // now we will output our main milk source
+                        else if (numbOfSoldiers == ghostSendOuts+3 && !putUpDistractor)
                         {
-                        	numbOfSoldiers = 0;
+                            rc.broadcast(1, SUPPLY_DEPOT);
+                            rc.spawn(rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite());
+                        }
+                        else if (numbOfSoldiers == ghostSendOuts+4 && !putUpMule)
+                        {
+                            rc.broadcast(1, MULECALLDOWN);
+                        }
+                        else if (numbOfSoldiers == ghostSendOuts+5 && !putUpSensorTower)
+                        {
+                            rc.broadcast(1, SENSORTOWER);
+                        }
+                        else if (numbOfSoldiers < ghostSendOuts+7)
+                        {
+                            rc.broadcast(1, MARINES);
+                        }
+                        else
+                        {
+                            rc.broadcast(1, GOLIATH);
+                            putUpDistractor = true;
+                            putUpSensorTower = true;
+                            putUpMule = true;
+                        }
+                        if ((numbOfSoldiers != ghostSendOuts+1) || putUpDistractor)
+                        {
+                            Utilities.SpawnSoldiers(rc);
+                        }
+                        numbOfSoldiers++;
+                        if (firstRound)
+                        {
+                            if (((numbOfSoldiers - ghostSendOuts) - 5) > GOLIATH_SIZE)
+                            {
+                                rc.broadcast(3, 5);
+                                numbOfSoldiers = 1;
+                            }
+                        }
+                        else
+                        {
+                            if (((numbOfSoldiers - ghostSendOuts) - 2) > GOLIATH_SIZE)
+                            {
+                                rc.broadcast(3, 5);
+                                numbOfSoldiers = 1;
+                            }
                         }
                     }
+
+
                 }
                 catch (Exception e)
                 {
                     e.printStackTrace();
                     System.out.println("HQ Exception");
                 }
+                rc.yield();
             }
         }
     }

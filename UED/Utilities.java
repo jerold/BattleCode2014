@@ -726,5 +726,112 @@ public class Utilities
         }
         return nuke;
     }
+
+    //finds best corner to collect milk where the return is an int as follows:
+    //1  2
+    //3  4
+    public static int findBestCorner(RobotController rc)
+    {
+        double[][] pasture = rc.senseCowGrowth();
+
+        double max = 0;
+        int corner = 0;
+        double total = 0;
+
+        //top left corner
+        for(int k = 0; k < 10; k++)
+        {
+            for(int a = 0; a < 10; a++)
+            {
+                total += pasture[k][a];
+            }
+        }
+        if(total > max)
+        {
+            max = total;
+            corner = 1;
+        }
+        total = 0;
+
+        //top right corner
+        for(int k = rc.getMapWidth() - 11; k < rc.getMapWidth(); k++)
+        {
+            for(int a = 0; a < 10; a++)
+            {
+                total += pasture[k][a];
+            }
+        }
+        if(total > max)
+        {
+            max = total;
+            corner = 2;
+        }
+        total = 0;
+
+        //bottom left corner
+        for(int k = 0; k < 10; k++)
+        {
+            for(int a = rc.getMapHeight() - 11; a < rc.getMapHeight(); a++)
+            {
+                total += pasture[k][a];
+            }
+        }
+        if(total > max)
+        {
+            max = total;
+            corner = 3;
+        }
+        total = 0;
+
+        //bottom right corner
+        for(int k = rc.getMapWidth() - 11; k < rc.getMapWidth(); k++)
+        {
+            for(int a = rc.getMapHeight() - 11; a < rc.getMapHeight(); a++)
+            {
+                total += pasture[k][a];
+            }
+        }
+        if(total > max)
+        {
+            max = total;
+            corner = 4;
+        }
+
+        return corner;
+    }
+
+    public static MapLocation spotOfSensorTower(RobotController rc)
+    {
+        rand = new Random();
+        MapLocation target = null;
+
+        int corner = Utilities.findBestCorner(rc);
+
+        switch(corner)
+        {
+            case 1:
+                target = new MapLocation(5, 5);
+                break;
+            case 2:
+                target = new MapLocation(rc.getMapWidth() - 6, 5);
+                break;
+            case 3:
+                target = new MapLocation(5, rc.getMapHeight() - 6);
+                break;
+            default:
+                target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
+                break;
+        }
+
+        Direction dir = directions[rand.nextInt(8)];
+        // make sure we don't try to build on a void space
+        while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+        {
+            target = target.add(dir);
+            dir = directions[rand.nextInt(8)];
+        }
+
+        return target;
+    }
 }
 

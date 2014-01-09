@@ -25,6 +25,8 @@ public class Duran
     MapLocation frontOfEnemy;
     MapLocation firstEnemyPastr;
     int arrivedTime = 0;
+    Random rand = new Random();
+    Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
 
     public Duran(RobotController rc)
     {
@@ -43,12 +45,27 @@ public class Duran
         }
 
         int var = 5;
-        target = new MapLocation(var, rc.getMapHeight() - var);
+        target = Utilities.spotOfSensorTower(rc);
+        Direction dir = target.directionTo(rc.senseEnemyHQLocation());
+
+        for (int i = 0; i < 5; i++)
+        {
+            target = target.add(dir);
+        }
+
+        while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+        {
+            dir = directions[rand.nextInt(8)];
+            target.add(dir);
+        }
+
+                /*new MapLocation(var, rc.getMapHeight() - var);
         while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
         {
             var++;
             target = new MapLocation(var, rc.getMapHeight() - var);
         }
+        */
 
         waitingZone = target;
         /*
@@ -68,140 +85,143 @@ public class Duran
         {
             try
             {
-                // first we need to get to starting location
-                if (!arrived)
+                if (rc.isActive())
                 {
-                    if (rc.getLocation().equals(waitingZone))
+                    // first we need to get to starting location
+                    if (!arrived)
                     {
-                        arrived = true;
-                        arrivedTime = Clock.getRoundNum();
-                    }
-                    else
-                    {
-                        Utilities.MoveMapLocation(rc, (waitingZone), false);
-                    }
-                }
-                else
-                {
-                    // now we need to wait till all supporting ghosts arrive
-                    if (!supportTeamUp)
-                    {
-                        if (numbOfGhosts <= rc.senseNearbyGameObjects(Robot.class, 6, rc.getTeam()).length || (arrivedTime > Clock.getRoundNum() - 75*numbOfGhosts))
+                        if (rc.getLocation().equals(waitingZone))
                         {
-                            supportTeamUp = true;
-                            rc.broadcast(4, 5);
-                            for (int i = 0; i < 10; i++)
-                            {
-                            	rc.yield();
-                            }
-                            
+                            arrived = true;
+                            arrivedTime = Clock.getRoundNum();
                         }
-                    }
-                    else
-                    {
-                        // now it is time to move forward trying to kill enemy pastrs
-                        enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
-                        // if we don't see any pastrs then we will advance toward the enemy HQ till we start getting close
-                        if (enemyPastrs.length == 0)
-                        {
-                        	GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
-
-                            if (nearByBots.length > 0 && rc.senseRobotInfo((Robot) nearByBots[0]).health < 201)
-                            {
-                                Utilities.fire(rc);
-                            }
-                        	/*
-                            int var = 5;
-                            target = new MapLocation(var, rc.getMapHeight() - var);
-                            while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
-                            {
-                                var++;
-                                target = new MapLocation(var, rc.getMapHeight() - var);
-                            }
-                            while (enemyPastrs.length == 0)
-                            {
-                            	enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
-                            	//Utilities.avoidEnemiesMove(rc, target);
-                            	Utilities.MoveMapLocation(rc, target, false);
-                            }
-                            */
-                            //Utilities.MoveMapLocation(rc, target, false);
-                        }
-                        // if we see enemyPastrs then lets head towards the nearest one
                         else
                         {
-                            int enemyPastrsIndex = 0;
-                            target = enemyPastrs[0];
-                            for (int i = 1; i < enemyPastrs.length; i++)
+                            Utilities.MoveMapLocation(rc, (waitingZone), false);
+                        }
+                    }
+                    else
+                    {
+                        // now we need to wait till all supporting ghosts arrive
+                        if (!supportTeamUp)
+                        {
+                            if (numbOfGhosts <= rc.senseNearbyGameObjects(Robot.class, 6, rc.getTeam()).length || (arrivedTime > Clock.getRoundNum() - 100*numbOfGhosts))
                             {
-                                if (rc.getLocation().distanceSquaredTo(enemyPastrs[i]) < rc.getLocation().distanceSquaredTo(target))
+                                supportTeamUp = true;
+                                rc.broadcast(4, 5);
+                                for (int i = 0; i < 10; i++)
                                 {
-                                    target = enemyPastrs[i];
-                                    enemyPastrsIndex = i;
+                                    rc.yield();
                                 }
+
                             }
-                            //target = enemyPastrs[0].subtract(rc.getLocation().directionTo(enemyPastrs[0])).subtract(rc.getLocation().directionTo(enemyPastrs[0]));
-                            //target = target.subtract((rc.getLocation().directionTo(target))).subtract((rc.getLocation().directionTo(target)));
-                            /*while (rc.getLocation().distanceSquaredTo(target) > 35)
+                        }
+                        else
+                        {
+                            // now it is time to move forward trying to kill enemy pastrs
+                            enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                            // if we don't see any pastrs then we will advance toward the enemy HQ till we start getting close
+                            if (enemyPastrs.length == 0)
                             {
-                                Utilities.avoidEnemiesMove(rc, target);
-                            }*/
-                            
-                            
-                            
-                            Utilities.MoveMapLocation(rc, target, false);
+                                GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
 
-                            firstEnemyPastr = enemyPastrs[enemyPastrsIndex];
-
-                            while (firstEnemyPastr.equals(enemyPastrs[enemyPastrsIndex]))
-                            {
-                                enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
-                                try
+                                if (nearByBots.length > 0 && rc.senseRobotInfo((Robot) nearByBots[0]).health < 201)
                                 {
-                                    GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
-                                    
-                                   
-                                    if (nearByBots.length > 0  && rc.senseRobotInfo((Robot) nearByBots[0]).health < 201)
+                                    Utilities.fire(rc);
+                                }
+                                /*
+                                int var = 5;
+                                target = new MapLocation(var, rc.getMapHeight() - var);
+                                while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+                                {
+                                    var++;
+                                    target = new MapLocation(var, rc.getMapHeight() - var);
+                                }
+                                while (enemyPastrs.length == 0)
+                                {
+                                    enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                                    //Utilities.avoidEnemiesMove(rc, target);
+                                    Utilities.MoveMapLocation(rc, target, false);
+                                }
+                                */
+                                //Utilities.MoveMapLocation(rc, target, false);
+                            }
+                            // if we see enemyPastrs then lets head towards the nearest one
+                            else
+                            {
+                                int enemyPastrsIndex = 0;
+                                target = enemyPastrs[0];
+                                for (int i = 1; i < enemyPastrs.length; i++)
+                                {
+                                    if (rc.getLocation().distanceSquaredTo(enemyPastrs[i]) < rc.getLocation().distanceSquaredTo(target))
                                     {
-                                        Utilities.fire(rc);
+                                        target = enemyPastrs[i];
+                                        enemyPastrsIndex = i;
                                     }
-                                    else
+                                }
+                                //target = enemyPastrs[0].subtract(rc.getLocation().directionTo(enemyPastrs[0])).subtract(rc.getLocation().directionTo(enemyPastrs[0]));
+                                //target = target.subtract((rc.getLocation().directionTo(target))).subtract((rc.getLocation().directionTo(target)));
+                                /*while (rc.getLocation().distanceSquaredTo(target) > 35)
+                                {
+                                    Utilities.avoidEnemiesMove(rc, target);
+                                }*/
+
+
+
+                                Utilities.MoveMapLocation(rc, target, false);
+
+                                firstEnemyPastr = enemyPastrs[enemyPastrsIndex];
+
+                                while (firstEnemyPastr.equals(enemyPastrs[enemyPastrsIndex]))
+                                {
+                                    enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                                    try
                                     {
-                                        nearByBots = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-                                        if (nearByBots.length > 1)
+                                        GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
+
+
+                                        if (nearByBots.length > 0  && rc.senseRobotInfo((Robot) nearByBots[0]).health < 201)
                                         {
-                                            Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByBots[0])), false);
+                                            Utilities.fire(rc);
                                         }
                                         else
                                         {
-                                            Utilities.MoveDirection(rc, rc.getLocation().directionTo(firstEnemyPastr), false);
+                                            nearByBots = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+                                            if (nearByBots.length > 1)
+                                            {
+                                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByBots[0])), false);
+                                            }
+                                            else
+                                            {
+                                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(firstEnemyPastr), false);
+                                            }
                                         }
+                                    } catch (Exception e)
+                                    {
+                                        e.printStackTrace();
+                                        System.out.println("Duran Exception");
                                     }
-                                } catch (Exception e)
-                                {
-                                    e.printStackTrace();
-                                    System.out.println("Duran Exception");
+                                    rc.yield();
                                 }
-                                rc.yield();
+
+                                /*
+                                GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+
+                                while (nearByBots.length > 0)
+                                {
+                                    if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(nearByBots[0])) > 10)
+                                    {
+                                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByBots[0])), false);
+                                    }
+                                    else
+                                    {
+                                        Utilities.fire(rc);
+                                    }
+                                    nearByBots = rc.senseNearbyGameObjects(Robot.class, 15, rc.getTeam().opponent());
+
+                                }
+                                */
                             }
-                            
-                            /*
-                            GameObject[] nearByBots = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-                            
-                            while (nearByBots.length > 0)
-                            {
-                            	if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(nearByBots[0])) > 10)
-                            	{
-                            		Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByBots[0])), false);
-                            	}
-                            	else
-                            	{
-                            		Utilities.fire(rc);
-                            	}
-                            	nearByBots = rc.senseNearbyGameObjects(Robot.class, 15, rc.getTeam().opponent());
-                            	
-                            }
-                            */
                         }
                     }
                 }
