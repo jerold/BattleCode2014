@@ -5,9 +5,8 @@ import battlecode.common.*;
 public class SoundTower
 {
 	RobotController rc;
-	int corner, iteration;
-	int width, height;
-	MapLocation[] one, two, three, four;
+	int width, height, corner;
+	int[] radii;
 	
 	public SoundTower(RobotController rc)
 	{
@@ -15,30 +14,8 @@ public class SoundTower
 		corner = findBestCorner();
 		width = rc.getMapWidth();
 		height = rc.getMapHeight();
-		MapLocation[] one = {new MapLocation(0, 13), new MapLocation(4, 13), new MapLocation(10, 13),
-							 new MapLocation(13, 10), new MapLocation(13, 4), new MapLocation(13, 0),
-							 new MapLocation(0, 10), new MapLocation(5, 10), new MapLocation(10, 10), 
-							 new MapLocation(10, 5), new MapLocation(10, 0), new MapLocation(2, 8),
-							 new MapLocation(8, 8), new MapLocation(8, 2)};
-		MapLocation[] two = {new MapLocation(width - 1, 13), new MapLocation(width - 5, 13), new MapLocation(width - 11, 13),
-				 			 new MapLocation(width - 14, 10), new MapLocation(width - 14, 4), new MapLocation(width - 14, 0),
-				 			 new MapLocation(width - 1, 10), new MapLocation(width - 6, 10), new MapLocation(width - 11, 10), 
-				 			 new MapLocation(width - 11, 5), new MapLocation(width - 11, 0), new MapLocation(width - 3, 8),
-				 			 new MapLocation(width - 9, 8), new MapLocation(width - 9, 2)};
-		MapLocation[] three = {new MapLocation(0, height - 14), new MapLocation(4, height - 14), new MapLocation(10, height - 14),
-				 			   new MapLocation(13, height - 11), new MapLocation(13, height - 5), new MapLocation(13, height - 1),
-				 			   new MapLocation(0, height - 11), new MapLocation(5, height - 11), new MapLocation(10, height - 11), 
-				 			   new MapLocation(10, height - 6), new MapLocation(10, height - 1), new MapLocation(2, height - 9),
-				 			   new MapLocation(8, height - 9), new MapLocation(8, height - 3)};
-		MapLocation[] four = {new MapLocation(width - 1, height - 14), new MapLocation(width - 5, height - 14), new MapLocation(width - 11, height - 14),
-							  new MapLocation(width - 14, height - 11), new MapLocation(width - 14, height - 5), new MapLocation(width - 14, height - 1),
-							  new MapLocation(width - 1, height - 11), new MapLocation(width - 6, height - 11), new MapLocation(width - 11, height - 11), 
-							  new MapLocation(width - 11, height - 6), new MapLocation(width - 11, height - 1), new MapLocation(width - 3, height - 9),
-							  new MapLocation(width - 9, height - 9), new MapLocation(width - 9, height - 3)};
-		this.one = one;
-		this.two = two;
-		this.three = three;
-		this.four = four;
+		int[] radii = {15, 13, 11, 9, 7};
+		this.radii = radii;
 	}
 	
 	public void run()
@@ -74,36 +51,7 @@ public class SoundTower
 			}
 			else
 			{
-				try
-				{
-					if(rc.isActive())
-					{
-						switch(corner)
-						{
-							case 1:
-								rc.attackSquare(one[iteration]);
-								iteration++;
-								iteration %= one.length;
-								break;
-							case 2:
-								rc.attackSquare(two[iteration]);
-								iteration++;
-								iteration %= two.length;
-								break;
-							case 3:
-								rc.attackSquare(three[iteration]);
-								iteration++;
-								iteration %= three.length;
-								break;
-							default:
-								rc.attackSquare(four[iteration]);
-								iteration++;
-								iteration %= four.length;
-								break;
-						}
-					}
-				}
-				catch(Exception e){}
+				fireArcs();
 			}
 			
 			rc.yield();
@@ -181,5 +129,83 @@ public class SoundTower
 		}
 		
 		return corner;
+	}
+	
+	private void fireArcs()
+	{
+		for(int k = 0; k < radii.length; k++)
+		{
+			for(int a = 0; a <= radii[k]; a+= 4)
+			{
+				while(!rc.isActive()){}
+				try
+				{
+					switch(corner)
+					{
+						case 1:
+							rc.attackSquare(new MapLocation(a, radii[k]));
+							break;
+						case 2:
+							rc.attackSquare(new MapLocation(width - a + 1, radii[k]));
+							break;
+						case 3:
+							rc.attackSquare(new MapLocation(a, height - radii[k] + 1));
+							break;
+						default:
+							rc.attackSquare(new MapLocation(width - a + 1, height - radii[k] + 1));
+							break;
+					}
+				}
+				catch(Exception e){}
+				
+				rc.yield();
+				
+				while(!rc.isActive()){}
+				try
+				{
+					switch(corner)
+					{
+						case 1:
+							rc.attackSquare(new MapLocation(radii[k], a));
+							break;
+						case 2:
+							rc.attackSquare(new MapLocation(width - radii[k] + 1, a));
+							break;
+						case 3:
+							rc.attackSquare(new MapLocation(radii[k], height - a + 1));
+							break;
+						default:
+							rc.attackSquare(new MapLocation(width - radii[k] + 1, height - a + 1));
+							break;
+					}
+				}
+				catch(Exception e){}
+				
+				rc.yield();
+			}
+			
+			while(!rc.isActive()){}
+			try
+			{
+				switch(corner)
+				{
+					case 1:
+						rc.attackSquare(new MapLocation(radii[k], radii[k]));
+						break;
+					case 2:
+						rc.attackSquare(new MapLocation(width - radii[k] + 1, radii[k]));
+						break;
+					case 3:
+						rc.attackSquare(new MapLocation(radii[k], height - radii[k] + 1));
+						break;
+					default:
+						rc.attackSquare(new MapLocation(width - radii[k] + 1, height - radii[k] + 1));
+						break;
+				}
+			}
+			catch(Exception e){}
+			
+			rc.yield();
+		}
 	}
 }
