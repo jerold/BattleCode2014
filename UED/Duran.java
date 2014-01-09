@@ -94,7 +94,8 @@ public class Duran
                             while (enemyPastrs.length == 0)
                             {
                             	enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
-                            	Utilities.avoidEnemiesMove(rc, target);
+                            	//Utilities.avoidEnemiesMove(rc, target);
+                            	Utilities.MoveMapLocation(rc, target, false);
                             }
                             //Utilities.MoveMapLocation(rc, target, false);
                         }
@@ -113,10 +114,12 @@ public class Duran
                             }
                             //target = enemyPastrs[0].subtract(rc.getLocation().directionTo(enemyPastrs[0])).subtract(rc.getLocation().directionTo(enemyPastrs[0]));
                             target = target.subtract((rc.getLocation().directionTo(target))).subtract((rc.getLocation().directionTo(target)));
-                            while (rc.getLocation().distanceSquaredTo(target) > 35)
+                            /*while (rc.getLocation().distanceSquaredTo(target) > 35)
                             {
                                 Utilities.avoidEnemiesMove(rc, target);
-                            }
+                            }*/
+                            
+                            Utilities.MoveMapLocation(rc, target, false);
 
                             firstEnemyPastr = enemyPastrs[enemyPastrsIndex];
 

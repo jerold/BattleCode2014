@@ -11,10 +11,12 @@ import battlecode.common.RobotType;
  *
  */
 public class AlexeiStukov {
-    static int numbOfSoldiers = 1;
+    static int numbOfSoldiers = 0;
     static final int GOLIATH = 1;
     static final int GHOST = 2;
     static final int DURAN = 3;
+    static int ghostSendOuts = 3;
+    static final int GOLIATH_SIZE = 5;
     public static void run(RobotController rc)
     {
         while(true) {
@@ -30,13 +32,14 @@ public class AlexeiStukov {
                     {
 
                         // after spawing soldiers we tell them what to be
-                        if (numbOfSoldiers == 1)
+                        if (numbOfSoldiers == 0)
                         {
                             rc.broadcast(1, DURAN);
+                            ghostSendOuts++;
                             // for now we broadcast 0 other soldiers going with Duran
-                            rc.broadcast(2, 1);
+                            rc.broadcast(2, ghostSendOuts);
                         }
-                        else if (numbOfSoldiers == 2)
+                        else if (numbOfSoldiers  < (ghostSendOuts))
                         {
                             rc.broadcast(1, GHOST);
                         }
@@ -46,6 +49,10 @@ public class AlexeiStukov {
                         }
                         Utilities.SpawnSoldiers(rc);
                         numbOfSoldiers++;
+                        if ((numbOfSoldiers - ghostSendOuts) >= GOLIATH_SIZE)
+                        {
+                        	numbOfSoldiers = 0;
+                        }
                     }
                 }
                 catch (Exception e)

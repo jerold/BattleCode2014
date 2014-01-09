@@ -1,33 +1,36 @@
-package greedy;
+package ultraGreedy;
 
-import java.util.Random;
-
-import battlecode.common.Clock;
-import battlecode.common.Direction;
-import battlecode.common.MapLocation;
-import battlecode.common.Robot;
 import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
-/**
- * Created by fredkneeland on 1/7/14.
- */
 public class RobotPlayer
 {
     static int myType = 0;
     static final int PASTR = 1;
     static final int MARINE = 2;
     static final int MARAUDER = 3;
+    static int numbOfSoldiers = 0;
 
     public static void run(RobotController rc)
     {
         while(true) {
             if (rc.getType() == RobotType.HQ)
             {
-                try
+            	try
                 {
-                    HQBot.run(rc);
+                    if (rc.isActive())
+                    {
+                        Utilities.fire(rc);
+                    }
+                    if (rc.isActive())
+                    {
+                        Utilities.SpawnSoldiers(rc);
+                        // after spawing soldiers we tell them what to be
+                            rc.broadcast(1, PASTR);
+                        
+                        numbOfSoldiers++;
+                        rc.broadcast(0, numbOfSoldiers);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -45,10 +48,9 @@ public class RobotPlayer
                         {
                             myType = rc.readBroadcast(1);
                         }
-                        if (myType == PASTR)
-                        {
+
                             PASTR pastr;
-                            if (rc.readBroadcast(0) < 5)
+                            if (rc.readBroadcast(0) % 2 == 0)
                             {
                                 pastr = new PASTR(rc, true);
                             }
@@ -58,20 +60,7 @@ public class RobotPlayer
                             }
 
                             pastr.run();
-                        }
-                        // trooops to protect our pastrs
-                        else if (myType == MARINE)
-                        {
-                            Marine marine = new Marine(rc);
-                            marine.run();
 
-                        }
-                        //troops to kill enemy pastrs
-                        else
-                        {
-                            Marauder marauder = new Marauder(rc);
-                            marauder.run();
-                        }
                     }
                 } catch (Exception e)
                 {

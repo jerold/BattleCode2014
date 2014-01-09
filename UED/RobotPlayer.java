@@ -45,7 +45,8 @@ public class RobotPlayer
                         // powerful squad to out muscle enemy
                         if (myType == GOLIATH)
                         {
-
+                        	Goliath goliath = new Goliath(rc);
+                        	goliath.run();
                         }
                         // trooops to support Duran
                         else if (myType == GHOST)
