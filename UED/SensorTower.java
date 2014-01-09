@@ -24,6 +24,7 @@ public class SensorTower
         height = rc.getMapHeight();
         int[] radii = {15, 13, 11, 9, 7};
         this.radii = radii;
+        rc.setIndicatorString(0, "SensorTower");
     }
 
     public void run()
@@ -35,33 +36,8 @@ public class SensorTower
 
                     try
                     {
-                        /*
-                        switch(corner)
-                        {
-                            case 1:
-                                target = new MapLocation(5, 5);
-                                break;
-                            case 2:
-                                target = new MapLocation(rc.getMapWidth() - 6, 5);
-                                break;
-                            case 3:
-                                target = new MapLocation(5, rc.getMapHeight() - 6);
-                                break;
-                            default:
-                                target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
-                                break;
-                        }
-
-                        Direction dir = directions[rand.nextInt(8)];
-                        // make sure we don't try to build on a void space
-                        while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
-                        {
-                            target = target.add(dir);
-                            dir = directions[rand.nextInt(8)];
-                        }
-                        */
                         target = Utilities.spotOfSensorTower(rc);
-                        Utilities.MoveMapLocation(rc, target, true);
+                        Utilities.AvoidEnemiesMoveMapLocation(rc, target, true);
 
                         if(rc.isActive())
                         {
