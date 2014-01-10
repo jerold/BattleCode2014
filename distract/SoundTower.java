@@ -1,4 +1,4 @@
-package firstjoshua;
+package distract;
 
 import battlecode.common.*;
 
@@ -11,7 +11,7 @@ public class SoundTower
 	public SoundTower(RobotController rc)
 	{
 		this.rc = rc;
-		corner = findBestCorner();
+		corner = Utilities.findBestCorner(rc);
 		width = rc.getMapWidth();
 		height = rc.getMapHeight();
 		int[] radii = {15, 13, 11, 9, 7};
@@ -56,79 +56,6 @@ public class SoundTower
 			
 			rc.yield();
 		}
-	}
-	
-	//finds best corner to collect milk where the return is an int as follows:
-	//1  2
-	//3  4
-	private int findBestCorner()
-	{
-		double[][] pasture = rc.senseCowGrowth();
-		
-		double max = 0;
-		int corner = 0;
-		double total = 0;
-		
-		//top left corner
-		for(int k = 0; k < 10; k++)
-		{
-			for(int a = 0; a < 10; a++)
-			{
-				total += pasture[k][a];
-			}
-		}
-		if(total > max)
-		{
-			max = total;
-			corner = 1;
-		}
-		total = 0;
-		
-		//top right corner
-		for(int k = rc.getMapWidth() - 11; k < rc.getMapWidth(); k++)
-		{
-			for(int a = 0; a < 10; a++)
-			{
-				total += pasture[k][a];
-			}
-		}
-		if(total > max)
-		{
-			max = total;
-			corner = 2;
-		}
-		total = 0;
-		
-		//bottom left corner
-		for(int k = 0; k < 10; k++)
-		{
-			for(int a = rc.getMapHeight() - 11; a < rc.getMapHeight(); a++)
-			{
-				total += pasture[k][a];
-			}
-		}
-		if(total > max)
-		{
-			max = total;
-			corner = 3;
-		}
-		total = 0;
-		
-		//bottom right corner
-		for(int k = rc.getMapWidth() - 11; k < rc.getMapWidth(); k++)
-		{
-			for(int a = rc.getMapHeight() - 11; a < rc.getMapHeight(); a++)
-			{
-				total += pasture[k][a];
-			}
-		}
-		if(total > max)
-		{
-			max = total;
-			corner = 4;
-		}
-		
-		return corner;
 	}
 	
 	private void fireArcs()

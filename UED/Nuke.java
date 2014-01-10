@@ -1,5 +1,8 @@
 package UED;
 
+import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
+
 /**
  * Created by fredkneeland on 1/7/14.
  *
@@ -9,5 +12,39 @@ package UED;
  */
 public class Nuke
 {
+    RobotController rc;
+    MapLocation target;
 
+    public Nuke (RobotController rc, MapLocation target)
+    {
+        this.rc = rc;
+        this.target = target;
+    }
+
+    public void run()
+    {
+        try
+        {
+            if (rc.getLocation().equals(target))
+            {
+                rc.selfDestruct();
+            }
+            else
+            {
+                if (rc.isActive())
+                {
+                    if (rc.canMove(rc.getLocation().directionTo(target)))
+                    {
+                        rc.move(rc.getLocation().directionTo(target));
+                    }
+                }
+            }
+            rc.selfDestruct();
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            System.out.println("Ghost Exception");
+        }
+        rc.yield();
+    }
 }

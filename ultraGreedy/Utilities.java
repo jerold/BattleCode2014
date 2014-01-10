@@ -1,11 +1,14 @@
-package greedy;
+package ultraGreedy;
 
-/**
- * Created by fredkneeland on 1/7/14.
- */
 import java.util.Random;
 
-import battlecode.common.*;
+import battlecode.common.Clock;
+import battlecode.common.Direction;
+import battlecode.common.MapLocation;
+import battlecode.common.Robot;
+import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 
 public class Utilities
 {
@@ -425,6 +428,4 @@ public class Utilities
         }
         catch(Exception e){}
     }
-
-
 }

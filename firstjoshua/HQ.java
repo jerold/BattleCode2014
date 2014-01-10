@@ -9,16 +9,17 @@ public class HQ
 		Direction dirs[] = Direction.values();
 		Shooter shooter = new Shooter(rc);
 		int k = 0;
-		boolean created = false;
+		int created = 0;
 		while(true)
 		{
 			try
 			{
-				if(rc.isActive() && rc.canMove(dirs[k]) && !created)
+				if(rc.isActive() && rc.canMove(dirs[k]) && created < 2)
 				{
+					rc.broadcast(0, created);
 					rc.spawn(dirs[k]);
 					k = (k + 1) % 8;
-					created = true;
+					created++;
 				}
 				if(rc.isActive())
 				{

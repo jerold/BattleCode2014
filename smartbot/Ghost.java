@@ -1,4 +1,4 @@
-package UED;
+package smartbot;
 
 import battlecode.common.*;
 

@@ -26,15 +26,15 @@ public class HQBot {
                     {
                         Utilities.SpawnSoldiers(rc);
                         // after spawing soldiers we tell them what to be
-                        if (numbOfSoldiers < 6)
+                        if (numbOfSoldiers < 3 || (numbOfSoldiers > 9 && numbOfSoldiers < 12))
                         {
                             rc.broadcast(1, PASTR);
                         }
-                        else if (numbOfSoldiers < 12)
+                        else if (numbOfSoldiers < 6 || (numbOfSoldiers > 11 && numbOfSoldiers < 15) || (numbOfSoldiers > 17 && (numbOfSoldiers % 2 == 0)))
                         {
                             rc.broadcast(1, MARINE);
                         }
-                        else
+                        else if (numbOfSoldiers < 9 || (numbOfSoldiers > 14 && numbOfSoldiers < 18)|| (numbOfSoldiers > 17 && (numbOfSoldiers % 2 == 1)))
                         {
                             rc.broadcast(1, MARAUDER);
                         }

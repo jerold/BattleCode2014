@@ -15,7 +15,12 @@ public class RobotPlayer
     static final int GOLIATH = 1;
     static final int GHOST = 2;
     static final int DURAN = 3;
-
+    static final int SUPPLY_DEPOT = 4;
+    static final int MULECALLDOWN = 5;
+    static final int SENSORTOWER = 6;
+    static final int MARINES = 7;
+    static final int HELLION = 8;
+    static final int THOR = 9;
 
     public static void run(RobotController rc)
     {
@@ -32,6 +37,10 @@ public class RobotPlayer
                     System.out.println("HQ Exception");
                 }
             }
+            else if(rc.getType() == RobotType.NOISETOWER)
+            {
+                new SensorTower(rc).run();
+            }
             if (rc.getType() == RobotType.SOLDIER)
             {
                 try
@@ -45,7 +54,8 @@ public class RobotPlayer
                         // powerful squad to out muscle enemy
                         if (myType == GOLIATH)
                         {
-
+                        	Goliath goliath = new Goliath(rc);
+                        	goliath.run();
                         }
                         // trooops to support Duran
                         else if (myType == GHOST)
@@ -53,6 +63,36 @@ public class RobotPlayer
                             Ghost ghost = new Ghost(rc);
                             ghost.run();
 
+                        }
+                        else if (myType == SUPPLY_DEPOT)
+                        {
+                            SupplyDepot supplyDepot = new SupplyDepot(rc);
+                            supplyDepot.run();
+                        }
+                        else if (myType == MULECALLDOWN)
+                        {
+                            MULE mule = new MULE(rc);
+                            mule.run();
+                        }
+                        else if (myType == SENSORTOWER)
+                        {
+                            SensorTower sensorTower = new SensorTower(rc);
+                            sensorTower.run();
+                        }
+                        else if (myType == MARINES)
+                        {
+                            Marines marines = new Marines(rc);
+                            marines.run();
+                        }
+                        else if (myType == HELLION)
+                        {
+                            Hellion hellion = new Hellion(rc);
+                            hellion.run();
+                        }
+                        else if (myType == THOR)
+                        {
+                            Thor thor = new Thor(rc);
+                            thor.run();
                         }
                         //Duran leader to kill enemy pastr
                         else

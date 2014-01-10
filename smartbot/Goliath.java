@@ -1,4 +1,4 @@
-package UED;
+package smartbot;
 
 
 import java.util.Random;
@@ -41,7 +41,7 @@ public class Goliath
 		direction = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
 		for (int i = 0; i < 3; i++)
 		{
-			targetZone = targetZone.subtract(direction);
+			targetZone = targetZone.add(direction);
 		}
 		
 		while (rc.senseTerrainTile(targetZone).equals(TerrainTile.VOID))
