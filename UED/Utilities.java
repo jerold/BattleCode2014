@@ -800,6 +800,387 @@ public class Utilities
         return corner;
     }
 
+    // this method is the same as MoveMapLocation until an enemy bot is seen where the robot will move in the opposite direction of the closest enemy it sees that is a soldier
+    public static void AvoidEnemiesMoveMapLocation(RobotController rc, MapLocation target, boolean sneak)
+    {
+        MapLocation[] pastLocations = new MapLocation[10];
+        int side = 45;
+        Direction dir;
+        Direction newDir;
+        rand = new Random();
+        boolean enemySeen = false;
+        // we initialize pastLocations to hold our current location 5 times
+        for (int i = 0; i < pastLocations.length; i++)
+        {
+            pastLocations[i] = rc.getLocation();
+        }
+
+        // this method will run until we get to our target location
+        while (!rc.getLocation().equals(target))
+        {
+            // we put the try block inside of the while loop so an exception won't terminate the method
+            try
+            {
+                if (rc.isActive())
+                {
+                    dir = rc.getLocation().directionTo(target);
+                    newDir = Direction.NONE;
+
+
+                    // we will look and move away from the closest enemy bot we can see
+
+                    Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,35,rc.getTeam().opponent());
+
+                    Robot[][] arrayOfNearByEnemies = new Robot[1][1];
+                    arrayOfNearByEnemies[0][0] = null;
+
+                    // now we will put all close enemies into a two dimensional array if there are any
+                    if (nearbyEnemies.length > 0)
+                    {
+                        arrayOfNearByEnemies = new Robot[6][nearbyEnemies.length];
+
+                        for (int i = 0; i < 6; i++)
+                        {
+                            nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,(35 - (5*i)),rc.getTeam().opponent());
+                            for (int j = 0; j < nearbyEnemies.length; j++)
+                            {
+                                // if this level has a robot then we stick it into the array
+                                if (nearbyEnemies.length > j)
+                                {
+                                    rc.setIndicatorString(2, "Analyzing enemies");
+                                    arrayOfNearByEnemies[i][j] = nearbyEnemies[j];
+                                }
+                                // otherwise we put null into the array
+                                else
+                                {
+                                    arrayOfNearByEnemies[i][j] = null;
+                                }
+                            }
+
+                        }
+                    }
+
+                    enemySeen = false;
+                    //rc.setIndicatorString(2, "Done Analyzing");
+
+                    // if there are enemies nearby do this code
+                    if (arrayOfNearByEnemies[0][0] != null)
+                    {
+                        enemySeen = true;
+                        rc.setIndicatorString(2, "Time to Run");
+
+                        Robot enemy;
+                        // we will start with the closest enemy bots and work our way out
+                        for (int k = 5; k >= 0; k--)
+                        {
+                            //rc.setIndicatorString(0, "Entering for loop");
+                            enemy = arrayOfNearByEnemies[k][0];
+
+                            // if there is actually an enemy here then we need to do something about it
+                            if (enemy != null)
+                            {
+                                rc.setIndicatorString(1, "See real enemy");
+                                // if we can one shot kill the enemy then we do else we run away
+                                if ((rc.senseRobotInfo((Robot) nearbyEnemies[0]).health > 10) && rc.senseRobotInfo((Robot) nearbyEnemies[0]).type == RobotType.SOLDIER)
+                                {
+                                    newDir = rc.getLocation().directionTo(rc.senseLocationOf(nearbyEnemies[0])).opposite();
+                                    MoveDirection(rc, newDir, false);
+                                }
+                                else
+                                {
+                                    if (rc.canAttackSquare(rc.senseLocationOf(nearbyEnemies[0])))
+                                    {
+                                        fire(rc);
+                                    }
+                                    // if the weak enemy or non soldier enemy is too far away to shoot move towards it
+                                    else
+                                    {
+                                        newDir = rc.getLocation().directionTo(rc.senseLocationOf(nearbyEnemies[0]));
+                                        MoveDirection(rc, newDir, false);
+                                    }
+                                }
+                                // we have done our action and should terminate the loop
+                                k = -1;
+                            }
+                        }
+                    }
+                    // if we can move towards target and we haven't been on the square recently then lets move
+                    else if (rc.canMove(dir) && !MapLocationInArray(rc, rc.getLocation().add(dir), pastLocations))
+                    {
+                        rc.setIndicatorString(2, "No enemies detected");
+                        newDir = dir;
+                        // if we found a direction to move then we go to it
+                        if (newDir != Direction.NONE)
+                        {
+                            // now we decide if we are going to sneak or run
+                            if (sneak)
+                            {
+                                // another check to make sure we don't throw any exceptions
+                                if (rc.isActive() && rc.canMove(newDir))
+                                {
+                                    //System.out.println(newDir);
+                                    rc.sneak(newDir);
+                                }
+                            }
+                            else
+                            {
+                                // another check to make sure we don't throw any exceptions
+                                if (rc.isActive() && rc.canMove(newDir))
+                                {
+                                    rc.move(newDir);
+                                }
+                            }
+                        }
+                        side = 45;
+                    }
+                    else
+                    {
+                        // if their is a robot blocking our way then we just move as close as we can to target
+                        if (rc.senseObjectAtLocation(rc.getLocation().add(dir)) != null)
+                        {
+                            //newDir = directions[rand.nextInt(8)];
+                            MoveDirection(rc, dir, sneak);
+                        }
+                        else
+                        {
+                            rc.setIndicatorString(2, "Looking elswhere");
+                            Direction dir2 = dir;
+                            MapLocation right;
+                            MapLocation left;
+                            dir2 = (dir.rotateRight());
+                            while (!rc.canMove(dir2))
+                            {
+                                dir2 = dir2.rotateRight();
+                            }
+                            right = rc.getLocation().add(dir2);
+
+                            dir2 = dir.rotateLeft();
+                            while (!rc.canMove(dir2))
+                            {
+                                dir2 = dir2.rotateLeft();
+                            }
+
+                            left = rc.getLocation().add(dir2);
+
+                            // left seems better so lets go that way
+                            if (left.distanceSquaredTo(target) < right.distanceSquaredTo(target))
+                            {
+                                side = 1;
+                            }
+                            // right seems better so lets try that way
+                            else
+                            {
+                                side = 0;
+                            }
+
+                            // we will go hugging one side of obstacle until we get back on our original line
+                            while (!dir2.equals(dir) && !rc.getLocation().equals(target))// && rc.canMove(dir2))
+                            {
+                                try
+                                {
+                                    if (rc.isActive())
+                                    {
+                                        //rc.setIndicatorString(1, "Trying to Avoid");
+                                        //rc.setIndicatorString(2, ""+side);
+
+                                        nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,35,rc.getTeam().opponent());
+
+                                        arrayOfNearByEnemies = new Robot[1][1];
+                                        arrayOfNearByEnemies[0][0] = null;
+
+                                        // now we will put all close enemies into a two dimensional array if there are any
+                                        if (nearbyEnemies.length > 0)
+                                        {
+                                            arrayOfNearByEnemies = new Robot[6][nearbyEnemies.length];
+
+                                            for (int i = 0; i < 6; i++)
+                                            {
+                                                nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,(35 - (5*i)),rc.getTeam().opponent());
+                                                for (int j = 0; j < nearbyEnemies.length; j++)
+                                                {
+                                                    // if this level has a robot then we stick it into the array
+                                                    if (nearbyEnemies.length > j)
+                                                    {
+                                                        rc.setIndicatorString(2, "Analyzing enemies");
+                                                        arrayOfNearByEnemies[i][j] = nearbyEnemies[j];
+                                                    }
+                                                    // otherwise we put null into the array
+                                                    else
+                                                    {
+                                                        arrayOfNearByEnemies[i][j] = null;
+                                                    }
+                                                }
+
+                                            }
+                                        }
+
+                                        // if there are enemies nearby do this code
+                                        if (arrayOfNearByEnemies[0][0] != null)
+                                        {
+                                            enemySeen = true;
+                                            rc.setIndicatorString(2, "Time to Run");
+
+                                            Robot enemy;
+                                            // we will start with the closest enemy bots and work our way out
+                                            for (int k = 5; k >= 0; k--)
+                                            {
+                                                //rc.setIndicatorString(0, "Entering for loop");
+                                                enemy = arrayOfNearByEnemies[k][0];
+
+                                                // if there is actually an enemy here then we need to do something about it
+                                                if (enemy != null)
+                                                {
+                                                    rc.setIndicatorString(1, "See real enemy");
+                                                    // if we can one shot kill the enemy then we do else we run away
+                                                    if ((rc.senseRobotInfo((Robot) nearbyEnemies[0]).health > 10) && rc.senseRobotInfo((Robot) nearbyEnemies[0]).type == RobotType.SOLDIER)
+                                                    {
+                                                        newDir = rc.getLocation().directionTo(rc.senseLocationOf(nearbyEnemies[0])).opposite();
+                                                        MoveDirection(rc, newDir, false);
+                                                    }
+                                                    else
+                                                    {
+                                                        if (rc.canAttackSquare(rc.senseLocationOf(nearbyEnemies[0])))
+                                                        {
+                                                            fire(rc);
+                                                        }
+                                                        // if the weak enemy or non soldier enemy is too far away to shoot move towards it
+                                                        else
+                                                        {
+                                                            newDir = rc.getLocation().directionTo(rc.senseLocationOf(nearbyEnemies[0]));
+                                                            MoveDirection(rc, newDir, false);
+                                                        }
+                                                    }
+                                                    // we have done our action and should terminate the loop
+                                                    k = -1;
+                                                }
+                                            }
+                                        }
+                                        // otherwise we just do our thing
+                                        else
+                                        {
+                                            enemySeen = false;
+                                            dir2 = rc.getLocation().directionTo(target);
+                                            if (rc.canMove(dir2) && !MapLocationInArray(rc, rc.getLocation().add(dir2), pastLocations))//  && !rc.senseTerrainTile(rc.getLocation().add(dir2).add(dir2)).equals(TerrainTile.VOID))
+                                            {
+                                                //rc.setIndicatorString(0, "Going straight");
+                                            }
+                                            else
+                                            {
+                                                for (int i = 0; i < 4; i++)
+                                                {
+                                                    if (side == 1)
+                                                    {
+                                                        dir2 = dir2.rotateLeft();
+                                                    }
+                                                    else
+                                                    {
+                                                        dir2 = dir2.rotateRight();
+                                                    }
+                                                    if (rc.senseTerrainTile(rc.getLocation().add(dir2)).equals(TerrainTile.OFF_MAP))
+                                                    {
+                                                        dir2 = Direction.NONE;
+                                                        i = 48;
+                                                    }
+                                                    else if ((rc.canMove(dir2) || (rc.senseObjectAtLocation(rc.getLocation().add(dir2)) != null)))// && !MapLocationInArray(rc, rc.getLocation().add(dir2), pastLocations))// && !rc.senseTerrainTile(rc.getLocation().add(dir2).add(dir2)).equals(TerrainTile.VOID))
+                                                    {
+                                                        i = 48;
+                                                    }
+                                                    else if (i == 3)
+                                                    {
+                                                        dir2 = Direction.NONE;
+                                                        //rc.setIndicatorString(1, "We failed to find a spot");
+                                                    }
+                                                }
+                                            }
+
+                                            // if we can move
+                                            if (dir2 != Direction.NONE)
+                                            {
+                                                if (rc.isActive())
+                                                {
+                                                    if (rc.canMove(dir2))
+                                                    {
+                                                        if (sneak)
+                                                        {
+                                                            rc.sneak(dir2);
+                                                        }
+                                                        else
+                                                        {
+                                                            rc.move(dir2);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        MoveDirection(rc, dir2, sneak);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (side == 1)
+                                                {
+                                                    side = 0;
+                                                }
+                                                else
+                                                {
+                                                    side = 1;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    ///rc.setIndicatorString(0, "Dir: "+ dir +" Dir2: " + dir2);
+                                } catch (Exception e)
+                                {
+                                    rc.setIndicatorString(0, "Catching Errors");
+                                    // tell the console we through an exception in utility object for debug purposes
+                                    //System.out.println("Utility Exception");
+                                    //System.out.println(e.toString());
+                                    e.printStackTrace();
+                                    rc.yield();
+                                }
+                                if (!rc.getLocation().equals(pastLocations[(pastLocations.length-1)]) && !enemySeen)
+                                {
+                                    for (int j = 0; j < (pastLocations.length-1); j++)
+                                    {
+                                        pastLocations[j] = pastLocations[j+1];
+                                        //System.out.println(pastLocations[j]);
+                                    }
+                                    // stick current local into array
+                                    pastLocations[(pastLocations.length-1)] = rc.getLocation();
+                                }
+
+                                rc.yield();
+                            }
+                            //rc.setIndicatorString(1, "Not trying to Avoid");
+                        }
+                    }
+
+                    // now we  shift everything up one in pastLocations
+                    if (rc.getLocation() != pastLocations[(pastLocations.length-1)])
+                    {
+                        for (int j = 0; j < (pastLocations.length-1); j++)
+                        {
+                            pastLocations[j] = pastLocations[j+1];
+                            //System.out.println(pastLocations[j]);
+                        }
+                        // stick current local into array
+                        pastLocations[(pastLocations.length-1)] = rc.getLocation();
+                    }
+                }
+                rc.yield();
+            }
+            catch (Exception e)
+            {
+                rc.setIndicatorString(0, "Catching Errors");
+                // tell the console we through an exception in utility object for debug purposes
+                System.out.println("Utility Exception");
+                e.printStackTrace();
+                //System.out.println(e.toString());
+                rc.yield();
+            }
+        }
+    }
+
     public static MapLocation spotOfSensorTower(RobotController rc)
     {
         rand = new Random();
