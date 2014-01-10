@@ -129,6 +129,14 @@ public class Duran
                                 {
                                     Utilities.fire(rc);
                                 }
+
+                                MapLocation[] ourPastrs =  rc.sensePastrLocations(rc.getTeam());
+
+                                if (ourPastrs.length > 0)
+                                {
+                                    Utilities.MoveDirection(rc, rc.getLocation().directionTo(ourPastrs[0]), false);
+                                }
+
                                 /*
                                 int var = 5;
                                 target = new MapLocation(var, rc.getMapHeight() - var);

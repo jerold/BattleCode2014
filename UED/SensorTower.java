@@ -37,7 +37,9 @@ public class SensorTower
                     try
                     {
                         target = Utilities.spotOfSensorTower(rc);
-                        Utilities.AvoidEnemiesMoveMapLocation(rc, target, true);
+
+                        //Utilities.AvoidEnemiesMoveMapLocation(rc, target, true);
+                        Utilities.MoveMapLocation(rc, target, true);
 
                         if(rc.isActive())
                         {

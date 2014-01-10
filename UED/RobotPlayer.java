@@ -19,6 +19,8 @@ public class RobotPlayer
     static final int MULECALLDOWN = 5;
     static final int SENSORTOWER = 6;
     static final int MARINES = 7;
+    static final int HELLION = 8;
+    static final int THOR = 9;
 
     public static void run(RobotController rc)
     {
@@ -81,6 +83,16 @@ public class RobotPlayer
                         {
                             Marines marines = new Marines(rc);
                             marines.run();
+                        }
+                        else if (myType == HELLION)
+                        {
+                            Hellion hellion = new Hellion(rc);
+                            hellion.run();
+                        }
+                        else if (myType == THOR)
+                        {
+                            Thor thor = new Thor(rc);
+                            thor.run();
                         }
                         //Duran leader to kill enemy pastr
                         else

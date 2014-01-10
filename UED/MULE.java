@@ -7,7 +7,8 @@ import java.util.Random;
 /**
  * Created by fredkneeland on 1/8/14.
  */
-public class MULE {
+public class MULE
+{
     RobotController rc;
     int corner;
     MapLocation target;
@@ -18,6 +19,7 @@ public class MULE {
     public MULE(RobotController rc)
     {
         this.rc = rc;
+        /*
         corner = Utilities.findBestCorner(rc);
 
         switch(corner)
@@ -41,6 +43,9 @@ public class MULE {
             dir = directions[rand.nextInt(8)];
             target = target.add(dir);
         }
+        */
+
+        target = Utilities.spotOfPastr(rc);
 
         rc.setIndicatorString(0, "MULE");
 
@@ -52,7 +57,8 @@ public class MULE {
         {
             if(rc.getType() == RobotType.SOLDIER)
             {
-                Utilities.AvoidEnemiesMoveMapLocation(rc, target, true);
+                //Utilities.AvoidEnemiesMoveMapLocation(rc, target, true);
+                Utilities.MoveMapLocation(rc, target, true);
 
                 if(rc.isActive())
                 {

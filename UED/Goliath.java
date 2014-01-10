@@ -41,7 +41,7 @@ public class Goliath
 		direction = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
 		for (int i = 0; i < 3; i++)
 		{
-			targetZone = targetZone.add(direction);
+			targetZone = targetZone.subtract(direction);
 		}
 		
 		while (rc.senseTerrainTile(targetZone).equals(TerrainTile.VOID))
