@@ -733,10 +733,50 @@ public class Utilities
     public static int findBestCorner(RobotController rc)
     {
         double[][] pasture = rc.senseCowGrowth();
+        
+        double[] voids = new double[4];
+        double[] cows = new double[4];
+        double[] distances = new double[4];
 
         double max = 0;
         int corner = 0;
         double total = 0;
+        MapLocation target = null;
+        MapLocation current = rc.senseHQLocation();
+        
+        for(int k = 1; k <= 4; k++)
+        {
+        	switch(k)
+            {
+                case 1:
+                    target = new MapLocation(5, 5);
+                    break;
+                case 2:
+                    target = new MapLocation(rc.getMapWidth() - 6, 5);
+                    break;
+                case 3:
+                    target = new MapLocation(5, rc.getMapHeight() - 6);
+                    break;
+                default:
+                    target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
+                    break;
+            }
+        	
+        	while(target.x != current.x || target.y != current.y)
+        	{
+        		if(rc.senseTerrainTile(current) == TerrainTile.VOID)
+        		{
+        			total++;
+        		}
+        		current = current.add(current.directionTo(target));
+        	}
+        	
+        	voids[k - 1] = total;
+        	distances[k - 1] = rc.senseHQLocation().distanceSquaredTo(target);
+        	
+        	total = 0;
+        	current = rc.senseHQLocation();
+        }
 
         //top left corner
         for(int k = 0; k < 10; k++)
@@ -746,11 +786,8 @@ public class Utilities
                 total += pasture[k][a];
             }
         }
-        if(total > max)
-        {
-            max = total;
-            corner = 1;
-        }
+        cows[0] = total;
+            
         total = 0;
 
         //top right corner
@@ -761,11 +798,8 @@ public class Utilities
                 total += pasture[k][a];
             }
         }
-        if(total > max)
-        {
-            max = total;
-            corner = 2;
-        }
+        cows[1] = total;
+        
         total = 0;
 
         //bottom left corner
@@ -776,11 +810,8 @@ public class Utilities
                 total += pasture[k][a];
             }
         }
-        if(total > max)
-        {
-            max = total;
-            corner = 3;
-        }
+        cows[2] = total;
+        
         total = 0;
 
         //bottom right corner
@@ -791,13 +822,43 @@ public class Utilities
                 total += pasture[k][a];
             }
         }
-        if(total > max)
+        cows[3] = total;
+        
+        for(int k = 0; k < 4; k++)
         {
-            max = total;
-            corner = 4;
+        	total = cows[k] * 1 - voids[k] * 50 - distances[k] * .001;
+        	
+        	if(total > max)
+        	{
+        		max = total;
+        		corner = k + 1;
+        	}
         }
 
         return corner;
+    }
+    
+    public static int findOpposingCorner(RobotController rc)
+    {
+    	int corner = findBestCorner(rc);
+    	
+    	switch(corner)
+        {
+            case 1:
+                corner = 4;
+                break;
+            case 2:
+                corner = 3;
+                break;
+            case 3:
+                corner = 2;
+                break;
+            default:
+                corner = 1;
+                break;
+        }
+    	
+    	return corner;
     }
 
     public static MapLocation spotOfSensorTower(RobotController rc)
