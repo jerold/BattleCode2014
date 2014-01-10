@@ -29,11 +29,8 @@ public class HQ
 		{
 			try
 			{
+				Utilities.fire(rc);
 				if(rc.isActive())
-				{
-					Utilities.fire(rc);
-				}
-				if(rc.isActive() && Clock.getRoundNum() % 10 == 5 && rc.senseNearbyGameObjects(Robot.class, 20, rc.getTeam().opponent()).length == 0)
 				{
 					if(start)
 					{
@@ -58,7 +55,6 @@ public class HQ
 				
 			}
 			catch(Exception e){}
-			
 			rc.yield();
 		}
 	}

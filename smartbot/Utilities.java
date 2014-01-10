@@ -1,4 +1,4 @@
-package distract;
+package smartbot;
 
 /**
  * Created by fredkneeland on 1/7/14.

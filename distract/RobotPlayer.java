@@ -12,19 +12,7 @@ public class RobotPlayer
 		}
 		else if(rc.getType() == RobotType.NOISETOWER)
 		{
-			new SoundTower(rc).run();
-		}
-		else if(rc.getType() == RobotType.PASTR)
-		{
-			int k = 5;
-			int a = 0;
-			while(true)
-			{
-				if(rc.getHealth() < 30)
-				{
-					int t = k / a;
-				}
-			}
+			new SmartTower(rc).run();
 		}
 		else
 		{
@@ -40,7 +28,7 @@ public class RobotPlayer
 				}
 				else if(rc.readBroadcast(0) <= 5)
 				{
-					new SoundTower(rc).run();
+					new SmartTower(rc).run();
 				}
 				else if(rc.readBroadcast(0) % 3 == 1)
 				{
