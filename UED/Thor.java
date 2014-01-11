@@ -183,7 +183,8 @@ public class Thor
                         }
                     }
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 e.printStackTrace();
                 rc.setIndicatorString(0, "Error");

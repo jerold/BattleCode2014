@@ -692,7 +692,16 @@ public class Utilities
             nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
 
             // here we only do necessary scans to reduce bitcode usage
-            if (nearByEnemies3.length > 0)
+
+            if (rc.getHealth() < 20)
+            {
+
+                SCV scv = new SCV(rc);
+                scv.run();
+                return true;
+
+            }
+            else if (nearByEnemies3.length > 0)
             {
                 nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
                 nearByAllies = findSoldiers(rc, nearByAllies);
