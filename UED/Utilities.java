@@ -684,7 +684,6 @@ public class Utilities
             Robot[] nearByAllies2 = null;
             Robot[] nearByAllies3 = null;
 
-
             // simple shoot at an enemy if we see one will need to be improved later
             nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
             nearByEnemies4 = nearByEnemies3;
@@ -838,6 +837,10 @@ public class Utilities
                                 fire(rc);
                             }
                         }
+                    }
+                    else if (nearByEnemies2.length == 1 && rc.getHealth() > (rc.senseRobotInfo(nearByEnemies2[0]).health + 10) && nearByEnemies3.length == 1)
+                    {
+                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
                     }
                     else
                     {

@@ -28,6 +28,9 @@ public class AlexeiStukov {
     static boolean putUpSensorTower = false;
     static boolean firstRound = true;
     static boolean thorUp = false;
+    RobotController rc;
+    long[] teamMemory;
+    MapLocation[] enemyPastrs;
 
     // channels for communication
     static final int EnemyHQChannel = 0;
@@ -43,8 +46,19 @@ public class AlexeiStukov {
     static final int endBattleCruiserArray = 59;
     static final int BattleCruiserInArray = 60;
 
+    // this is arrays of our troop combinations
+    static final int[] initialSpawn = {THOR, THOR, SUPPLY_DEPOT, THOR, THOR, THOR};
 
-    public static void run(RobotController rc)
+
+
+    public AlexeiStukov (RobotController rc)
+    {
+        this.rc = rc;
+        teamMemory = rc.getTeamMemory();
+    }
+
+
+    public void run()
     {
         while(true) {
             if (rc.getType() == RobotType.HQ)
@@ -54,6 +68,12 @@ public class AlexeiStukov {
                     rc.setIndicatorString(0, ""+rc.getActionDelay());
                     rc.setIndicatorString(1, ""+rc.isActive());
 
+                    if (Clock.getRoundNum() > 350 && Clock.getRoundNum() % 100 == 0)
+                    {
+                        enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                    }
+
+                    GameObject[] FarAwayEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                     GameObject[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
                     if (nearByEnemies.length > 0)
                     {
@@ -62,6 +82,32 @@ public class AlexeiStukov {
                     }
                     if (rc.isActive())
                     {
+
+                        if (numbOfSoldiers < initialSpawn.length)
+                        {
+                            rc.broadcast(TroopType, initialSpawn[numbOfSoldiers]);
+                        }
+                        // here we saved information about what our opponent does
+                        else if (teamMemory.length > 0)
+                        {
+
+                        }
+                        else if (numbOfSoldiers < initialSpawn.length + 5)
+                        {
+                            rc.broadcast(TroopType, GOLIATH);
+                        }
+                        // we have done our initial set up so now we will determine our strategy
+                        else
+                        {
+                            // if our enemies are swarming our hq then we need to build a battlecruiser to kill them
+                            if (FarAwayEnemies.length > 2)
+                            {
+
+                            }
+                        }
+
+                        Utilities.SpawnSoldiers(rc);
+                        numbOfSoldiers++;
 
                         // after spawing soldiers we tell them what to be
                         /*
@@ -154,13 +200,14 @@ public class AlexeiStukov {
 
 
 
+                        /*
                         if (!thorUp)
                         {
                             if (numbOfSoldiers < 5)
                             {
                                 numbOfSoldiers++;
                                 Utilities.SpawnSoldiers(rc);
-                                rc.broadcast(1, THOR);
+                                rc.broadcast(TroopType, THOR);
                             }
                             else
                             {
@@ -171,33 +218,34 @@ public class AlexeiStukov {
                         else if (numbOfSoldiers == 0)
                         {
                             Utilities.SpawnSoldiers(rc);
-                            rc.broadcast(1, DURAN);
+                            rc.broadcast(TroopType, DURAN);
                             //ghostSendOuts++;
                             // for now we broadcast 0 other soldiers going with Duran
-                            rc.broadcast(2, ghostSendOuts);
-                            rc.broadcast(4, 0);
+                            //rc.broadcast(2, ghostSendOuts);
+                            //rc.broadcast(4, 0);
                             numbOfSoldiers++;
                         }
                         else if (numbOfSoldiers <= ghostSendOuts)
                         {
                             Utilities.SpawnSoldiers(rc);
-                            rc.broadcast(1, GHOST);
+                            rc.broadcast(TroopType, GHOST);
                             // reset Goliath squad
-                            rc.broadcast(3, 0);
+                            //rc.broadcast(3, 0);
                             numbOfSoldiers++;
                         }
                         else
                         {
                             Utilities.SpawnSoldiers(rc);
-                            rc.broadcast(1, GOLIATH);
+                            rc.broadcast(TroopType, GOLIATH);
                             numbOfSoldiers++;
                         }
 
                         if (((numbOfSoldiers - ghostSendOuts)) > GOLIATH_SIZE)
                         {
-                            rc.broadcast(3, 5);
+                            //rc.broadcast(3, 5);
                             numbOfSoldiers = 1;
                         }
+                        */
                     }
                 }
                 catch (Exception e)
