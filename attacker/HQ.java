@@ -14,15 +14,18 @@ public class HQ
 			rc.setIndicatorString(0, "(" + rc.getMapWidth() + ", " + rc.getMapHeight() + ")");
 			try
 			{
+                shooter.fire();
 				if(rc.isActive() && rc.canMove(dirs[k]) && rc.senseRobotCount() < GameConstants.MAX_ROBOTS)
 				{
 					rc.spawn(dirs[k]);
 					k = (k + 1) % 8;
 				}
+                /*
 				else if(rc.isActive())
 				{
 					shooter.fire();
 				}
+				*/
 			}
 			catch(Exception e){}
 			

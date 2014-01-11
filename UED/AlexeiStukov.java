@@ -20,6 +20,7 @@ public class AlexeiStukov {
     static final int MARINES = 7;
     static final int HELLION = 8;
     static final int THOR = 9;
+    static final int BATTLECRUISER = 10;
     static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
     static boolean putUpDistractor = false;
@@ -27,6 +28,21 @@ public class AlexeiStukov {
     static boolean putUpSensorTower = false;
     static boolean firstRound = true;
     static boolean thorUp = false;
+
+    // channels for communication
+    static final int EnemyHQChannel = 0;
+    static final int OurHQChannel = 1;
+    static final int TroopType = 2;
+    static final int GhostNumb = 3;
+    static final int GoliathOnline = 4;
+    static final int GhostReady = 5;
+    static final int BattleCruiserLoc = 6;
+    static final int BattleCruiserLoc2 = 7;
+    static final int BattleCruiserArrived = 8;
+    static final int startBattleCruiserArray = 9;
+    static final int endBattleCruiserArray = 59;
+    static final int BattleCruiserInArray = 60;
+
 
     public static void run(RobotController rc)
     {
@@ -115,10 +131,24 @@ public class AlexeiStukov {
                             }
                         }
                         */
+
                         //rc.broadcast(1, HELLION);
-                        //Utilities.SpawnSoldiers(rc);
+                        if (numbOfSoldiers % 8 == 0 && numbOfSoldiers > 0)
+                        {
+                            rc.broadcast(BattleCruiserArrived, 1);
+                        }
+                        else if (numbOfSoldiers % 8 == 1)
+                        {
+                            rc.broadcast(BattleCruiserArrived, 0);
+                        }
+
+                        rc.broadcast(TroopType, BATTLECRUISER);
+                        numbOfSoldiers++;
+
+                        Utilities.SpawnSoldiers(rc);
 
 
+/*
                         if (!thorUp)
                         {
                             if (numbOfSoldiers < 5)
@@ -163,6 +193,8 @@ public class AlexeiStukov {
                             rc.broadcast(3, 5);
                             numbOfSoldiers = 1;
                         }
+
+                        */
 
 
                     }

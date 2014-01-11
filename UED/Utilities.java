@@ -13,7 +13,38 @@ public class Utilities
     static Random rand;
     static boolean goneRight = false;
 
-    // In this function the HQ spawns a soldier ideally toward the enemy base but in any direction otherwise
+    // channels for communication
+    static final int EnemyHQChannel = 0;
+    static final int OurHQChannel = 1;
+    static final int TroopType = 2;
+    static final int GhostNumb = 3;
+    static final int GoliathOnline = 4;
+    static final int GhostReady = 5;
+    static final int BattleCruiserLoc = 6;
+    static final int BattleCruiserLoc2 = 7;
+    static final int BattleCruiserArrived = 8;
+    static final int startBattleCruiserArray = 9;
+    static final int endBattleCruiserArray = 59;
+    static final int BattleCruiserInArray = 60;
+
+    public static boolean BattleCruiserReady(RobotController rc)
+    {
+        try
+        {
+            if (rc.readBroadcast(BattleCruiserArrived) == 1)
+            {
+                return true;
+            }
+
+            return false;
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            System.out.println("Utility Exception");
+        }
+        return false;
+    }
+
     public static void SpawnSoldiers(RobotController rc)
     {
         try
@@ -149,6 +180,147 @@ public class Utilities
         }
     }
 
+    public static Robot[] findSoldiers(RobotController rc, Robot[] gameObjects)
+    {
+        Robot[] emptySet = null;
+        try
+        {
+            int numbOfSoldiers = 0;
+            int[] index = new int[gameObjects.length];
+            for (int i = 0; i < gameObjects.length; i++)
+            {
+                if (rc.senseRobotInfo(gameObjects[i]).type == RobotType.SOLDIER)
+                {
+                    numbOfSoldiers++;
+                    index[i] = 1;
+                }
+                else
+                {
+                    index[i] = 0;
+                }
+            }
+            Robot[] soldiers = new Robot[numbOfSoldiers];
+            int k = 0;
+            for (int j = 0; j < gameObjects.length; j++)
+            {
+                if (index[j] == 1)
+                {
+                    soldiers[k] = gameObjects[j];
+                    k++;
+                }
+            }
+            return soldiers;
+
+        }  catch (Exception e)
+        {
+            // tell the console we through an exception in utility object for debug purposes
+            System.out.println("Utility Exception");
+            e.printStackTrace();
+            //System.out.println(newDir);
+        }
+        return null;
+    }
+
+    public static Robot[] findNonSoldiers(RobotController rc, Robot[] gameObjects)
+    {
+        Robot[] emptySet = null;
+        try
+        {
+            int numbOfSoldiers = 0;
+            int[] index = new int[gameObjects.length];
+            for (int i = 0; i < gameObjects.length; i++)
+            {
+                if (rc.senseRobotInfo(gameObjects[i]).type != RobotType.SOLDIER && rc.senseRobotInfo(gameObjects[i]).type != RobotType.HQ)
+                {
+                    numbOfSoldiers++;
+                    index[i] = 1;
+                }
+                else
+                {
+                    index[i] = 0;
+                }
+            }
+            Robot[] soldiers = new Robot[numbOfSoldiers];
+            int k = 0;
+            for (int j = 0; j < gameObjects.length; j++)
+            {
+                if (index[j] == 1)
+                {
+                    soldiers[k] = gameObjects[j];
+                    k++;
+                }
+            }
+            return soldiers;
+
+        }  catch (Exception e)
+        {
+            // tell the console we through an exception in utility object for debug purposes
+            System.out.println("Utility Exception");
+            e.printStackTrace();
+            //System.out.println(newDir);
+        }
+        return null;
+    }
+
+    public static Robot[] findSoldiersAtDistance(RobotController rc, Robot[] gameObjects, int distance)
+    {
+        try
+        {
+            int[] index = new int[gameObjects.length];
+            int numb = 0;
+
+            for (int i = 0; i < gameObjects.length; i++)
+            {
+                if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(gameObjects[i])) <= distance)
+                {
+                    index[i] = 1;
+                    numb++;
+                }
+                else
+                {
+                    index[i] = 0;
+                }
+            }
+            Robot[] soldiers = new Robot[numb];
+            int k = 0;
+
+            for (int j = 0; j < gameObjects.length; j++)
+            {
+                if (index[j] == 1)
+                {
+                    soldiers[k] = gameObjects[j];
+                    k++;
+                }
+            }
+
+            return soldiers;
+
+        } catch (Exception e)
+        {
+            // tell the console we through an exception in utility object for debug purposes
+            System.out.println("Utility Exception");
+            e.printStackTrace();
+            //System.out.println(newDir);
+        }
+        return null;
+    }
+
+    public static int convertMapLocationToInt(MapLocation loc)
+    {
+        int x = loc.x;
+        int y = loc.y;
+        int total = (x*1000) + y;
+        return total;
+    }
+
+    public static MapLocation convertIntToMapLocation(int value)
+    {
+        int x = value / 1000;
+        int y = value % 1000;
+        MapLocation loc = new MapLocation(x, y);
+        return loc;
+    }
+
     public static void MoveMapLocation(RobotController rc, MapLocation target, boolean sneak)
     {
         MapLocation[] pastLocations = new MapLocation[10];
@@ -171,91 +343,17 @@ public class Utilities
             {
                 if (rc.isActive())
                 {
+
                     dir = rc.getLocation().directionTo(target);
                     newDir = Direction.NONE;
 
-                    Robot[] nearbyEnemies = null;
-                    Robot[] nearByEnemies2 = null;
-                    Robot[] nearByEnemies3 = null;
-                    Robot[] nearByAllies = null;
-                    Robot[] nearByAllies2 = null;
-                    Robot[] nearByAllies3 = null;
-
-
-                    // simple shoot at an enemy if we see one will need to be improved later
-
-                    nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-
-                    // here we only do necessary scans to reduce bitcode usage
-                    if (nearByEnemies3.length > 0)
+                    if (fightMode(rc))
                     {
-
-                        nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
-                        if (nearbyEnemies.length > 0)
-                        {
-                            nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-                        }
-                        else
-                        {
-                            nearByEnemies2 = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
-                            nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-                            nearByAllies2 = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam());
-
-                        }
-
-
-                        // now we go into specific shooter code
-                        if (nearbyEnemies.length > 0)
-                        {
-                            MapLocation enemySlot = rc.senseLocationOf(nearbyEnemies[0]);
-                            nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
-                            didNotShoot = false;
-                            // if there are other bots in range then we should fire
-                            if (nearByAllies3.length >= nearbyEnemies.length)
-                            {
-                                fire(rc);
-                            }
-                            // if our allies haven't gotten to battle yet wait for them to arrive
-                            else if (nearByAllies.length > 0)
-                            {
-                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByAllies[0])), false);
-                            }
-                            else if (rc.getHealth() >= rc.senseRobotInfo(nearbyEnemies[0]).health && nearbyEnemies.length == 1)
-                            {
-                                fire(rc);
-                            }
-                            else
-                            {
-                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearbyEnemies[0])).opposite(), false);
-                            }
-                        }
-                        // if there is an enemy close to use to where if we move they can hit us but not far away for us to shoot then we stop
-                        else if (nearByEnemies2.length > 0)//<= (nearByAllies.length + 1) && (rc.getHealth() >= rc.senseRobotInfo(nearByEnemies3[0]).health || nearByAllies.length >= nearByEnemies2.length))
-                        {
-                            MapLocation enemySlot = rc.senseLocationOf(nearByEnemies2[0]);
-                            nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
-                            didNotShoot = false;
-                            if (nearByAllies3.length >= nearByEnemies2.length)
-                            {
-                                MoveDirection(rc, rc.getLocation().directionTo(enemySlot), false);
-                            }
-                            else
-                            {
-                            }
-                        }
-                        else if (nearByEnemies3.length > 0)
-                        {
-                            didNotShoot = false;
-                            if (nearByAllies.length > nearByAllies2.length)
-                            {
-                            }
-                            else
-                            {
-                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies3[0])), false);
-                            }
-                        }
                     }
-
+                    else if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
+                    {
+                        MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
+                    }
                     //
                     // if we can move towards target and we haven't been on the square recently then lets move
                     else if (rc.canMove(dir) && !MapLocationInArray(rc, rc.getLocation().add(dir), pastLocations))
@@ -344,71 +442,18 @@ public class Utilities
                                     if (rc.isActive())
                                     {
 
-                                        nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                                         dir2 = rc.getLocation().directionTo(target);
-                                        nearbyEnemies = rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
-                                        nearByEnemies2 = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
 
 
-                                        nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-                                        nearByAllies2 = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam());
+                                        if (fightMode(rc))
+                                        {
 
-                                        if (nearbyEnemies.length > 0)
-                                        {
-                                            MapLocation enemySlot = rc.senseLocationOf(nearbyEnemies[0]);
-                                            nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
-                                            didNotShoot = false;
-                                            // if there are other bots in range then we should fire
-                                            if (nearByAllies3.length >= nearbyEnemies.length)
-                                            {
-                                                fire(rc);
-                                            }
-                                            // if our allies haven't gotten to battle yet wait for them to arrive
-                                            else if (nearByAllies.length > 0)
-                                            {
-                                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByAllies[0])), false);
-                                            }
-                                            else if (rc.getHealth() >= rc.senseRobotInfo(nearbyEnemies[0]).health && nearbyEnemies.length == 1)
-                                            {
-                                                fire(rc);
-                                            }
-                                            else
-                                            {
-                                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearbyEnemies[0])).opposite(), false);
-                                            }
                                         }
-                                        // if there is an enemy close to use to where if we move they can hit us but not far away for us to shoot then we stop
-                                        else if (nearByEnemies2.length > 0)//<= (nearByAllies.length + 1) && (rc.getHealth() >= rc.senseRobotInfo(nearByEnemies3[0]).health || nearByAllies.length >= nearByEnemies2.length))
+                                        else if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
                                         {
-                                            MapLocation enemySlot = rc.senseLocationOf(nearByEnemies2[0]);
-                                            nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
-                                            didNotShoot = false;
-                                            if (nearByAllies3.length >= nearByEnemies2.length)
-                                            {
-                                                MoveDirection(rc, rc.getLocation().directionTo(enemySlot), false);
-                                            }
-                                            else
-                                            {
-                                            }
+                                            MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
                                         }
-                                        else if (nearByEnemies3.length > 0)
-                                        {
-                                            MapLocation enemySlot = rc.senseLocationOf(nearByEnemies3[0]);
-                                            nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
-                                            didNotShoot = false;
-                                            if (nearByAllies3.length > 0)
-                                            {
-                                                MoveDirection(rc, rc.getLocation().directionTo((enemySlot)), false);
-                                            }
-                                            else if (nearByAllies.length > nearByAllies2.length)
-                                            {
-                                            }
-                                            else
-                                            {
-                                                MoveDirection(rc, rc.getLocation().directionTo((enemySlot)), false);
-                                            }
-                                        }
-                                        if (rc.canMove(dir2) && !MapLocationInArray(rc, rc.getLocation().add(dir2), pastLocations))//  && !rc.senseTerrainTile(rc.getLocation().add(dir2).add(dir2)).equals(TerrainTile.VOID))
+                                        else if (rc.canMove(dir2) && !MapLocationInArray(rc, rc.getLocation().add(dir2), pastLocations))//  && !rc.senseTerrainTile(rc.getLocation().add(dir2).add(dir2)).equals(TerrainTile.VOID))
                                         {
                                             //rc.setIndicatorString(0, "Going straight");
                                         }
@@ -549,6 +594,368 @@ public class Utilities
         }
     }
 
+    public static boolean MapLocationOutOfRangeOfEnemies(RobotController rc, Robot[] SeenEnemies, MapLocation location)
+    {
+        try
+        {
+            if (!rc.canMove(rc.getLocation().directionTo(location)))
+            {
+                return false;
+            }
+            // we loop through all enemies and if any of them are close enough to shoot this spot then we don't move
+            for (int i = 0; i < SeenEnemies.length; i++)
+            {
+                if (rc.senseLocationOf(SeenEnemies[i]).distanceSquaredTo(location) < 11)
+                {
+                    return false;
+                }
+            }
+            return true;
+        } catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static int AlliesBehindUs(RobotController rc, Robot[] allies, MapLocation target)
+    {
+        int numbOfAlliesBehind = 0;
+        try
+        {
+            int distanceToTarget = rc.getLocation().distanceSquaredTo(target);
+
+            for (int i = 0; i < allies.length; i++)
+            {
+                if (distanceToTarget < rc.senseLocationOf(allies[i]).distanceSquaredTo(target))
+                {
+                    numbOfAlliesBehind++;
+                }
+            }
+        } catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        return numbOfAlliesBehind;
+    }
+
+    public static int AlliesAhead(RobotController rc, Robot[] allies, MapLocation target)
+    {
+        int numbOfAlliesAhead = 0;
+        try
+        {
+            int distanceToTarget = rc.getLocation().distanceSquaredTo(target);
+
+            for (int i = 0; i < allies.length; i++)
+            {
+                if (distanceToTarget > rc.senseLocationOf(allies[i]).distanceSquaredTo(target))
+                {
+                    numbOfAlliesAhead++;
+                }
+            }
+        } catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        return numbOfAlliesAhead;
+    }
+
+    public static boolean MapLocationInRangeOfEnemyHQ(RobotController rc, MapLocation target)
+    {
+        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public static boolean fightMode(RobotController rc)
+    {
+        try
+        {
+            Robot[] nearbyEnemies = null;
+            Robot[] nearByEnemies2 = null;
+            Robot[] nearByEnemies3 = null;
+            Robot[] nearByEnemies4 = null;
+            Robot[] nearByAllies = null;
+            Robot[] nearByAllies2 = null;
+            Robot[] nearByAllies3 = null;
+
+
+            // simple shoot at an enemy if we see one will need to be improved later
+            nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+            nearByEnemies4 = nearByEnemies3;
+            nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
+            nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
+
+            // here we only do necessary scans to reduce bitcode usage
+            if (nearByEnemies3.length > 0)
+            {
+                nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                nearByAllies = findSoldiers(rc, nearByAllies);
+                nearbyEnemies = findSoldiersAtDistance(rc, nearByEnemies3, 10);//rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
+                if (nearbyEnemies.length > 0)
+                {
+                }
+                else
+                {
+                    nearByEnemies2 = findSoldiersAtDistance(rc, nearByEnemies3, 24);//rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
+                    //nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 10);//rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam());
+
+                }
+
+
+                /**
+                 * We see an enemy in our range so either we shoot it or we run outside of its range
+                 */
+                if (nearbyEnemies.length > 0)
+                {
+                    MapLocation enemySlot = rc.senseLocationOf(nearbyEnemies[0]);
+
+                    nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
+                    // if there are other bots in range then we should fire
+                    if (nearByAllies3.length > 0)//= nearbyEnemies.length)
+                    {
+                        fire(rc);
+                    }
+                    // if our allies haven't gotten to battle and our opponent isn't almost dead yet wait for them to arrive
+                    // assuming we can move to a location our enemy can't hit
+                    else if ((nearByAllies.length > 0  && (rc.senseRobotInfo(nearbyEnemies[0]).health > 30)))
+                    {
+                        MapLocation ally = rc.getLocation().add(rc.getLocation().directionTo(rc.senseLocationOf(nearByAllies[0])));
+                        if (MapLocationOutOfRangeOfEnemies(rc, nearByEnemies3, ally))
+                        {
+                            if (MapLocationInRangeOfEnemyHQ(rc, ally))
+                            {
+                                fire(rc);
+                            }
+                            else
+                            {
+                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(ally), false);
+                            }
+                        }
+                        else
+                        {
+                            fire(rc);
+                        }
+                    }
+                    // if there are multiple enemies attacking us and we don't have support then we need to get out
+                    // of there if possible
+                    else if (nearbyEnemies.length > 1)
+                    {
+                        MapLocation enemy = rc.getLocation().subtract(rc.getLocation().directionTo(rc.senseLocationOf(nearbyEnemies[0])));
+                        if (MapLocationOutOfRangeOfEnemies(rc, nearByEnemies3, enemy))
+                        {
+                            if (!MapLocationInRangeOfEnemyHQ(rc, enemy))
+                            {
+                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(enemy), false);
+                            }
+                            else
+                            {
+                                fire(rc);
+                            }
+                        }
+                        else
+                        {
+                            fire(rc);
+                        }
+                    }
+                    else if ((rc.getHealth() >= rc.senseRobotInfo(nearbyEnemies[0]).health))
+                    {
+                        fire(rc);
+                    }
+                    // in this case we have lower health than our opponent and will be killed so we should retreat
+                    else
+                    {
+                        MapLocation enemy = rc.getLocation().subtract(rc.getLocation().directionTo(rc.senseLocationOf(nearbyEnemies[0])));
+                        if (MapLocationOutOfRangeOfEnemies(rc, nearByEnemies3, enemy))
+                        {
+                            if (!MapLocationInRangeOfEnemyHQ(rc, enemy))
+                            {
+                                if (!MapLocationInRangeOfEnemyHQ(rc, enemy))
+                                {
+                                    Utilities.MoveDirection(rc, rc.getLocation().directionTo(enemy), false);
+                                }
+                                else
+                                {
+                                    fire(rc);
+                                }
+                            }
+                            else
+                            {
+                                fire(rc);
+                            }
+
+                        }
+                        else
+                        {
+                            fire(rc);
+                        }
+                    }
+                }
+                // if there is an enemy close to use to where if we move they can hit us but not far away for us to shoot then we stop
+                else if (nearByEnemies2.length > 0)//<= (nearByAllies.length + 1) && (rc.getHealth() >= rc.senseRobotInfo(nearByEnemies3[0]).health || nearByAllies.length >= nearByEnemies2.length))
+                {
+                    MapLocation enemySlot = rc.senseLocationOf(nearByEnemies2[0]);
+                    nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
+                    nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 9);
+                    // if our brethern are in the field of action we must join them!
+                    if (nearByAllies3.length > 0)
+                    {
+                        if (!MapLocationInRangeOfEnemyHQ(rc, enemySlot))
+                        {
+                            MoveDirection(rc, rc.getLocation().directionTo(enemySlot), false);
+                        }
+                        else
+                        {
+                            fire(rc);
+                        }
+                    }
+                    else if (nearByAllies2.length > 0)
+                    {
+                        MapLocation target = rc.senseLocationOf(nearByAllies2[0]);
+
+                        if (MapLocationOutOfRangeOfEnemies(rc, nearByEnemies2, target))
+                        {
+                            if (!MapLocationInRangeOfEnemyHQ(rc, target))
+                            {
+                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                            }
+                            else
+                            {
+                                fire(rc);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (nearByEnemies4.length > 0)
+                        {
+
+                            Robot[] nearByEnemies5 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
+                            if (nearByEnemies5.length > 0)
+                            {
+                                MapLocation spot = rc.senseLocationOf(nearByEnemies5[0]);
+                                if (MapLocationOutOfRangeOfEnemies(rc, nearByEnemies3, spot))
+                                {
+                                    if (!MapLocationInRangeOfEnemyHQ(rc, spot))
+                                    {
+                                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(spot), false);
+                                    }
+                                    else
+                                    {
+                                        fire(rc);
+                                    }
+                                }
+                                else
+                                {
+                                    fire(rc);
+                                }
+                            }
+                            else
+                            {
+                                fire(rc);
+                            }
+                        }
+
+                    }
+                }
+                /**
+                 * We can see enemies in the distance
+                 */
+                else if (nearByEnemies3.length > 0)
+                {
+
+                    MapLocation target = rc.senseLocationOf(nearByEnemies3[0]);
+
+                    // if we have friends ahead then we must join them
+                    if (AlliesAhead(rc, nearByAllies, target) > 0)
+                    {
+                        if (!MapLocationInRangeOfEnemyHQ(rc, target))
+                        {
+                            Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                        }
+                        else
+                        {
+                            fire(rc);
+                        }
+                    }
+                    // if we see enemy pastrs then kill them!
+                    else if (nearByEnemies4.length > 0)
+                    {
+                        Robot[] nearByEnemies5 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
+                        if (nearByEnemies5.length > 0)
+                        {
+                            fire(rc);
+                        }
+                        else
+                        {
+                            MapLocation targeter = rc.senseLocationOf(nearByEnemies4[0]);
+                            if (!MapLocationInRangeOfEnemyHQ(rc, targeter))
+                            {
+                                Utilities.MoveDirection(rc, rc.getLocation().directionTo(targeter), false);
+                            }
+                            else
+                            {
+                                fire(rc);
+                            }
+                        }
+                    }
+                    // if there are allies coming up then wait for them
+                    else if (AlliesBehindUs(rc, nearByAllies, target) > 0)
+                    {
+                        fire(rc);
+                    }
+                    // if our enemies have higher health than us also wait
+                    else if (rc.senseRobotInfo(nearByEnemies3[0]).health > rc.getHealth())
+                    {
+                        fire(rc);
+                    }
+                    // otherwise advance to death or glory
+                    else
+                    {
+                        if (!MapLocationInRangeOfEnemyHQ(rc, target))
+                        {
+                            Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                        }
+                        else
+                        {
+                            fire(rc);
+                        }
+                    }
+                }
+                return true;
+            }
+            // here we deal with none soldier enemies like pastrs and noise towers
+            else if (nearByEnemies4.length > 0)
+            {
+                MapLocation target2 = rc.senseLocationOf(nearByEnemies4[0]);
+                if (rc.getLocation().distanceSquaredTo(target2) > 10)
+                {
+                    MoveDirection(rc, rc.getLocation().directionTo(target2), false);
+                }
+                else
+                {
+                    fire(rc);
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        } catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
     // this method returns true if a MapLocation is inside of an array false otherwise
     public static boolean MapLocationInArray(RobotController rc, MapLocation target, MapLocation[] array)
     {
@@ -563,6 +970,7 @@ public class Utilities
 
         return false;
     }
+
     public static void fire(RobotController rc)
     {
         int radius;
@@ -1397,6 +1805,183 @@ public class Utilities
             counter++;
         }
         return target;
+    }
+
+    public static MapLocation determineBestWayAround(RobotController rc, MapLocation target)
+    {
+        MapLocation[] leftSide = new MapLocation[50];
+        MapLocation[] rightSide = new MapLocation[50];
+        try
+        {
+            int counter = 0;
+            int rightCounter = 0;
+            MapLocation currentLoc = rc.getLocation();
+            Direction direction;
+            while (!currentLoc.equals(target) && counter < 50)
+            {
+                direction = currentLoc.directionTo(target);
+                while (rc.senseTerrainTile(currentLoc.add(direction)).equals(TerrainTile.VOID))
+                {
+                    direction = direction.rotateLeft();
+                }
+                currentLoc = currentLoc.add(direction);
+                leftSide[counter] = currentLoc;
+
+                counter++;
+            }
+
+            currentLoc = rc.getLocation();
+            while (!currentLoc.equals(target) && rightCounter < 50)
+            {
+                direction = currentLoc.directionTo(target);
+                while (rc.senseTerrainTile(currentLoc.add(direction)).equals(TerrainTile.VOID))
+                {
+                    direction = direction.rotateRight();
+                }
+                currentLoc = currentLoc.add(direction);
+                leftSide[rightCounter] = currentLoc;
+
+                rightCounter++;
+            }
+
+            if (counter < rightCounter)
+            {
+                int j = 1;
+                while (j < 50 && leftSide[j] != null)
+                {
+                    rc.broadcast(startBattleCruiserArray+j, convertMapLocationToInt(leftSide[j]));
+                    j++;
+                }
+                while (j < 50)
+                {
+                    rc.broadcast(startBattleCruiserArray+j, -5);
+                }
+                return leftSide[0];
+            }
+            int j = 1;
+            while (j < 50 && rightSide[j] != null)
+            {
+                rc.broadcast(startBattleCruiserArray+j, convertMapLocationToInt(rightSide[j]));
+                j++;
+            }
+            while (j < 50)
+            {
+                rc.broadcast(startBattleCruiserArray+j, -5);
+            }
+            return rightSide[0];
+
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            rc.yield();
+        }
+
+        return rightSide[0];
+    }
+
+    public static void BattleCruiserMovement(RobotController rc)
+    {
+        try
+        {
+            boolean amLeader = false;
+            MapLocation target = null;
+            int currentChannel;
+            Direction direction;
+            MapLocation enemyHQ = rc.senseEnemyHQLocation();
+
+            // we alternate between two channels based on the round number
+            if (Clock.getRoundNum() % 2 == 0)
+            {
+                currentChannel = BattleCruiserLoc;
+                if (rc.readBroadcast(BattleCruiserLoc) == 0)
+                {
+                    amLeader = true;
+                    rc.broadcast(BattleCruiserLoc2, 0);
+                }
+                else
+                {
+                    target = convertIntToMapLocation(rc.readBroadcast(BattleCruiserLoc));
+                }
+            }
+            else
+            {
+                currentChannel = BattleCruiserLoc2;
+                if (rc.readBroadcast(BattleCruiserLoc2) == 0)
+                {
+                    amLeader = true;
+                    rc.broadcast(BattleCruiserLoc, 0);
+                }
+                else
+                {
+                    target = convertIntToMapLocation(rc.readBroadcast(BattleCruiserLoc2));
+                }
+            }
+
+            if (amLeader)
+            {
+                rc.setIndicatorString(2, "Leader");
+                if (fightMode(rc))
+                {
+                    rc.broadcast(currentChannel, convertMapLocationToInt(rc.getLocation()));
+                }
+                else
+                {
+                    direction = rc.getLocation().directionTo(enemyHQ);
+                    if (rc.readBroadcast(BattleCruiserInArray) == 5)
+                    {
+                        int j = startBattleCruiserArray;
+                        while (rc.readBroadcast(j) == -5 && j < endBattleCruiserArray)
+                        {
+                            j++;
+                        }
+                        if (j == endBattleCruiserArray)
+                        {
+                            rc.broadcast(BattleCruiserInArray, 0);
+                            rc.broadcast(currentChannel, convertMapLocationToInt(rc.getLocation()));
+                        }
+                        else
+                        {
+                            MapLocation spot = convertIntToMapLocation(rc.readBroadcast(j));
+                            rc.broadcast(currentChannel, convertMapLocationToInt(spot));
+                            rc.broadcast(j, -5);
+                            MoveDirection(rc, rc.getLocation().directionTo(spot), false);
+                        }
+                    }
+                    if (rc.senseTerrainTile(rc.getLocation().add(direction)).equals(TerrainTile.VOID))
+                    {
+                        MapLocation spot = rc.getLocation().add(direction);
+                        while (rc.senseTerrainTile(spot).equals(TerrainTile.VOID))
+                        {
+                            spot.add(direction);
+                        }
+                        spot = determineBestWayAround(rc, spot);
+                        rc.broadcast(currentChannel, convertMapLocationToInt(spot));
+                        rc.broadcast(BattleCruiserInArray, 5);
+                        MoveDirection(rc, rc.getLocation().directionTo(spot), false);
+                    }
+                    else
+                    {
+                        rc.broadcast(currentChannel, convertMapLocationToInt(rc.getLocation().add(direction)));
+                        Utilities.MoveDirection(rc, direction, false);
+                    }
+                }
+            }
+            else
+            {
+                rc.setIndicatorString(2, "Not Leader");
+                if (fightMode(rc))
+                {
+                }
+                else
+                {
+                    MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                }
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            rc.yield();
+        }
     }
 }
 

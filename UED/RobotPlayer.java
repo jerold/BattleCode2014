@@ -21,10 +21,27 @@ public class RobotPlayer
     static final int MARINES = 7;
     static final int HELLION = 8;
     static final int THOR = 9;
+    static final int BATTLECRUISER = 10;
+
+    // here are all of the channels
+    // channels for communication
+    static final int EnemyHQChannel = 0;
+    static final int OurHQChannel = 1;
+    static final int TroopType = 2;
+    static final int GhostNumb = 3;
+    static final int GoliathOnline = 4;
+    static final int GhostReady = 5;
+    static final int BattleCruiserLoc = 6;
+    static final int BattleCruiserLoc2 = 7;
+    static final int BattleCruiserArrived = 8;
+    static final int startBattleCruiserArray = 9;
+    static final int endBattleCruiserArray = 59;
+    static final int BattleCruiserInArray = 60;
 
     public static void run(RobotController rc)
     {
-        while(true) {
+        while(true)
+        {
             if (rc.getType() == RobotType.HQ)
             {
                 try
@@ -49,7 +66,7 @@ public class RobotPlayer
                     {
                         if (myType == 0)
                         {
-                            myType = rc.readBroadcast(1);
+                            myType = rc.readBroadcast(TroopType);
                         }
                         // powerful squad to out muscle enemy
                         if (myType == GOLIATH)
@@ -93,6 +110,11 @@ public class RobotPlayer
                         {
                             Thor thor = new Thor(rc);
                             thor.run();
+                        }
+                        else if (myType == BATTLECRUISER)
+                        {
+                            BattleCruiser battleCruiser = new BattleCruiser(rc);
+                            battleCruiser.run();
                         }
                         //Duran leader to kill enemy pastr
                         else
