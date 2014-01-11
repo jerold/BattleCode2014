@@ -860,6 +860,38 @@ public class Utilities
     	
     	return corner;
     }
+    
+    public static void fireCircle(RobotController rc, int radius, MapLocation center)
+    {
+    	for(int k = 0; k < directions.length; k++)
+    	{
+    		while(!rc.isActive()){}
+    		MapLocation toFire = center.add(directions[k], radius);
+    		try
+    		{
+    			if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+    			{
+    				rc.attackSquare(toFire);
+    			}
+			}
+    		catch(Exception e){}
+    		while(!rc.isActive()){}
+    		toFire = center;
+    		for(int a = 0; a < radius / 2; a++)
+    		{
+    			toFire = toFire.add(directions[k]);
+    			toFire = toFire.add(directions[(k + 1) % directions.length]);
+    		}
+    		try
+    		{
+    			if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+    			{
+    				rc.attackSquare(toFire);
+    			}
+			}
+    		catch(Exception e){}
+    	}
+    }
 
     public static MapLocation spotOfSensorTower(RobotController rc)
     {

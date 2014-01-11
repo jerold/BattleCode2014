@@ -49,6 +49,7 @@ public class SmartTower
             		rc.setIndicatorString(0, "Tower");
 	            	Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 30, rc.getTeam().opponent());
 	            	Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 30, rc.getTeam());
+	            	MapLocation pastr = null;
 	            	boolean enemyPastr = false;
 	            	boolean allyPastr = false;
 	            	
@@ -65,12 +66,16 @@ public class SmartTower
 	            		{
 	            			rc.setIndicatorString(1, "found pastr");
 	            			allyPastr = true;
+	            			pastr = rc.senseRobotInfo(allies[k]).location;
 	            		}
 	            	}
 	            	if(!enemyPastr && allyPastr)
 	            	{
 	            		rc.setIndicatorString(0, "");
-	            		fireArcs();
+	            		for(int k = 20; k > 4; k -= 1)
+	            		{
+	            			Utilities.fireCircle(rc, k, pastr);
+	            		}
 	            	}
 	            	else
 	            	{
@@ -79,84 +84,6 @@ public class SmartTower
             	}
             	catch(Exception e){}
             }
-
-            rc.yield();
-        }
-    }
-
-    private void fireArcs()
-    {
-        for(int k = 0; k < radii.length; k++)
-        {
-            for(int a = 0; a <= radii[k]; a+= 4)
-            {
-                while(!rc.isActive()){}
-                try
-                {
-                    switch(corner)
-                    {
-                        case 1:
-                            rc.attackSquare(new MapLocation(a, radii[k]));
-                            break;
-                        case 2:
-                            rc.attackSquare(new MapLocation(width - a + 1, radii[k]));
-                            break;
-                        case 3:
-                            rc.attackSquare(new MapLocation(a, height - radii[k] + 1));
-                            break;
-                        default:
-                            rc.attackSquare(new MapLocation(width - a + 1, height - radii[k] + 1));
-                            break;
-                    }
-                }
-                catch(Exception e){}
-
-                //rc.yield();
-
-                while(!rc.isActive()){}
-                try
-                {
-                    switch(corner)
-                    {
-                        case 1:
-                            rc.attackSquare(new MapLocation(radii[k], a));
-                            break;
-                        case 2:
-                            rc.attackSquare(new MapLocation(width - radii[k] + 1, a));
-                            break;
-                        case 3:
-                            rc.attackSquare(new MapLocation(radii[k], height - a + 1));
-                            break;
-                        default:
-                            rc.attackSquare(new MapLocation(width - radii[k] + 1, height - a + 1));
-                            break;
-                    }
-                }
-                catch(Exception e){}
-
-                rc.yield();
-            }
-
-            while(!rc.isActive()){}
-            try
-            {
-                switch(corner)
-                {
-                    case 1:
-                        rc.attackSquare(new MapLocation(radii[k], radii[k]));
-                        break;
-                    case 2:
-                        rc.attackSquare(new MapLocation(width - radii[k] + 1, radii[k]));
-                        break;
-                    case 3:
-                        rc.attackSquare(new MapLocation(radii[k], height - radii[k] + 1));
-                        break;
-                    default:
-                        rc.attackSquare(new MapLocation(width - radii[k] + 1, height - radii[k] + 1));
-                        break;
-                }
-            }
-            catch(Exception e){}
 
             rc.yield();
         }
