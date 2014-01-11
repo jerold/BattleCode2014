@@ -45,13 +45,9 @@ public class Marines
                 {
                     Robot[] enemies = rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
                     Robot[] enemies2 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-                    if (enemies.length > 0)
+                    if (Utilities.fightMode(rc))
                     {
-                        Utilities.fire(rc);
-                    }
-                    else if (enemies2.length > 0)
-                    {
-                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(enemies2[0])), true);
+
                     }
                     else if (rc.getLocation().equals(target))
                     {

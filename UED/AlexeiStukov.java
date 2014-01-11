@@ -62,8 +62,9 @@ public class AlexeiStukov {
                     }
                     if (rc.isActive())
                     {
-                        /*
+
                         // after spawing soldiers we tell them what to be
+                        /*
 
                         if (numbOfSoldiers == 0)
                         {
@@ -132,7 +133,9 @@ public class AlexeiStukov {
                         }
                         */
 
+
                         //rc.broadcast(1, HELLION);
+                        /*
                         if (numbOfSoldiers % 8 == 0 && numbOfSoldiers > 0)
                         {
                             rc.broadcast(BattleCruiserArrived, 1);
@@ -145,10 +148,12 @@ public class AlexeiStukov {
                         rc.broadcast(TroopType, BATTLECRUISER);
                         numbOfSoldiers++;
 
+
                         Utilities.SpawnSoldiers(rc);
+                        */
 
 
-/*
+
                         if (!thorUp)
                         {
                             if (numbOfSoldiers < 5)
@@ -193,13 +198,7 @@ public class AlexeiStukov {
                             rc.broadcast(3, 5);
                             numbOfSoldiers = 1;
                         }
-
-                        */
-
-
                     }
-
-
                 }
                 catch (Exception e)
                 {

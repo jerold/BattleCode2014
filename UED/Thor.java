@@ -113,11 +113,14 @@ public class Thor
                     // till we are ready to go
                     if (!timeToGo)
                     {
+                        timeToGo = true;
+                        /*
                         if (rc.senseRobotCount() > (4 + numbOfSoldiersBeforeThor))
                         {
                             timeToGo = true;
                         }
                         Utilities.MoveDirection(rc, rc.getLocation().directionTo(waitingZone), false);
+                        */
                     }
                     else
                     {
@@ -177,7 +180,6 @@ public class Thor
                                     Utilities.MoveDirection(rc, rc.getLocation().directionTo(target2), true);
                                 }
                             }
-
                         }
                     }
                 }
