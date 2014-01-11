@@ -32,6 +32,24 @@ public class Goliath
 	MapLocation pastLeaderSpot;
 	GameObject leader;
 	MapLocation target;
+    MapLocation newTarget;
+
+    // channels for communication
+    static final int EnemyHQChannel = 0;
+    static final int OurHQChannel = 1;
+    static final int TroopType = 2;
+    static final int GhostNumb = 3;
+    static final int GoliathOnline = 4;
+    static final int GhostReady = 5;
+    static final int BattleCruiserLoc = 6;
+    static final int BattleCruiserLoc2 = 7;
+    static final int BattleCruiserArrived = 8;
+    static final int startBattleCruiserArray = 9;
+    static final int endBattleCruiserArray = 59;
+    static final int BattleCruiserInArray = 60;
+    static final int GoliathReadyForCommand = 61;
+    static final int GoliathNextLocation = 62;
+    static final int PastStartChannel = 10000;
 	
 	public Goliath(RobotController rc)
 	{
@@ -49,8 +67,6 @@ public class Goliath
 			direction = directions[rand.nextInt(8)];
 			targetZone.add(direction);
 		}
-
-		pastLeaderSpot = targetZone;
 	}
 	
 	public void run()
@@ -61,23 +77,9 @@ public class Goliath
 			{
                 if (rc.isActive())
                 {
-                    GameObject[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
-                    // if we are almost dead then we run to corner to create pastr
-                    if (rc.getHealth() < 20)
+                    if (Utilities.fightMode(rc))
                     {
-                        if (Utilities.turnNuke(rc))
-                        {
 
-                        }
-                        else
-                        {
-                            SCV scv = new SCV(rc);
-                            scv.run();
-                        }
-                    }
-                    else if (nearByEnemies.length > 0)
-                    {
-                        Utilities.fire(rc);
                     }
                     // first we need to move to our target location
                     else if (!gotToWaitingZone)
@@ -87,11 +89,10 @@ public class Goliath
                             gotToWaitingZone = true;
                         }
                         // if the bot at targetZone announces that we are ready to go
-                        else if (rc.readBroadcast(3) == 5)
+                        else if (rc.readBroadcast(GoliathOnline) == 1)
                         {
                             gotToWaitingZone = true;
                             allTroopsArrived = true;
-                            leader = rc.senseObjectAtLocation(targetZone);
                         }
                         else
                         {
@@ -102,51 +103,35 @@ public class Goliath
                     {
                         if (!allTroopsArrived)
                         {
-                            nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
-                            if (rc.getHealth() < 20)
+                            if (Utilities.fightMode(rc))
                             {
-                                if (Utilities.turnNuke(rc))
-                                {
 
-                                }
-                                else
-                                {
-                                    SCV scv = new SCV(rc);
-                                    scv.run();
-                                }
                             }
-                            else if (nearByEnemies.length > 0)
-                            {
-                                Utilities.fire(rc);
-                            }
-
-                            if (rc.readBroadcast(3) == 5)
+                            else if (rc.readBroadcast(GoliathOnline) == 1)
                             {
                                 allTroopsArrived = true;
                             }
-
-                            for (int i = 0; i < 6; i++)
-                            {
-                                rc.yield();
-                            }
-                            amLeader = true;
-                            rc.setIndicatorString(0, "Goliath Leader");
                         }
                         else
                         {
                             // if we have low health either we go nuke or we slip away to build a pastr
-                            if (rc.getHealth() < 20)
+                            if (Utilities.fightMode(rc))
                             {
-                                if (Utilities.turnNuke(rc))
+
+                            }
+                            else if (newTarget == null)
+                            {
+                                newTarget = Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation));
+                            }
+                            else if (rc.getLocation().isAdjacentTo(newTarget))
+                            {
+                                if (newTarget.equals(Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation))))
                                 {
 
                                 }
-                                else
-                                {
-                                    SCV scv = new SCV(rc);
-                                    scv.run();
-                                }
                             }
+
+                            /*
                             // if we are the leader then we start heading toward the enemy HQ
                             else if (amLeader)
                             {
@@ -250,6 +235,7 @@ public class Goliath
                                     pastLeaderSpot = target;
                                 }
                             }
+                            */
                         }
                     }
                 }

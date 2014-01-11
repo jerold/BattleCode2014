@@ -1,6 +1,7 @@
 package UED;
 
 import battlecode.common.*;
+import greedy.Marine;
 
 import java.util.Random;
 
@@ -142,9 +143,13 @@ public class Thor
                             {
                                 if (rc.senseObjectAtLocation(target4) != null)
                                 {
+                                    /*
                                     rc.broadcast(2, 0);
                                     Duran Samir = new Duran(rc);
                                     Samir.run();
+                                    */
+                                    Marines marines = new Marines(rc);
+                                    marines.run();
                                 }
                                 else
                                 {

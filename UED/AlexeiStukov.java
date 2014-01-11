@@ -10,7 +10,7 @@ import battlecode.common.*;
  *
  */
 public class AlexeiStukov {
-    static int numbOfSoldiers = 0;
+    int numbOfSoldiers = 0;
     static final int GOLIATH = 1;
     static final int GHOST = 2;
     static final int DURAN = 3;
@@ -23,7 +23,7 @@ public class AlexeiStukov {
     static final int BATTLECRUISER = 10;
     static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
-    static boolean putUpDistractor = false;
+     boolean putUpDistractor = false;
     static boolean putUpMule = false;
     static boolean putUpSensorTower = false;
     static boolean firstRound = true;
@@ -45,6 +45,8 @@ public class AlexeiStukov {
     static final int startBattleCruiserArray = 9;
     static final int endBattleCruiserArray = 59;
     static final int BattleCruiserInArray = 60;
+    static final int GoliathReadyForCommand = 61;
+    static final int PastStartChannel = 10000;
 
     // this is arrays of our troop combinations
     static final int[] initialSpawn = {THOR, THOR, SUPPLY_DEPOT, THOR, THOR, THOR};
@@ -60,13 +62,14 @@ public class AlexeiStukov {
 
     public void run()
     {
-        while(true) {
+        while(true)
+        {
             if (rc.getType() == RobotType.HQ)
             {
                 try
                 {
-                    rc.setIndicatorString(0, ""+rc.getActionDelay());
-                    rc.setIndicatorString(1, ""+rc.isActive());
+                    //rc.setIndicatorString(0, ""+rc.getActionDelay());
+                    //rc.setIndicatorString(1, ""+rc.isActive());
 
                     if (Clock.getRoundNum() > 350 && Clock.getRoundNum() % 100 == 0)
                     {
@@ -88,12 +91,13 @@ public class AlexeiStukov {
                             rc.broadcast(TroopType, initialSpawn[numbOfSoldiers]);
                         }
                         // here we saved information about what our opponent does
-                        else if (teamMemory.length > 0)
+                        else if (teamMemory[0] == 1)
                         {
-
+                            rc.setIndicatorString(1, "Hello World");
                         }
-                        else if (numbOfSoldiers < initialSpawn.length + 5)
+                        else if (numbOfSoldiers < (initialSpawn.length + 5))
                         {
+                            rc.setIndicatorString(2, "Spawning Goliaths");
                             rc.broadcast(TroopType, GOLIATH);
                         }
                         // we have done our initial set up so now we will determine our strategy
@@ -102,10 +106,44 @@ public class AlexeiStukov {
                             // if our enemies are swarming our hq then we need to build a battlecruiser to kill them
                             if (FarAwayEnemies.length > 2)
                             {
-
+                                rc.broadcast(TroopType, BATTLECRUISER);
+                            }
+                            else
+                            {
+                                int numbOfPastrs = rc.readBroadcast(PastStartChannel);
+                                int index = -1;
+                                if (numbOfSoldiers % 6 == 0)
+                                {
+                                    if (numbOfPastrs > 0)
+                                    {
+                                        for (int j = 0; j < numbOfPastrs; j++)
+                                        {
+                                            int numbOfDefenders = rc.readBroadcast((PastStartChannel + (j*4)));
+                                            if (numbOfDefenders > 0 && numbOfDefenders < 5)
+                                            {
+                                                rc.broadcast(TroopType, THOR);
+                                                index = j;
+                                            }
+                                        }
+                                        if (index == -1)
+                                        {
+                                            rc.broadcast(TroopType, GOLIATH);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    rc.broadcast(TroopType, GOLIATH);
+                                }
+                            }
+                            if (numbOfSoldiers % 6 == 1)
+                            {
+                                rc.broadcast(GoliathOnline, 1);
                             }
                         }
 
+                        //rc.setIndicatorString(1, ""+numbOfSoldiers);
+                        //rc.setIndicatorString(2, ""+initialSpawn.length);
                         Utilities.SpawnSoldiers(rc);
                         numbOfSoldiers++;
 

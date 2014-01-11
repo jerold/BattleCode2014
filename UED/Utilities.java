@@ -40,7 +40,6 @@ public class Utilities
         } catch (Exception e)
         {
             e.printStackTrace();
-            System.out.println("Utility Exception");
         }
         return false;
     }
@@ -84,7 +83,6 @@ public class Utilities
         } catch (Exception e)
         {
         	e.printStackTrace();
-            System.out.println("Utility Exception");
         }
     }
 
@@ -174,9 +172,7 @@ public class Utilities
         } catch (Exception e)
         {
             // tell the console we through an exception in utility object for debug purposes
-            System.out.println("Utility Exception");
             e.printStackTrace();
-            //System.out.println(newDir);
         }
     }
 
@@ -214,9 +210,7 @@ public class Utilities
         }  catch (Exception e)
         {
             // tell the console we through an exception in utility object for debug purposes
-            System.out.println("Utility Exception");
             e.printStackTrace();
-            //System.out.println(newDir);
         }
         return null;
     }
@@ -255,9 +249,7 @@ public class Utilities
         }  catch (Exception e)
         {
             // tell the console we through an exception in utility object for debug purposes
-            System.out.println("Utility Exception");
             e.printStackTrace();
-            //System.out.println(newDir);
         }
         return null;
     }
@@ -298,9 +290,7 @@ public class Utilities
         } catch (Exception e)
         {
             // tell the console we through an exception in utility object for debug purposes
-            System.out.println("Utility Exception");
             e.printStackTrace();
-            //System.out.println(newDir);
         }
         return null;
     }
@@ -343,6 +333,13 @@ public class Utilities
             {
                 if (rc.isActive())
                 {
+                    if (rc.getLocation().isAdjacentTo(target))
+                    {
+                        if (rc.senseObjectAtLocation(target) != null || rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+                        {
+                            break;
+                        }
+                    }
 
                     dir = rc.getLocation().directionTo(target);
                     newDir = Direction.NONE;
@@ -378,7 +375,6 @@ public class Utilities
                                 // another check to make sure we don't throw any exceptions
                                 if (rc.isActive() && rc.canMove(newDir))
                                 {
-                                    //System.out.println(newDir);
                                     rc.sneak(newDir);
                                 }
                             }
@@ -541,8 +537,6 @@ public class Utilities
                                 } catch (Exception e)
                                 {
                                     // tell the console we through an exception in utility object for debug purposes
-                                    //System.out.println("Utility Exception");
-                                    //System.out.println(e.toString());
                                     e.printStackTrace();
                                     rc.yield();
                                 }
@@ -553,7 +547,6 @@ public class Utilities
                                         for (int j = 0; j < (pastLocations.length-1); j++)
                                         {
                                             pastLocations[j] = pastLocations[j+1];
-                                            //System.out.println(pastLocations[j]);
                                         }
                                         // stick current local into array
                                         pastLocations[(pastLocations.length-1)] = rc.getLocation();
@@ -574,7 +567,6 @@ public class Utilities
                             for (int j = 0; j < (pastLocations.length-1); j++)
                             {
                                 pastLocations[j] = pastLocations[j+1];
-                                //System.out.println(pastLocations[j]);
                             }
                             // stick current local into array
                             pastLocations[(pastLocations.length-1)] = rc.getLocation();
@@ -585,9 +577,7 @@ public class Utilities
             catch (Exception e)
             {
                 // tell the console we through an exception in utility object for debug purposes
-                System.out.println("Utility Exception");
                 e.printStackTrace();
-                //System.out.println(e.toString());
 
             }
             rc.yield();
@@ -1186,7 +1176,6 @@ public class Utilities
                         spot = rc.getLocation().add(newDir);
                         for (int i = 0; i < nearByBots.length; i++)
                         {
-                            //System.out.println("entering for loop");
                             distancesToLocations[j] += spot.distanceSquaredTo(rc.senseLocationOf(nearByBots[i]));
                         }
                     }
@@ -1488,7 +1477,6 @@ public class Utilities
                                 // another check to make sure we don't throw any exceptions
                                 if (rc.isActive() && rc.canMove(newDir))
                                 {
-                                    //System.out.println(newDir);
                                     rc.sneak(newDir);
                                 }
                             }
@@ -1703,8 +1691,6 @@ public class Utilities
                                 {
                                     rc.setIndicatorString(0, "Catching Errors");
                                     // tell the console we through an exception in utility object for debug purposes
-                                    //System.out.println("Utility Exception");
-                                    //System.out.println(e.toString());
                                     e.printStackTrace();
                                     rc.yield();
                                 }
@@ -1713,7 +1699,6 @@ public class Utilities
                                     for (int j = 0; j < (pastLocations.length-1); j++)
                                     {
                                         pastLocations[j] = pastLocations[j+1];
-                                        //System.out.println(pastLocations[j]);
                                     }
                                     // stick current local into array
                                     pastLocations[(pastLocations.length-1)] = rc.getLocation();
@@ -1731,7 +1716,6 @@ public class Utilities
                         for (int j = 0; j < (pastLocations.length-1); j++)
                         {
                             pastLocations[j] = pastLocations[j+1];
-                            //System.out.println(pastLocations[j]);
                         }
                         // stick current local into array
                         pastLocations[(pastLocations.length-1)] = rc.getLocation();
@@ -1743,9 +1727,7 @@ public class Utilities
             {
                 rc.setIndicatorString(0, "Catching Errors");
                 // tell the console we through an exception in utility object for debug purposes
-                System.out.println("Utility Exception");
                 e.printStackTrace();
-                //System.out.println(e.toString());
                 rc.yield();
             }
         }
