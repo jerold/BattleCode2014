@@ -16,34 +16,23 @@ public class MULE {
 
     public void run()
     {
+    	MapLocation target;
+    	
         while(true)
         {
             if(rc.getType() == RobotType.SOLDIER)
             {
-                switch(corner)
+            	try
                 {
-                    case 1:
-                        Utilities.MoveMapLocation(rc, new MapLocation(2, 2), true);
-                        break;
-                    case 2:
-                        Utilities.MoveMapLocation(rc, new MapLocation(rc.getMapWidth() - 3, 2), true);
-                        break;
-                    case 3:
-                        Utilities.MoveMapLocation(rc, new MapLocation(2, rc.getMapHeight() - 3), true);
-                        break;
-                    default:
-                        Utilities.MoveMapLocation(rc, new MapLocation(rc.getMapWidth() - 3, rc.getMapHeight() - 3), true);
-                        break;
-                }
+                    target = Utilities.spotOfPastr(rc);
+                    Utilities.MoveMapLocation(rc, target, true);
 
-                if(rc.isActive())
-                {
-                    try
+                    if(rc.isActive())
                     {
                         rc.construct(RobotType.PASTR);
                     }
-                    catch (Exception e){}
                 }
+                catch(Exception e){}
             }
         }
     }
