@@ -8,7 +8,7 @@ import battlecode.common.*;
  * Created by fredkneeland on 1/7/14.
  *
  * Vice Admiral Stukov leads at the battlefield spawning troops at the HQ and giving units orders
- * alternates between goliaths which have 5 soldiers and ghost groups which increase in size over time
+ * adapts to best counter enemy strategy
  *
  */
 public class AlexeiStukov {
@@ -23,6 +23,10 @@ public class AlexeiStukov {
     static final int HELLION = 8;
     static final int THOR = 9;
     static final int BATTLECRUISER = 10;
+    static final int THOR2 = 11;
+    static final int HELLION2 = 12;
+    static final int SCV2 = 13;
+    static final int MARAUDER = 14;
     static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
      boolean putUpDistractor = false;
@@ -44,6 +48,8 @@ public class AlexeiStukov {
     int a = 0;
     Direction[] directions = Direction.values();
     Random rand = new Random();
+    int battleCruiserCount = 0;
+    int numbOfSoldiers2 = 0;
 
     // channels for communication
     static final int EnemyHQChannel = 0;
@@ -64,8 +70,31 @@ public class AlexeiStukov {
     static final int GoliathCurrentLocation = 63;
     static final int PastrStartChannel = 10000;
 
+
     // this is arrays of our troop combinations
-    static final int[] initialSpawn = {THOR, THOR, SUPPLY_DEPOT, THOR, THOR, THOR};
+    static final int[] initialSpawnArray = {THOR, THOR, SUPPLY_DEPOT, THOR, THOR, THOR};
+    static final int[] BlockadeRunnerArray = {BATTLECRUISER};
+    static final int[] KamikazeArray = {HELLION2, MARAUDER};
+    static final int[] AllInMilkArray = {THOR, THOR2, SCV2};
+    static final int[] SmallSquadPastrAttackArray = {DURAN, GHOST, DURAN, GHOST, MARAUDER, THOR, GOLIATH};
+    static final int[] SecondCornerArray = {THOR2, THOR2, THOR2, THOR2, THOR2};
+    static final int[] AllOutPastrRushArray = {GOLIATH, DURAN};
+    static final int[] Balanced1PastrDefendArray = {GOLIATH, GOLIATH, THOR, GOLIATH, GOLIATH};
+    static final int[] Balanced2PastrDefendArray = {GOLIATH, THOR, GOLIATH, THOR2, GOLIATH, GOLIATH};
+    static final int[] TimingPushArray = {GOLIATH, GOLIATH, GOLIATH, GOLIATH, GOLIATH, HELLION, THOR};
+    static final int[] ImmediatePastrTakeDownArray = {MARAUDER, GOLIATH};
+
+    // these are our strategy possiblities
+    static final int BlockadeRunner = 1;
+    static final int Kamikaze = 2;
+    static final int AllInMilk = 3;
+    static final int SmallSquadPastrAttack = 4;
+    static final int SecondCorner = 5;
+    static final int AllOutPastrRush = 6;
+    static final int Balanced1PastrDefend = 7;
+    static final int Balanced2PastrDefend = 8;
+    static final int TimingPush = 9;
+    static final int ImmediatePastrTakeDown = 10;
 
 
 
@@ -103,7 +132,6 @@ public class AlexeiStukov {
             {
                 try
                 {
-
                     //rc.setIndicatorString(0, ""+rc.getActionDelay());
                     //rc.setIndicatorString(1, ""+rc.isActive());
 
@@ -111,84 +139,15 @@ public class AlexeiStukov {
                     {
                         enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                         ourPastrs = rc.sensePastrLocations(rc.getTeam());
-                        //GoliathTarget = enemyPastrs[0];
                     }
 
-                    // give Battlecruiser next location
-                    if (rc.readBroadcast(BattleCruiserReadyForNewCommand) == 1)
-                    {
-
-                        BattleCruiserPosition = Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation));
-                        rc.setIndicatorString(1, ""+BattleCruiserPosition);
 
 
-                        Direction dir = BattleCruiserPosition.directionTo(BattleCruiserTarget);
-                        BattleCruiserNextSpot = BattleCruiserPosition.add(dir);
-                        while (rc.senseTerrainTile(BattleCruiserNextSpot).equals(TerrainTile.VOID))
-                        {
-                            BattleCruiserNextSpot = BattleCruiserNextSpot.add(dir);
-                        }
-
-                        rc.broadcast(BattleCruiserLoc, Utilities.convertMapLocationToInt(BattleCruiserNextSpot));
-                        rc.broadcast(BattleCruiserReadyForNewCommand, 0);
-                        rc.setIndicatorString(2, ""+BattleCruiserTarget);
-                    }
+                    // give BattleCruiser next location
+                    Utilities.GiveBattleCruisersNextLocation(rc, BattleCruiserTarget);
 
                     // if the goliaths want a new command then we give them a new location
-                    if (rc.readBroadcast(GoliathReadyForCommand) == 1)
-                    {
-
-                        GoliathPosition = Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation));
-                        rc.setIndicatorString(1, ""+GoliathPosition);
-                        if (GoliathTarget == null || GoliathPosition.isAdjacentTo(GoliathTarget) || GoliathPosition.equals(GoliathTarget))
-                        {
-
-                            if (enemyPastrs.length == 0)
-                            {
-                                enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
-                            }
-                            if (ourPastrs.length == 0)
-                            {
-                                ourPastrs = rc.sensePastrLocations(rc.getTeam());
-                            }
-
-                            if (enemyPastrs.length > 0)
-                            {
-                                GoliathTarget = enemyPastrs[0];
-                            }
-                            else if (ourPastrs.length > 0)
-                            {
-                                a = 0;
-                                for (int j = 0; j < ourPastrs.length; j++)
-                                {
-                                    if ((ourPastrs[j].distanceSquaredTo(rc.senseHQLocation())) > 10 && !ourPastrs[j].equals(GoliathTarget))
-                                    {
-                                        GoliathTarget = ourPastrs[j];
-                                        a = 48;
-                                    }
-                                }
-                                if (a == 0)
-                                {
-                                    GoliathTarget = center;
-                                }
-                            }
-                            else
-                            {
-                                GoliathTarget = center;
-                            }
-                        }
-
-                        Direction dir = GoliathPosition.directionTo(GoliathTarget);
-                        GoliathNextSpot = GoliathPosition.add(dir);
-                        while (rc.senseTerrainTile(GoliathNextSpot).equals(TerrainTile.VOID))
-                        {
-                            GoliathNextSpot = GoliathNextSpot.add(dir);
-                        }
-
-                        rc.broadcast(GoliathNextLocation, Utilities.convertMapLocationToInt(GoliathNextSpot));
-                        rc.broadcast(GoliathReadyForCommand, 0);
-                        rc.setIndicatorString(2, ""+GoliathTarget);
-                    }
+                    Utilities.GiveGoliathsNextLocation(rc, center);
 
                     GameObject[] FarAwayEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                     GameObject[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
@@ -199,38 +158,66 @@ public class AlexeiStukov {
                     }
                     if (rc.isActive())
                     {
+                        // here we determine what we should do
+                        double opponentMilk = rc.senseTeamMilkQuantity(rc.getTeam().opponent());
+                        double ourMilk = rc.senseTeamMilkQuantity(rc.getTeam());
+                        // if our opponent has almost gotten all their milk and we haven't
 
-                        if (numbOfSoldiers < initialSpawn.length)
+                        rc.setIndicatorString(1, ""+opponentMilk);
+                        rc.setIndicatorString(2, ""+ourMilk);
+
+
+
+                        //if (opponentMilk > 7500000 &&)
+                        // added condition to test our battle cruiser
+                        /*
+                        if (battleCruiserCount < 9)
                         {
-                            rc.broadcast(TroopType, initialSpawn[numbOfSoldiers]);
+                            rc.broadcast(TroopType, BATTLECRUISER);
+                            battleCruiserCount++;
+                        }
+                        // there is a certain sequence which we will always do
+                        else */if (numbOfSoldiers < initialSpawnArray.length)
+                        {
+                            rc.broadcast(TroopType, initialSpawnArray[numbOfSoldiers]);
                         }
                         // here we saved information about what our opponent does
                         else if (teamMemory[0] == 1)
                         {
-                            rc.setIndicatorString(1, "Hello World");
                         }
-                        else if (numbOfSoldiers < (initialSpawn.length + 5))
+
+                        // here we build our first Goliath task force which we will swell in size as time goes on
+                        else if (numbOfSoldiers < (initialSpawnArray.length + 5))
                         {
-                            //rc.setIndicatorString(2, "Spawning Goliaths");
                             rc.broadcast(TroopType, GOLIATH);
                         }
                         // we have done our initial set up so now we will determine our strategy
                         else
                         {
                             // if our enemies are swarming our hq then we need to build a battlecruiser to kill them
-                            if (FarAwayEnemies.length > 2)
+                            if (FarAwayEnemies.length > 2 && battleCruiserCount < 9)
                             {
                                 rc.broadcast(TroopType, BATTLECRUISER);
+                                battleCruiserCount++;
                             }
                             else if (enemyPastrs.length == 0)
                             {
-
+                                // we will alternate between defending our pastr and gathering an army
+                                if (numbOfSoldiers % 3 == 0)
+                                {
+                                    rc.broadcast(TroopType, THOR);
+                                }
+                                else
+                                {
+                                    rc.broadcast(TroopType, GOLIATH);
+                                }
                             }
                             else if (enemyPastrs.length < 3)
                             {
                                 // in this case our opponent has built their pastrs close to their
                                 if (Utilities.MapLocationsNextToEnemyHQ(rc, enemyPastrs))
                                 {
+                                    // eventually we should set up a noise tower to keep cows away from their pastr
 
                                 }
                                 // if our pastr is under attack then we send out goliaths to take out theirs
@@ -251,6 +238,7 @@ public class AlexeiStukov {
                                 int index = -1;
                                 if (numbOfSoldiers % 6 == 0)
                                 {
+                                    /*
                                     if (numbOfPastrs > 0)
                                     {
                                         for (int j = 0; j < numbOfPastrs; j++)
@@ -267,6 +255,8 @@ public class AlexeiStukov {
                                             rc.broadcast(TroopType, THOR);
                                         }
                                     }
+                                    */
+                                    rc.broadcast(TroopType, THOR);
                                 }
                                 else
                                 {
@@ -278,11 +268,13 @@ public class AlexeiStukov {
                                 rc.broadcast(GoliathOnline, 1);
                             }
                         }
-
-                        //rc.setIndicatorString(1, ""+numbOfSoldiers);
-                        //rc.setIndicatorString(2, ""+initialSpawn.length);
                         Utilities.SpawnSoldiers(rc);
                         numbOfSoldiers++;
+
+                        if (battleCruiserCount > 8)
+                        {
+                            rc.broadcast(BattleCruiserArrived, 1);
+                        }
 
                         // after spawing soldiers we tell them what to be
                         /*

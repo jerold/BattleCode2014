@@ -2,6 +2,7 @@ package UED;
 
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
+import greedy.*;
 
 /**
  * Created by fredkneeland on 1/7/14.
@@ -22,6 +23,10 @@ public class RobotPlayer
     static final int HELLION = 8;
     static final int THOR = 9;
     static final int BATTLECRUISER = 10;
+    static final int THOR2 = 11;
+    static final int HELLION2 = 12;
+    static final int SCV2 = 13;
+    static final int MARAUDER = 14;
 
     // here are all of the channels
     // channels for communication
@@ -57,7 +62,7 @@ public class RobotPlayer
             }
             else if(rc.getType() == RobotType.NOISETOWER)
             {
-                new SensorTower(rc).run();
+                new SensorTower(rc, true).run();
             }
             else if(rc.getType() == RobotType.PASTR)
             {
@@ -93,12 +98,12 @@ public class RobotPlayer
                         }
                         else if (myType == MULECALLDOWN)
                         {
-                            MULE mule = new MULE(rc);
+                            MULE mule = new MULE(rc, true);
                             mule.run();
                         }
                         else if (myType == SENSORTOWER)
                         {
-                            SensorTower sensorTower = new SensorTower(rc);
+                            SensorTower sensorTower = new SensorTower(rc, true);
                             sensorTower.run();
                         }
                         else if (myType == MARINES)
@@ -108,18 +113,38 @@ public class RobotPlayer
                         }
                         else if (myType == HELLION)
                         {
-                            Hellion hellion = new Hellion(rc);
+                            Hellion hellion = new Hellion(rc, false);
                             hellion.run();
                         }
                         else if (myType == THOR)
                         {
-                            Thor thor = new Thor(rc);
+                            Thor thor = new Thor(rc, true);
                             thor.run();
                         }
                         else if (myType == BATTLECRUISER)
                         {
                             BattleCruiser battleCruiser = new BattleCruiser(rc);
                             battleCruiser.run();
+                        }
+                        else if (myType == THOR2)
+                        {
+                            Thor thor = new Thor(rc, false);
+                            thor.run();
+                        }
+                        else if (myType == HELLION2)
+                        {
+                            Hellion hellion = new Hellion(rc, true);
+                            hellion.run();
+                        }
+                        else if (myType == SCV2)
+                        {
+                            SCV scv = new SCV(rc);
+                            scv.run();
+                        }
+                        else if (myType == MARAUDER)
+                        {
+                            Marauder marauder = new Marauder(rc);
+                            marauder.run();
                         }
                         //Duran leader to kill enemy pastr
                         else

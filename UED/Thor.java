@@ -32,15 +32,17 @@ public class Thor
     int counter = 0;
     boolean sensorOver = false;
     boolean firstPastr = false;
+    boolean corner1;
 
-    public Thor(RobotController rc)
+    public Thor(RobotController rc, boolean corner1)
     {
         this.rc = rc;
+        this.corner1 = corner1;
         ourHQ = rc.senseHQLocation();
         enemyHQ = rc.senseEnemyHQLocation();
         direction = ourHQ.directionTo(enemyHQ);
         waitingZone = ourHQ;
-        target = Utilities.spotOfSensorTower(rc);
+        target = Utilities.spotOfSensorTower(rc, corner1);
         target2 = target;
 
         direction2 = ourHQ.directionTo(target);
@@ -53,7 +55,7 @@ public class Thor
             counter++;
         }
 
-        target3 = Utilities.spotOfPastr(rc);
+        target3 = Utilities.spotOfPastr(rc, corner1);
         target4 = target3;
         direction2 = ourHQ.directionTo(target3);
         target3 = target3.subtract(direction2);
@@ -136,7 +138,7 @@ public class Thor
                             // if we are at target 4 then we become a mule
                             if (rc.getLocation().equals(target4))
                             {
-                                MULE mule = new MULE(rc);
+                                MULE mule = new MULE(rc, corner1);
                                 mule.run();
                             }
                             else if (rc.canSenseSquare(target4))
@@ -173,7 +175,7 @@ public class Thor
                             {
                                 if (rc.getLocation().equals(target2))
                                 {
-                                    rc.construct(RobotType.PASTR);
+                                    rc.construct(RobotType.NOISETOWER);
                                 }
                                 else if (rc.senseObjectAtLocation(target2) != null)
                                 {

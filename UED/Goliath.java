@@ -130,6 +130,14 @@ public class Goliath
                         {
                             if (Utilities.fightMode(rc))
                             {
+                                if (rc.isActive())
+                                {
+                                    Direction dir = rc.getLocation().directionTo(newTarget);
+                                    if (rc.canMove(dir))
+                                    {
+                                        rc.move(dir);
+                                    }
+                                }
                             }
                             else if (newTarget == null)
                             {

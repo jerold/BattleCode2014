@@ -965,8 +965,8 @@ public class Utilities
                     MapLocation enemySlot = rc.senseLocationOf(nearByEnemies2[0]);
                     nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
                     nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 9);
-                    GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
-                    // if our brethern are in the field of action we must join them!
+                    GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 9);
+                    // if our brethern are in the field we must join them!
                     if (nearByAllies3.length > 0)
                     {
                         if (!MapLocationInRangeOfEnemyHQ(rc, enemySlot))
@@ -978,7 +978,8 @@ public class Utilities
                             fire(rc);
                         }
                     }
-                    else if (nearByAllies4.length > (nearByEnemies2.length + 2))
+                    // if we have support then engage to destroy the enemy before they are reinforced
+                    else if (nearByAllies4.length > (nearByEnemies2.length))
                     {
                         MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
                     }
@@ -1040,7 +1041,6 @@ public class Utilities
                  */
                 else if (nearByEnemies3.length > 0)
                 {
-
                     MapLocation target = rc.senseLocationOf(nearByEnemies3[0]);
 
                     // if we have friends ahead then we must join them

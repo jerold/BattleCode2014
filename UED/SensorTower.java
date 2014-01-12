@@ -15,10 +15,12 @@ public class SensorTower
     MapLocation target;
     Random rand = new Random();
     Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
+    boolean corner1;
 
-    public SensorTower(RobotController rc)
+    public SensorTower(RobotController rc, boolean corner1)
     {
         this.rc = rc;
+        this.corner1 = corner1;
         corner = Utilities.findBestCorner(rc);
         width = rc.getMapWidth();
         height = rc.getMapHeight();
@@ -36,7 +38,7 @@ public class SensorTower
 
                     try
                     {
-                        target = Utilities.spotOfSensorTower(rc);
+                        target = Utilities.spotOfSensorTower(rc, corner1);
 
                         //Utilities.AvoidEnemiesMoveMapLocation(rc, target, true);
                         Utilities.MoveMapLocation(rc, target, true);
@@ -51,7 +53,45 @@ public class SensorTower
             }
             else
             {
-                fireArcs();
+                try
+                {
+                    rc.setIndicatorString(0, "Tower");
+                    Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 30, rc.getTeam().opponent());
+                    Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 30, rc.getTeam());
+                    MapLocation pastrA = null;
+                    MapLocation pastrE = null;
+                    boolean enemyPastr = false;
+                    boolean allyPastr = false;
+
+                    for(int k = 0; k < enemies.length; k++)
+                    {
+                        if(rc.senseRobotInfo(enemies[k]).type == RobotType.PASTR)
+                        {
+                            enemyPastr = true;
+                            pastrA = rc.senseRobotInfo(enemies[k]).location;
+                        }
+                    }
+                    for(int k = 0; k < allies.length; k++)
+                    {
+                        if(rc.senseRobotInfo(allies[k]).type == RobotType.PASTR)
+                        {
+                            allyPastr = true;
+                            pastrA = rc.senseRobotInfo(allies[k]).location;
+                        }
+                    }
+                    if(!enemyPastr && allyPastr)
+                    {
+                        for(int k = 20; k > 4; k -= 2)
+                        {
+                            Utilities.fireCircle(rc, k, pastrA);
+                        }
+                    }
+                    else if(enemyPastr)
+                    {
+                        rc.attackSquare(pastrE);
+                    }
+                }
+                catch(Exception e){}
             }
 
             rc.yield();

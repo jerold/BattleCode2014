@@ -15,10 +15,12 @@ public class MULE
     Random rand = new Random();
     Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
     Direction dir;
+    boolean corner1;
 
-    public MULE(RobotController rc)
+    public MULE(RobotController rc, boolean corner1)
     {
         this.rc = rc;
+        this.corner1 = corner1;
         /*
         corner = Utilities.findBestCorner(rc);
 
@@ -45,7 +47,7 @@ public class MULE
         }
         */
 
-        target = Utilities.spotOfPastr(rc);
+        target = Utilities.spotOfPastr(rc, corner1);
 
         rc.setIndicatorString(0, "MULE");
 

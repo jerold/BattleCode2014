@@ -42,12 +42,12 @@ public class BattleCruiser
 
     /**
      *
-     * BattleCruiser builds huge army then when it is time to go
-     * every round the force will switch between two channels for targeted area
-     * if no other battlecruiser has yet given a map location to move towards then
-     * the current one will set it otherwise the battlecruiser will move toward the map location
+     * BattleCruiser builds huge army then when it has gathered it will set out
+     * and crush any enemies in its path as it seeks to encircle the enemy HQ and cut off its life supply
+     * This unit will primarily be used to stop enemies from surrounding our hq and killing our troops as they spawn
      *
      * @param rc
+     *
      */
     public BattleCruiser(RobotController rc)
     {
@@ -70,11 +70,15 @@ public class BattleCruiser
         try
         {
             rc.broadcast(BattleCruiserNumber, rc.readBroadcast(BattleCruiserNumber) + 1);
+            if (rc.readBroadcast(BattleCruiserLoc) == 0)
+            {
+                rc.broadcast(BattleCruiserReadyForNewCommand, 1);
+            }
         } catch (Exception e)
         {
             e.printStackTrace();
             rc.setIndicatorString(0, "Error");
-            System.out.println("Thor Exception");
+            System.out.println("Battle Cruiser Exception");
         }
 
     }
@@ -93,6 +97,7 @@ public class BattleCruiser
                 }
                 if (rc.isActive())
                 {
+                    rc.setIndicatorString(1, ""+rc.readBroadcast(BattleCruiserNumber));
                     // wait at target zone until all troops arrive
                     if (!arrived)
                     {
@@ -120,6 +125,21 @@ public class BattleCruiser
                     {
                         if (Utilities.fightMode(rc))
                         {
+                            /*if (rc.isActive())
+                            {*/
+                                if (newTarget == null)
+                                {
+                                    newTarget = Utilities.convertIntToMapLocation(rc.readBroadcast(BattleCruiserLoc));
+                                }
+                                else
+                                {
+                                    if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < newTarget.distanceSquaredTo(rc.senseEnemyHQLocation()))
+                                    {
+                                        rc.broadcast(BattleCruiserLoc, Utilities.convertMapLocationToInt(rc.getLocation()));
+                                        rc.setIndicatorString(1, "Calling in the big guns");
+                                    }
+                                }
+
                         }
                         else if (newTarget == null)
                         {
@@ -129,7 +149,7 @@ public class BattleCruiser
                         {
                             if (newTarget.equals(Utilities.convertIntToMapLocation(rc.readBroadcast(BattleCruiserLoc))))
                             {
-                                if (rc.readBroadcast(BattleCruiserNumber) == rc.senseNearbyGameObjects(Robot.class, 15, rc.getTeam()).length)
+                                if (rc.readBroadcast(BattleCruiserNumber) <= ((rc.senseNearbyGameObjects(Robot.class, 15, rc.getTeam()).length)+1))
                                 {
                                     rc.broadcast(BattleCruiserReadyForNewCommand, 1);
                                 }
@@ -141,6 +161,7 @@ public class BattleCruiser
                         }
                         else
                         {
+                            rc.setIndicatorString(2, ""+newTarget);
                             Utilities.MoveMapLocation(rc, newTarget, false);
                         }
 

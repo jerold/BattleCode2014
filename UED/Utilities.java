@@ -51,6 +51,23 @@ public class Utilities
         return false;
     }
 
+    // user must check that pastrLoc contains at least one item
+    public static MapLocation ClosestPastr(RobotController rc, MapLocation[] pastrLoc)
+    {
+        MapLocation location = pastrLoc[0];
+        int distance = rc.getLocation().distanceSquaredTo(pastrLoc[0]);
+
+        for (int i =0; i<pastrLoc.length; i++)
+        {
+            if (rc.getLocation().distanceSquaredTo(pastrLoc[i]) < distance)
+            {
+                location = pastrLoc[i];
+                 distance = rc.getLocation().distanceSquaredTo(pastrLoc[i]);
+            }
+        }
+        return location;
+    }
+
     public static boolean MapLocationsNextToEnemyHQ(RobotController rc, MapLocation[] enemyPastrs)
     {
         int adjacent = 0;
@@ -140,6 +157,112 @@ public class Utilities
         } catch (Exception e)
         {
         	e.printStackTrace();
+        }
+    }
+
+    public static void GiveBattleCruisersNextLocation(RobotController rc, MapLocation BattleCruiserTarget)
+    {
+        try
+        {
+            MapLocation BattleCruiserNextSpot;
+            MapLocation BattleCruiserPosition;
+
+            if (rc.readBroadcast(BattleCruiserReadyForNewCommand) == 1)
+            {
+                int spot = rc.readBroadcast(BattleCruiserLoc);
+
+                if (spot == 0)
+                {
+                    BattleCruiserPosition = rc.getLocation();
+                }
+                else
+                {
+                    BattleCruiserPosition = Utilities.convertIntToMapLocation(spot);
+                }
+
+
+                Direction dir = BattleCruiserPosition.directionTo(BattleCruiserTarget);
+                BattleCruiserNextSpot = BattleCruiserPosition.add(dir);
+                while (rc.senseTerrainTile(BattleCruiserNextSpot).equals(TerrainTile.VOID))
+                {
+                    BattleCruiserNextSpot = BattleCruiserNextSpot.add(dir);
+                }
+
+                rc.broadcast(BattleCruiserLoc, Utilities.convertMapLocationToInt(BattleCruiserNextSpot));
+                rc.broadcast(BattleCruiserReadyForNewCommand, 0);
+
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void GiveGoliathsNextLocation(RobotController rc, MapLocation center)
+    {
+        MapLocation GoliathPosition = null;
+        MapLocation GoliathTarget = null;
+        MapLocation GoliathNextSpot = null;
+        MapLocation[] enemyPastrs = null;
+        MapLocation[] ourPastrs = null;
+        int a = 0;
+        try
+        {
+            if (rc.readBroadcast(GoliathReadyForCommand) == 1)
+            {
+
+                GoliathPosition = Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation));
+                if (GoliathTarget == null || GoliathPosition.isAdjacentTo(GoliathTarget) || GoliathPosition.equals(GoliathTarget))
+                {
+
+                    if (enemyPastrs.length == 0)
+                    {
+                        enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                    }
+                    if (ourPastrs.length == 0)
+                    {
+                        ourPastrs = rc.sensePastrLocations(rc.getTeam());
+                    }
+
+                    if (enemyPastrs.length > 0)
+                    {
+                        GoliathTarget = enemyPastrs[0];
+                    }
+                    else if (ourPastrs.length > 0)
+                    {
+                        a = 0;
+                        for (int j = 0; j < ourPastrs.length; j++)
+                        {
+                            if ((ourPastrs[j].distanceSquaredTo(rc.senseHQLocation())) > 10 && !ourPastrs[j].equals(GoliathTarget))
+                            {
+                                GoliathTarget = ourPastrs[j];
+                                a = 48;
+                            }
+                        }
+                        if (a == 0)
+                        {
+                            GoliathTarget = center;
+                        }
+                    }
+                    else
+                    {
+                        GoliathTarget = center;
+                    }
+                }
+
+                Direction dir = GoliathPosition.directionTo(GoliathTarget);
+                GoliathNextSpot = GoliathPosition.add(dir);
+                while (rc.senseTerrainTile(GoliathNextSpot).equals(TerrainTile.VOID))
+                {
+                    GoliathNextSpot = GoliathNextSpot.add(dir);
+                }
+
+                rc.broadcast(GoliathNextLocation, Utilities.convertMapLocationToInt(GoliathNextSpot));
+                rc.broadcast(GoliathReadyForCommand, 0);
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
         }
     }
 
@@ -977,7 +1100,7 @@ public class Utilities
                             fire(rc);
                         }
                     }
-                    else if (nearByAllies4.length > (nearByEnemies2.length + 2))
+                    else if (nearByAllies4.length > (nearByEnemies2.length))
                     {
                         MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
                     }
@@ -1462,9 +1585,49 @@ public class Utilities
     {
         double[][] pasture = rc.senseCowGrowth();
 
+        double[] voids = new double[4];
+        double[] cows = new double[4];
+        double[] distances = new double[4];
+
         double max = 0;
         int corner = 0;
         double total = 0;
+        MapLocation target = null;
+        MapLocation current = rc.senseHQLocation();
+
+        for(int k = 1; k <= 4; k++)
+        {
+            switch(k)
+            {
+                case 1:
+                    target = new MapLocation(5, 5);
+                    break;
+                case 2:
+                    target = new MapLocation(rc.getMapWidth() - 6, 5);
+                    break;
+                case 3:
+                    target = new MapLocation(5, rc.getMapHeight() - 6);
+                    break;
+                default:
+                    target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
+                    break;
+            }
+
+            while(target.x != current.x || target.y != current.y)
+            {
+                if(rc.senseTerrainTile(current) == TerrainTile.VOID)
+                {
+                    total++;
+                }
+                current = current.add(current.directionTo(target));
+            }
+
+            voids[k - 1] = total;
+            distances[k - 1] = rc.senseHQLocation().distanceSquaredTo(target);
+
+            total = 0;
+            current = rc.senseHQLocation();
+        }
 
         //top left corner
         for(int k = 0; k < 10; k++)
@@ -1474,11 +1637,8 @@ public class Utilities
                 total += pasture[k][a];
             }
         }
-        if(total > max)
-        {
-            max = total;
-            corner = 1;
-        }
+        cows[0] = total;
+
         total = 0;
 
         //top right corner
@@ -1489,11 +1649,8 @@ public class Utilities
                 total += pasture[k][a];
             }
         }
-        if(total > max)
-        {
-            max = total;
-            corner = 2;
-        }
+        cows[1] = total;
+
         total = 0;
 
         //bottom left corner
@@ -1504,11 +1661,8 @@ public class Utilities
                 total += pasture[k][a];
             }
         }
-        if(total > max)
-        {
-            max = total;
-            corner = 3;
-        }
+        cows[2] = total;
+
         total = 0;
 
         //bottom right corner
@@ -1519,13 +1673,161 @@ public class Utilities
                 total += pasture[k][a];
             }
         }
-        if(total > max)
+        cows[3] = total;
+
+        for(int k = 0; k < 4; k++)
         {
-            max = total;
-            corner = 4;
+            total = cows[k] * 1 - voids[k] * 50 - distances[k] * .001;
+
+            if(total > max)
+            {
+                max = total;
+                corner = k + 1;
+            }
         }
 
         return corner;
+    }
+
+    public static int findOpposingCorner(RobotController rc)
+    {
+        int corner = findBestCorner(rc);
+
+        switch(corner)
+        {
+            case 1:
+                corner = 4;
+                break;
+            case 2:
+                corner = 3;
+                break;
+            case 3:
+                corner = 2;
+                break;
+            default:
+                corner = 1;
+                break;
+        }
+
+        return corner;
+    }
+
+    public static void fireCircle(RobotController rc, int radius, MapLocation center)
+    {
+        for(int k = 0; k < directions.length; k++)
+        {
+            while(!rc.isActive()){}
+            MapLocation toFire = center.add(directions[k], radius);
+            try
+            {
+                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+                {
+                    rc.attackSquare(toFire);
+                    rc.yield();
+                }
+            }
+            catch(Exception e){}
+            while(!rc.isActive()){}
+            toFire = center;
+            for(int a = 0; a < radius / 2; a++)
+            {
+                toFire = toFire.add(directions[k]);
+                toFire = toFire.add(directions[(k + 1) % directions.length]);
+            }
+            try
+            {
+                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+                {
+                    rc.attackSquare(toFire);
+                    rc.yield();
+                }
+            }
+            catch(Exception e){}
+        }
+    }
+
+    public static MapLocation spotOfSensorTower(RobotController rc, boolean corner1)
+    {
+        rand = new Random();
+        MapLocation target = null;
+        int corner=0;
+
+        if (corner1)
+        {
+            corner = Utilities.findBestCorner(rc);
+        }
+        else
+        {
+            corner = findOpposingCorner(rc);
+        }
+
+        switch(corner)
+        {
+            case 1:
+                target = new MapLocation(5, 5);
+                break;
+            case 2:
+                target = new MapLocation(rc.getMapWidth() - 6, 5);
+                break;
+            case 3:
+                target = new MapLocation(5, rc.getMapHeight() - 6);
+                break;
+            default:
+                target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
+                break;
+        }
+
+        Direction dir = directions[rand.nextInt(8)];
+        // make sure we don't try to build on a void space
+        while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+        {
+            target = target.add(dir);
+            dir = directions[rand.nextInt(8)];
+        }
+
+        return target;
+    }
+
+    public static MapLocation spotOfPastr(RobotController rc, boolean corner1)
+    {
+        MapLocation target;
+        int[] lookPlaces = {1,1,0,3,6,7,4,5,2,3,0,2,2,3,1,4,5,3,2,5,6};
+        int counter = 0;
+        Direction dir;
+        int corner = 0;
+        if (corner1)
+        {
+            corner = findBestCorner(rc);
+        }
+        else
+        {
+            corner = findOpposingCorner(rc);
+        }
+        rand = new Random();
+        switch(corner)
+        {
+            case 1:
+                target = new MapLocation(2, 2);
+                break;
+            case 2:
+                target = new MapLocation(rc.getMapWidth() - 3, 2);
+                break;
+            case 3:
+                target = new MapLocation(2, rc.getMapHeight() - 3);
+                break;
+            default:
+                target = new MapLocation(rc.getMapWidth() - 3, rc.getMapHeight() - 3);
+                break;
+        }
+
+        while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+        {
+
+            dir = directions[rand.nextInt(8)];
+            target = target.add(dir);
+            counter++;
+        }
+        return target;
     }
 
     // this method is the same as MoveMapLocation until an enemy bot is seen where the robot will move in the opposite direction of the closest enemy it sees that is a soldier
@@ -1900,74 +2202,6 @@ public class Utilities
                 rc.yield();
             }
         }
-    }
-
-    public static MapLocation spotOfSensorTower(RobotController rc)
-    {
-        rand = new Random();
-        MapLocation target = null;
-
-        int corner = Utilities.findBestCorner(rc);
-
-        switch(corner)
-        {
-            case 1:
-                target = new MapLocation(5, 5);
-                break;
-            case 2:
-                target = new MapLocation(rc.getMapWidth() - 6, 5);
-                break;
-            case 3:
-                target = new MapLocation(5, rc.getMapHeight() - 6);
-                break;
-            default:
-                target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
-                break;
-        }
-
-        Direction dir = directions[rand.nextInt(8)];
-        // make sure we don't try to build on a void space
-        while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
-        {
-            target = target.add(dir);
-            dir = directions[rand.nextInt(8)];
-        }
-
-        return target;
-    }
-
-    public static MapLocation spotOfPastr(RobotController rc)
-    {
-        MapLocation target;
-        int[] lookPlaces = {1,1,0,3,6,7,4,5,2,3,0,2,2,3,1,4,5,3,2,5,6};
-        int counter = 0;
-        Direction dir;
-        int corner = findBestCorner(rc);
-        rand = new Random();
-        switch(corner)
-        {
-            case 1:
-                target = new MapLocation(2, 2);
-                break;
-            case 2:
-                target = new MapLocation(rc.getMapWidth() - 3, 2);
-                break;
-            case 3:
-                target = new MapLocation(2, rc.getMapHeight() - 3);
-                break;
-            default:
-                target = new MapLocation(rc.getMapWidth() - 3, rc.getMapHeight() - 3);
-                break;
-        }
-
-        while (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
-        {
-
-            dir = directions[rand.nextInt(8)];
-            target = target.add(dir);
-            counter++;
-        }
-        return target;
     }
 
     public static MapLocation determineBestWayAround(RobotController rc, MapLocation target)
