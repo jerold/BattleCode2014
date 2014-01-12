@@ -13,15 +13,25 @@ public class RobotPlayer
 			{
 				if(rc.getType() == RobotType.HQ)
 				{
-					if(rc.isActive() && !created)
+					MapLocation[] pastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+					MapLocation target = null;
+					for(int k = 0; k < pastrs.length; k++)
 					{
+						if(Utilities.MapLocationNextToEnemyHQ(rc, pastrs[k]))
+						{
+							target = pastrs[k];
+						}
+					}
+					if(rc.isActive() && !created && target != null)
+					{
+						rc.broadcast(0, Utilities.convertMapLocationToInt(target));
 						rc.spawn(Direction.NORTH);
 						created = true;
 					}
 				}
 				else
 				{
-					new TrollTower(rc).run();
+					new TrollTower(rc, Utilities.convertIntToMapLocation(rc.readBroadcast(0))).run();
 				}
 			}
 			catch(Exception e){}

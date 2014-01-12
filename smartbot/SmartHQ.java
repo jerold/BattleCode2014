@@ -11,26 +11,23 @@ public class SmartHQ
 	public static final int GHOST = 4;
 	public static final int MARINE = 5;
 	public static final int GOLIATH = 6;
-	public static final int SCOUT = 7;
+	public static final int TROLL = 7;
 	private final int NUMGHOST = 2;
 	private final int NUMGOLIATH = 5;
-	private final int[] initial = {MULE, TOWER};
-	private final int[] defensive = {MARINE, MARINE, MARINE, GOLIATH};
-	private final int[] standard = {};
-	private final int[] offensive = {GOLIATH, GOLIATH, GOLIATH, DURAN, GHOST, GHOST};
 	
+	private Analysis a;
+	private int[] currentStrat;
 	private int goliaths;
 	private int bots;
-	private int strat;
-	private int[] current;
 	
 	public SmartHQ(RobotController rc)
 	{
 		this.rc = rc;
+		a = new Analysis(rc);
+		currentStrat = a.getStrat();
 		goliaths = 0;
 		bots = 0;
-		strat = 2;
-		current = initial;
+		
 		try
 		{
 			rc.broadcast(2, NUMGHOST);
@@ -47,30 +44,16 @@ public class SmartHQ
 				Utilities.fire(rc);
 				if(rc.isActive())
 				{
-					if(bots == current.length)
+					if(bots == currentStrat.length)
 					{
 						bots = 0;
-						switch(strat)
-						{
-							case 0:
-								current = initial;
-								break;
-							case 1:
-								current = defensive;
-								break;
-							case 2:
-								current = standard;
-								break;
-							case 3:
-								current = offensive;
-								break;
-						}
+						currentStrat = a.getStrat();
 					}
 					
-					rc.broadcast(0, current[bots]);
+					rc.broadcast(0, currentStrat[bots]);
 					Utilities.SpawnSoldiers(rc);
 					bots++;
-					if(current[bots] == GOLIATH)
+					if(currentStrat[bots] == GOLIATH)
 					{
 						goliaths++;
 					}

@@ -1004,5 +1004,21 @@ public class Utilities
 
         return false;
     }
+    
+    public static int convertMapLocationToInt(MapLocation loc)
+    {
+        int x = loc.x;
+        int y = loc.y;
+        int total = (x*1000) + y;
+        return total;
+    }
+
+    public static MapLocation convertIntToMapLocation(int value)
+    {
+        int x = value / 1000;
+        int y = value % 1000;
+        MapLocation loc = new MapLocation(x, y);
+        return loc;
+    }
 }
 

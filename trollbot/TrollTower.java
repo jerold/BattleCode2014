@@ -5,40 +5,53 @@ import battlecode.common.*;
 public class TrollTower
 {
 	RobotController rc;
-	MapLocation[] pastrs;
-	MapLocation target;
+	MapLocation target, pastr;
 	
-	public TrollTower(RobotController rc)
+	public TrollTower(RobotController rc, MapLocation pastr)
 	{
 		this.rc = rc;
-		pastrs = rc.sensePastrLocations(rc.getTeam().opponent());
-		target = null;
+		this.pastr = pastr;
+		target = pastr;
+		int width = rc.getMapWidth();
+		int height = rc.getMapHeight();
+		int dist = 350;
 		
-		for(int k = 0; k < pastrs.length; k++)
+		if(pastr.x < width / 2)
 		{
-			if(Utilities.MapLocationNextToEnemyHQ(rc, pastrs[k]))
+			while(target.distanceSquaredTo(pastr) < dist && target.x > 0)
 			{
-				target = pastrs[k];
+				target = target.add(Direction.WEST);
 			}
 		}
-		if(target == null)
+		else
 		{
-			int corner = Utilities.findOpposingCorner(rc);
-			switch(corner)
+			while(target.distanceSquaredTo(pastr) < dist && target.x < rc.getMapWidth() - 1)
 			{
-				case 1:
-					target = new MapLocation(0,0);
-					break;
-				case 2:
-					target = new MapLocation(rc.getMapWidth() - 1, 0);
-					break;
-				case 3:
-					target = new MapLocation(0, rc.getMapHeight() - 1);
-					break;
-				default:
-					target = new MapLocation(rc.getMapWidth() - 1, rc.getMapHeight() - 1);
-					break;
+				target = target.add(Direction.EAST);
 			}
+		}
+		if(pastr.y < height / 2)
+		{
+			while(target.distanceSquaredTo(pastr) < dist && target.y < height - 1)
+			{
+				target = target.add(Direction.SOUTH);
+			}
+		}
+		else
+		{
+			while(target.distanceSquaredTo(pastr) < dist && target.y > 0)
+			{
+				target = target.add(Direction.NORTH);
+			}
+		}
+		
+		while(rc.senseTerrainTile(target) == TerrainTile.VOID && target.x < width / 2)
+		{
+			target = target.add(Direction.EAST);
+		}
+		while(rc.senseTerrainTile(target) == TerrainTile.VOID && target.x > width / 2)
+		{
+			target = target.add(Direction.WEST);
 		}
 	}
 	
@@ -48,30 +61,32 @@ public class TrollTower
 		{
 			if(rc.getType() == RobotType.SOLDIER)
 			{
-				Utilities.MoveMapLocation(rc, target, false);
+				rc.setIndicatorString(0, "(" + target.x + ", " + target.y + ")");
+				rc.setIndicatorString(1, "(" + rc.getMapWidth() + ", " + rc.getMapHeight() + ")");
+				if(rc.isActive())
+				{
+					Utilities.MoveMapLocation(rc, target, false);
+				}
 				
 				while(!rc.isActive()){}
 				
 				try
 				{
+					rc.setIndicatorString(2, "Constructing");
 					rc.construct(RobotType.NOISETOWER);
 				}
 				catch(Exception e){}
 			}
 			else if(rc.getType() == RobotType.NOISETOWER)
 			{
-				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent());
-				for(int k = 0; k < enemies.length; k++)
+				try
 				{
-					try
+					if(rc.isActive())
 					{
-						if(rc.senseRobotInfo(enemies[k]).type == RobotType.PASTR && rc.isActive())
-						{
-							rc.attackSquare(rc.senseRobotInfo(enemies[k]).location);
-						}
+						rc.attackSquare(pastr);
 					}
-					catch(Exception e){}
 				}
+				catch(Exception e){}
 			}
 			rc.yield();
 		}
