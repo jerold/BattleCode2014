@@ -29,11 +29,7 @@ public class Utilities
     static final int BattleCruiserInArray = 60;
 
     static final int startPastrChannels = 1000;
-    static final int PastrDetailCount = 4;
-    static final int LastActiveRound = 0;
-    static final int DefenderCount = 1;
-    static final int EnemyCount = 2;
-    static final int CowCount = 3;
+    static final int PastrDetailCount = 5; // [LastActiveRound, DefenderCount, EnemyCount, CowCount, PastrLocation]
 
     public static boolean BattleCruiserReady(RobotController rc)
     {
@@ -194,43 +190,53 @@ public class Utilities
 
     public static int[] getDetailsForPastr(RobotController rc)
     {
+        int pastrNumber = pastrNumberFromId(rc);
+        return getDetailsForPastrNumber(rc, pastrNumber);
+    }
+
+    public static int[] getDetailsForPastrNumber(RobotController rc, int pastrNumber)
+    {
         int pastrDetails[] = new int[PastrDetailCount];
         for (int i = 0; i < PastrDetailCount; i++)
             pastrDetails[i] = -1;
-        try {
-            int pastrCount = rc.readBroadcast(startPastrChannels);
-            int pastrNumber = pastrNumberFromId(rc, pastrCount);
-            if (pastrNumber >= 0) {
-                pastrDetails[LastActiveRound] = rc.readBroadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+LastActiveRound);
-                pastrDetails[DefenderCount] = rc.readBroadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+DefenderCount);
-                pastrDetails[EnemyCount] = rc.readBroadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+EnemyCount);
-                pastrDetails[CowCount] = rc.readBroadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+CowCount);
-                if (!pastrIsResponsive(pastrDetails[LastActiveRound], Clock.getRoundNum()))
-                    removeDetailsForPastrToChannels(rc, pastrCount, pastrNumber);
-            }
-        } catch (Exception e) {}
+        if (pastrNumber >= 0) {
+            try {
+                int pastrCount = rc.readBroadcast(startPastrChannels);
+                for (int i = 0; i < PastrDetailCount; i++) {
+                    pastrDetails[i] = rc.readBroadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+i);
+                }
+            } catch (Exception e) {}
+        }
         return pastrDetails;
     }
 
-    public static void setDetailsForPastr(RobotController rc, int round, int defenders, int enemies, int cows)
+    public static void setDetailsForPastr(RobotController rc, int[] details)
     {
+        int pastrNumber = pastrNumberFromId(rc);
+        setDetailsForPastrNumber(rc, pastrNumber, details);
+    }
+
+    public static void setDetailsForPastrNumber(RobotController rc, int pastrNumber, int[] details)
+    {
+        if (details.length != PastrDetailCount)
+            return;
+
         try {
             int pastrCount = rc.readBroadcast(startPastrChannels);
-            int pastrNumber = pastrNumberFromId(rc, pastrCount);
             if (pastrNumber >= 0) {
-                rc.broadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+LastActiveRound, round);
-                rc.broadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+DefenderCount, defenders);
-                rc.broadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+EnemyCount, enemies);
-                rc.broadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+CowCount, cows);
+                for (int i = 0; i < PastrDetailCount; i++) {
+                    rc.broadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+i, details[i]);
+                }
             } else {
-                addDetailsForPastrToChannels(rc, pastrCount, round, defenders, enemies, cows);
+                addDetailsForPastrToChannels(rc, pastrCount, details);
             }
         } catch (Exception e) {}
     }
 
-    public static int pastrNumberFromId(RobotController rc, int pastrCount)
+    public static int pastrNumberFromId(RobotController rc)
     {
         try {
+            int pastrCount = rc.readBroadcast(startPastrChannels);
             for (int i = 0; i < pastrCount; i++) {
                 int idAtIndex = rc.readBroadcast(1+startPastrChannels+i);
                 if (idAtIndex == rc.getRobot().getID())
@@ -240,34 +246,30 @@ public class Utilities
         return -1;
     }
 
-    public static void addDetailsForPastrToChannels(RobotController rc, int pastrCount, int round, int defenders, int enemies, int cows)
-{
+    public static void addDetailsForPastrToChannels(RobotController rc, int pastrCount, int[] details)
+    {
+        if (details.length != PastrDetailCount)
+            return;
+
         int newPastrCount = pastrCount + 1;
         try {
             rc.broadcast(startPastrChannels, newPastrCount);
             rc.broadcast(startPastrChannels+newPastrCount, rc.getRobot().getID());
-            rc.broadcast(startPastrChannels+1+newPastrCount+PastrDetailCount*newPastrCount+LastActiveRound, round);
-            rc.broadcast(startPastrChannels+1+newPastrCount+PastrDetailCount*newPastrCount+DefenderCount, defenders);
-            rc.broadcast(startPastrChannels+1+newPastrCount+PastrDetailCount*newPastrCount+EnemyCount, enemies);
-            rc.broadcast(startPastrChannels+1+newPastrCount+PastrDetailCount*newPastrCount+CowCount, cows);
+            setDetailsForPastrNumber(rc, newPastrCount, details);
         } catch (Exception e) {}
-    }
-
-
-    public static void removeDetailsForPastrToChannels(RobotController rc, int pastrCount)
-    {
-        return removeDetailsForPastrToChannels(rc, pastrCount, pastrNumberFromId(rc, pastrCount));
     }
 
     public static void removeDetailsForPastrToChannels(RobotController rc, int pastrCount, int pastrNumber)
     {
         int newPastrCount = pastrCount - 1;
         try {
-            rc.broadcast(startPastrChannels, newPastrCount);
             for (int i = 0; i < pastrCount-pastrNumber; i++) {
-                int laterPastrId = rc.readBroadcast(2+startPastrChannels+pastrNumber+i);
-                rc.broadcast(startPastrChannels+pastrNumber+i, rc.getRobot().getID());
+                int laterPastrId = rc.readBroadcast(startPastrChannels+1+pastrNumber+i+1);
+                int[] laterPastrDetails = getDetailsForPastrNumber(rc, pastrNumber+i+1);
+                rc.broadcast(startPastrChannels+1+pastrNumber+i, laterPastrId);
+                setDetailsForPastrNumber(rc, pastrNumber+i, laterPastrDetails);
             }
+            rc.broadcast(startPastrChannels, newPastrCount);
         } catch (Exception e) {}
     }
 
@@ -277,20 +279,6 @@ public class Utilities
             return false;
         return true;
     }
-
-//    public static void updatePastrChannels(RobotController rc)
-//    {
-//        try {
-//            int pastrCount = rc.readBroadcast(startPastrChannels);
-//            int pastrDetails[][] = new int[pastrCount][PastrDetailCount];
-//            for (int i = 0; i < pastrCount; i++) {
-//                pastrDetails[i][LastActiveRound] = rc.readBroadcast(1+startPastrChannels+PastrDetailCount*i+LastActiveRound);
-//                pastrDetails[i][DefenderCount] = rc.readBroadcast(1+startPastrChannels+PastrDetailCount*i+DefenderCount);
-//                pastrDetails[i][EnemyCount] = rc.readBroadcast(1+startPastrChannels+PastrDetailCount*i+EnemyCount);
-//                pastrDetails[i][CowCount] = rc.readBroadcast(1+startPastrChannels+PastrDetailCount*i+CowCount);
-//            }
-//        } catch (Exception e) {}
-//    }
 
     //================================================================================
     // Helper Methods
