@@ -92,7 +92,7 @@ public class BattleCruiser
                 if (rc.getHealth() < 30)
                 {
                     rc.broadcast(BattleCruiserNumber, rc.readBroadcast(BattleCruiserNumber) - 1);
-                    Hellion hellion = new Hellion(rc);
+                    Hellion hellion = new Hellion(rc, false);
                     hellion.run();
                 }
                 if (rc.isActive())

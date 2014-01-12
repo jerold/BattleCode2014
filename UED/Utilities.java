@@ -51,6 +51,12 @@ public class Utilities
         return false;
     }
 
+    // returns a 1 for small a 2 for medium and a 3 for large
+    public static int MapSize(RobotController rc)
+    {
+        return 0;
+    }
+
     // user must check that pastrLoc contains at least one item
     public static MapLocation ClosestPastr(RobotController rc, MapLocation[] pastrLoc)
     {
@@ -265,6 +271,8 @@ public class Utilities
             e.printStackTrace();
         }
     }
+
+
 
     //================================================================================
     // PASTR Communication Methods

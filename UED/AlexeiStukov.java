@@ -29,7 +29,7 @@ public class AlexeiStukov {
     static final int MARAUDER = 14;
     static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
-     boolean putUpDistractor = false;
+    boolean putUpDistractor = false;
     static boolean putUpMule = false;
     static boolean putUpSensorTower = false;
     static boolean firstRound = true;
@@ -50,6 +50,11 @@ public class AlexeiStukov {
     Random rand = new Random();
     int battleCruiserCount = 0;
     int numbOfSoldiers2 = 0;
+    int strategy = 0;
+    int strategy2 = 0;
+    int startingGoliathSize = 0;
+    int startingBattleCruiserSize = 0;
+
 
     // channels for communication
     static final int EnemyHQChannel = 0;
@@ -63,11 +68,16 @@ public class AlexeiStukov {
     static final int BattleCruiserArrived = 8;
     static final int BattleCruiserReadyForNewCommand = 9;
     static final int startBattleCruiserArray = 10;
+    static final int RushEnemyHQ = 11;
+    static final int RushEnemyPastrs = 12;
+    static final int GoliathConvertToThors = 13;
+    static final int GoliathNumber = 14;
     static final int endBattleCruiserArray = 59;
     static final int BattleCruiserInArray = 60;
     static final int GoliathReadyForCommand = 61;
     static final int GoliathNextLocation = 62;
     static final int GoliathCurrentLocation = 63;
+
     static final int PastrStartChannel = 10000;
 
 
@@ -78,11 +88,11 @@ public class AlexeiStukov {
     static final int[] AllInMilkArray = {THOR, THOR2, SCV2};
     static final int[] SmallSquadPastrAttackArray = {DURAN, GHOST, DURAN, GHOST, MARAUDER, THOR, GOLIATH};
     static final int[] SecondCornerArray = {THOR2, THOR2, THOR2, THOR2, THOR2};
-    static final int[] AllOutPastrRushArray = {GOLIATH, DURAN};
+    static final int[] AllOutPastrRushArray = {MARAUDER, DURAN};
     static final int[] Balanced1PastrDefendArray = {GOLIATH, GOLIATH, THOR, GOLIATH, GOLIATH};
     static final int[] Balanced2PastrDefendArray = {GOLIATH, THOR, GOLIATH, THOR2, GOLIATH, GOLIATH};
     static final int[] TimingPushArray = {GOLIATH, GOLIATH, GOLIATH, GOLIATH, GOLIATH, HELLION, THOR};
-    static final int[] ImmediatePastrTakeDownArray = {MARAUDER, GOLIATH};
+    static final int[] PastrDefendArray = {THOR, GOLIATH, THOR, GOLIATH};
 
     // these are our strategy possiblities
     static final int BlockadeRunner = 1;
@@ -94,7 +104,7 @@ public class AlexeiStukov {
     static final int Balanced1PastrDefend = 7;
     static final int Balanced2PastrDefend = 8;
     static final int TimingPush = 9;
-    static final int ImmediatePastrTakeDown = 10;
+    static final int PastrDefend = 10;
 
 
 
@@ -166,253 +176,163 @@ public class AlexeiStukov {
                         rc.setIndicatorString(1, ""+opponentMilk);
                         rc.setIndicatorString(2, ""+ourMilk);
 
+                        strategy2 = strategy;
 
-
-                        //if (opponentMilk > 7500000 &&)
-                        // added condition to test our battle cruiser
-                        /*
-                        if (battleCruiserCount < 9)
+                        /**
+                         * Here we will determine our current strategy against our opponent
+                         *
+                         * note: This strategy will always take place after we have put out our first 6 units which will be our standard start
+                         *
+                         */
+                        // in this case our opponent is probably beating us so we must take down their pastrs and quickly
+                        if (opponentMilk > 7500000 && Clock.getRoundNum() < 750)
                         {
-                            rc.broadcast(TroopType, BATTLECRUISER);
-                            battleCruiserCount++;
+                            // if we aren't almost to the win quantity then we need to respond
+                            if (ourMilk < 90000000 || ourPastrs.length == 0)
+                            {
+                                // in this case our enemy has built their pastrs by their hq so we rush it
+                                if (Utilities.MapLocationsNextToEnemyHQ(rc, enemyPastrs))
+                                {
+                                    rc.broadcast(RushEnemyHQ, 1);
+                                    strategy = Kamikaze;
+                                }
+                                else
+                                {
+                                    rc.broadcast(RushEnemyPastrs, 1);
+                                    strategy = AllOutPastrRush;
+                                }
+                            }
+                            // we can keep doing what we are
+                            else
+                            {
+                                // in this case we have one pastr to defend
+                                if (ourPastrs.length < 3)
+                                {
+                                    strategy = Balanced1PastrDefend;
+                                }
+                                else
+                                {
+                                    strategy = Balanced2PastrDefend;
+                                }
+                            }
                         }
-                        // there is a certain sequence which we will always do
-                        else */if (numbOfSoldiers < initialSpawnArray.length)
+                        // if the enemy has more milk than us and only has one pastr then they are probably going with a strategy where they defend one pastr
+                        else if (opponentMilk > ourMilk && enemyPastrs.length == 1)
+                        {
+                            // if we haven't gotten both corners set up then
+                            if (ourPastrs.length < 3)
+                            {
+                                strategy = SecondCorner;
+                            }
+                            else
+                            {
+                                strategy = AllInMilk;
+                            }
+                        }
+                        // if our enemy is swarming our base then we need to do a break out
+                        else if (FarAwayEnemies.length > 2 || (strategy == BlockadeRunner && rc.readBroadcast(BattleCruiserArrived) == 0))
+                        {
+                            strategy = BlockadeRunner;
+                        }
+                        // if our enemy has only a few pastrs then we should do a timing push
+                        else if (enemyPastrs.length < 3 && enemyPastrs.length > 0)
+                        {
+                            strategy = TimingPush;
+                        }
+                        // if our enemey has lots of pastrs we should send out small groups to go around killing them
+                        else if (enemyPastrs.length > 2)
+                        {
+                            strategy = SmallSquadPastrAttack;
+                        }
+                        // in this case our opponent has no pastrs up
+                        else
+                        {
+                            if (opponentMilk > ourMilk || ourMilk < 2500000)
+                            {
+                                strategy = TimingPush;
+                                rc.broadcast(GoliathConvertToThors, 1);
+                            }
+                            else if (ourPastrs.length > 1)
+                            {
+                                strategy = PastrDefend;
+                            }
+                            else
+                            {
+                                strategy = BlockadeRunner;
+                            }
+
+                        }
+
+                        if (strategy == strategy2) {}
+                        else
+                        {
+                            numbOfSoldiers2 = 0;
+                        }
+
+
+
+                        if (numbOfSoldiers < initialSpawnArray.length)
                         {
                             rc.broadcast(TroopType, initialSpawnArray[numbOfSoldiers]);
                         }
-                        // here we saved information about what our opponent does
-                        else if (teamMemory[0] == 1)
-                        {
-                        }
-
-                        // here we build our first Goliath task force which we will swell in size as time goes on
-                        else if (numbOfSoldiers < (initialSpawnArray.length + 5))
-                        {
-                            rc.broadcast(TroopType, GOLIATH);
-                        }
-                        // we have done our initial set up so now we will determine our strategy
                         else
                         {
-                            // if our enemies are swarming our hq then we need to build a battlecruiser to kill them
-                            if (FarAwayEnemies.length > 2 && battleCruiserCount < 9)
+                            if (strategy == BlockadeRunner)
                             {
-                                rc.broadcast(TroopType, BATTLECRUISER);
-                                battleCruiserCount++;
+                                rc.broadcast(TroopType, BlockadeRunnerArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
                             }
-                            else if (enemyPastrs.length == 0)
+                            else if (strategy == Kamikaze)
                             {
-                                // we will alternate between defending our pastr and gathering an army
-                                if (numbOfSoldiers % 3 == 0)
-                                {
-                                    rc.broadcast(TroopType, THOR);
-                                }
-                                else
-                                {
-                                    rc.broadcast(TroopType, GOLIATH);
-                                }
+                                rc.broadcast(TroopType, KamikazeArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
                             }
-                            else if (enemyPastrs.length < 3)
+                            else if (strategy == AllInMilk)
                             {
-                                // in this case our opponent has built their pastrs close to their
-                                if (Utilities.MapLocationsNextToEnemyHQ(rc, enemyPastrs))
-                                {
-                                    // eventually we should set up a noise tower to keep cows away from their pastr
-
-                                }
-                                // if our pastr is under attack then we send out goliaths to take out theirs
-                                else if (Utilities.PastrUnderAttack(rc))
-                                {
-
-                                }
-                                // other wise we should set up more pastr and out milk the enemy
-                                else
-                                {
-
-                                }
+                                rc.broadcast(TroopType, AllInMilkArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
                             }
-                            // our enemy has built tons of pastr which we must destroy
+                            else if (strategy == SmallSquadPastrAttack)
+                            {
+                                rc.broadcast(TroopType, SmallSquadPastrAttackArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                            }
+                            else if (strategy == SecondCorner)
+                            {
+                                rc.broadcast(TroopType, SecondCornerArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                            }
+                            else if (strategy == AllOutPastrRush)
+                            {
+                                rc.broadcast(TroopType, AllOutPastrRushArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                            }
+                            else if (strategy == Balanced1PastrDefend)
+                            {
+                                rc.broadcast(TroopType, Balanced1PastrDefendArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                            }
+                            else if (strategy == Balanced2PastrDefend)
+                            {
+                                rc.broadcast(TroopType, Balanced2PastrDefendArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                            }
+                            else if (strategy == TimingPush)
+                            {
+                                rc.broadcast(TroopType, TimingPushArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                            }
                             else
                             {
-                                int numbOfPastrs = rc.readBroadcast(PastrStartChannel);
-                                int index = -1;
-                                if (numbOfSoldiers % 6 == 0)
-                                {
-                                    /*
-                                    if (numbOfPastrs > 0)
-                                    {
-                                        for (int j = 0; j < numbOfPastrs; j++)
-                                        {
-                                            int numbOfDefenders = rc.readBroadcast((PastrStartChannel + (j*5) + 2));
-                                            if (numbOfDefenders > 0 && numbOfDefenders < 5)
-                                            {
-                                                rc.broadcast(TroopType, THOR);
-                                                index = j;
-                                            }
-                                        }
-                                        if (index == -1)
-                                        {
-                                            rc.broadcast(TroopType, THOR);
-                                        }
-                                    }
-                                    */
-                                    rc.broadcast(TroopType, THOR);
-                                }
-                                else
-                                {
-                                    rc.broadcast(TroopType, GOLIATH);
-                                }
+                                rc.broadcast(TroopType, PastrDefendArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
                             }
-                            if (numbOfSoldiers % 6 == 1 || numbOfSoldiers == 11)
-                            {
-                                rc.broadcast(GoliathOnline, 1);
-                            }
+                            numbOfSoldiers2++;
                         }
-                        Utilities.SpawnSoldiers(rc);
-                        numbOfSoldiers++;
 
-                        if (battleCruiserCount > 8)
+                        numbOfSoldiers++;
+                        Utilities.SpawnSoldiers(rc);
+
+                        // these tell our troops to move forward when they have collected
+                        if (rc.readBroadcast(BattleCruiserNumber) > startingBattleCruiserSize)
                         {
                             rc.broadcast(BattleCruiserArrived, 1);
                         }
 
-                        // after spawing soldiers we tell them what to be
-                        /*
-
-                        if (numbOfSoldiers == 0)
+                        if (rc.readBroadcast(GoliathNumber) > startingGoliathSize)
                         {
-                            rc.broadcast(1, DURAN);
-                            //ghostSendOuts++;
-                            // for now we broadcast 0 other soldiers going with Duran
-                            rc.broadcast(2, ghostSendOuts);
-                            rc.broadcast(4, 0);
+                            rc.broadcast(GoliathOnline, 1);
                         }
-                        else if (numbOfSoldiers  <= (ghostSendOuts))
-                        {
-                            rc.broadcast(1, GHOST);
-                            // reset Goliath squad
-                            rc.broadcast(3, 0);
-                        }
-                        // we output 2 goliaths to  keep base from being overwhelmed
-                        else if (numbOfSoldiers == ghostSendOuts+2)
-                        {
-                            rc.broadcast(1, GOLIATH);
-                        }
-                        // now we will output our main milk source
-                        else if (numbOfSoldiers == ghostSendOuts+3 && !putUpDistractor)
-                        {
-                            rc.broadcast(1, SUPPLY_DEPOT);
-                            rc.spawn(rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite());
-                        }
-                        else if (numbOfSoldiers == ghostSendOuts+4 && !putUpMule)
-                        {
-                            rc.broadcast(1, MULECALLDOWN);
-                        }
-                        else if (numbOfSoldiers == ghostSendOuts+5 && !putUpSensorTower)
-                        {
-                            rc.broadcast(1, SENSORTOWER);
-                        }
-                        else if (numbOfSoldiers < ghostSendOuts+7)
-                        {
-                            rc.broadcast(1, MARINES);
-                        }
-                        else
-                        {
-                            rc.broadcast(1, GOLIATH);
-                            putUpDistractor = true;
-                            putUpSensorTower = true;
-                            putUpMule = true;
-                        }
-                        if ((numbOfSoldiers != ghostSendOuts+1) || putUpDistractor)
-                        {
-                            Utilities.SpawnSoldiers(rc);
-                        }
-                        numbOfSoldiers++;
-                        if (firstRound)
-                        {
-                            if (((numbOfSoldiers - ghostSendOuts) - 5) > GOLIATH_SIZE)
-                            {
-                                rc.broadcast(3, 5);
-                                numbOfSoldiers = 1;
-                            }
-                        }
-                        else
-                        {
-                            if (((numbOfSoldiers - ghostSendOuts) - 2) > GOLIATH_SIZE)
-                            {
-                                rc.broadcast(3, 5);
-                                numbOfSoldiers = 1;
-                            }
-                        }
-                        */
-
-
-                        //rc.broadcast(1, HELLION);
-                        /*
-                        if (numbOfSoldiers % 8 == 0 && numbOfSoldiers > 0)
-                        {
-                            rc.broadcast(BattleCruiserArrived, 1);
-                        }
-                        else if (numbOfSoldiers % 8 == 1)
-                        {
-                            rc.broadcast(BattleCruiserArrived, 0);
-                        }
-
-                        rc.broadcast(TroopType, BATTLECRUISER);
-                        numbOfSoldiers++;
-
-
-                        Utilities.SpawnSoldiers(rc);
-                        */
-
-
-
-                        /*
-                        if (!thorUp)
-                        {
-                            if (numbOfSoldiers < 5)
-                            {
-                                numbOfSoldiers++;
-                                Utilities.SpawnSoldiers(rc);
-                                rc.broadcast(TroopType, THOR);
-                            }
-                            else
-                            {
-                                thorUp = true;
-                                numbOfSoldiers = 3;
-                            }
-                        }
-                        else if (numbOfSoldiers == 0)
-                        {
-                            Utilities.SpawnSoldiers(rc);
-                            rc.broadcast(TroopType, DURAN);
-                            //ghostSendOuts++;
-                            // for now we broadcast 0 other soldiers going with Duran
-                            //rc.broadcast(2, ghostSendOuts);
-                            //rc.broadcast(4, 0);
-                            numbOfSoldiers++;
-                        }
-                        else if (numbOfSoldiers <= ghostSendOuts)
-                        {
-                            Utilities.SpawnSoldiers(rc);
-                            rc.broadcast(TroopType, GHOST);
-                            // reset Goliath squad
-                            //rc.broadcast(3, 0);
-                            numbOfSoldiers++;
-                        }
-                        else
-                        {
-                            Utilities.SpawnSoldiers(rc);
-                            rc.broadcast(TroopType, GOLIATH);
-                            numbOfSoldiers++;
-                        }
-
-                        if (((numbOfSoldiers - ghostSendOuts)) > GOLIATH_SIZE)
-                        {
-                            //rc.broadcast(3, 5);
-                            numbOfSoldiers = 1;
-                        }
-                        */
                     }
                 }
                 catch (Exception e)

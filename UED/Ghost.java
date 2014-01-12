@@ -41,7 +41,7 @@ public class Ghost
         }
         */
 
-        target = Utilities.spotOfSensorTower(rc);
+        target = Utilities.spotOfSensorTower(rc, true);
         Direction dir = target.directionTo(rc.senseEnemyHQLocation());
 
         for (int i = 0; i < 5; i++)
