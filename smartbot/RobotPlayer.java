@@ -1,6 +1,5 @@
 package smartbot;
 
-import trollbot.TrollTower;
 import battlecode.common.*;
 
 public class RobotPlayer
@@ -45,13 +44,13 @@ public class RobotPlayer
 					}
 					else if(type == SmartHQ.MULE)
 					{
-						new MULE(rc).run();
+						new SupplyDepot(rc).run();
 					}
 					else if(type == SmartHQ.TOWER)
 					{
-						new SmartTower(rc).run();
+						new HQTower(rc).run();
 					}
-					else if(type == SmartHQ.SCOUT)
+					else if(type == SmartHQ.TROLL)
 					{
 						new Scout(rc).run();
 					}

@@ -46,21 +46,23 @@ public class SmartHQ
 				{
 					if(bots == currentStrat.length)
 					{
-						bots = 0;
+						//bots = 0;
 						currentStrat = a.getStrat();
 					}
-					
-					rc.broadcast(0, currentStrat[bots]);
-					Utilities.SpawnSoldiers(rc);
-					bots++;
-					if(currentStrat[bots] == GOLIATH)
+					else
 					{
-						goliaths++;
-					}
-					if(goliaths >= NUMGOLIATH)
-					{
-						rc.broadcast(3, 5);
-						goliaths = 0;
+						rc.broadcast(0, currentStrat[bots]);
+						Utilities.SpawnSoldiers(rc);
+						bots++;
+						if(currentStrat[bots] == GOLIATH)
+						{
+							goliaths++;
+						}
+						if(goliaths >= NUMGOLIATH)
+						{
+							rc.broadcast(3, 5);
+							goliaths = 0;
+						}
 					}
 				}
 			}
