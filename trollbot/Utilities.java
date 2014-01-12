@@ -1,4 +1,4 @@
-package smartbot;
+package trollbot;
 
 /**
  * Created by fredkneeland on 1/7/14.

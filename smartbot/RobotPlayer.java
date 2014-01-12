@@ -1,5 +1,6 @@
 package smartbot;
 
+import trollbot.TrollTower;
 import battlecode.common.*;
 
 public class RobotPlayer

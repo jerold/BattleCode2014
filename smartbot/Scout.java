@@ -29,23 +29,30 @@ public class Scout
 		{
 			for(int k = 0; k < pastrs.length; k++)
 			{
-				for(int a = 0; a < distAround; a++)
+				if(Utilities.MapLocationNextToEnemyHQ(rc, pastrs[k]))
 				{
-					for(int t = 0; t < distAround; t++)
+				}
+				else
+				{
+					for(int a = 0; a < distAround; a++)
 					{
-						cows[a][t] = 0;
+						for(int t = 0; t < distAround; t++)
+						{
+							cows[a][t] = 0;
+						}
 					}
-				}
-				cowTotal = 0;
-				soldierTotal = 0;
-				towerTotal = 0;
-				for(int a = 1; a <= 1; a++)
-				{
-					goToCorner(k);
+					cowTotal = 0;
+					soldierTotal = 0;
+					towerTotal = 0;
+					goToPastr(k);
 					fillInfo(k);
+					if(soldierTotal == 0)
+					{
+						Utilities.MoveMapLocation(rc, pastrs[k], false);
+					}
+					interpret();
+					broadcastInfo(k);
 				}
-				interpret();
-				broadcastInfo(k);
 			}
 			
 			pastrs = rc.sensePastrLocations(rc.getTeam().opponent());
@@ -53,7 +60,7 @@ public class Scout
 	}
 	
 	//Goes to whichever corner indicated as best as it can without being seen.
-	private void goToCorner( int pastr)
+	private void goToPastr(int pastr)
 	{
 		MapLocation target;
 		target = pastrs[pastr];
@@ -65,7 +72,7 @@ public class Scout
 			target = target.add(toTarget.opposite());
 		}
 		
-		Utilities.MoveMapLocation(rc, target, true);
+		Utilities.MoveMapLocation(rc, target, false);
 	}
 	
 	//Takes the info to put in the array given which corner it is on.
