@@ -24,6 +24,7 @@ public class RobotPlayer {
 	static final int ATTACKER = 2;
 	static final int GUARD = 3;
 	static MapLocation[] roads = new MapLocation[100];
+	static MapLocation[] tempRoads = new MapLocation[100];
 	static MapLocation traveledOn;
 	static boolean initializeRoads = false;
 	static MapLocation cRoad;
@@ -93,7 +94,7 @@ public class RobotPlayer {
 			int roadLocation = rc.readBroadcast(1);
 			if(Basic.Utilities.fightMode(rc)){
 				
-			}
+			} 
 			else if(onRoad == false){
 				MapLocation road = Basic.Utilities.convertIntToMapLocation(roadLocation);
 				Direction dir = rc.getLocation().directionTo(road);
@@ -105,22 +106,50 @@ public class RobotPlayer {
 				if(rc.senseTerrainTile(rc.getLocation()) == TerrainTile.ROAD){
 					onRoad = true;
 				}
-			}
+			} 
 			else{	
-				Direction findNext = rc.getLocation().directionTo(rc.getLocation().add(Direction.NORTH));
-				MapLocation search = rc.getLocation().add(findNext);
-				while(rc.senseTerrainTile(search)!=(TerrainTile.ROAD)){
-					findNext = findNext.rotateLeft();
-					search = rc.getLocation().add(findNext);
-				}
-				if(findNext != Direction.OMNI && findNext != Direction.NONE){
-					if(rc.canMove(findNext) && rc.getLocation().add(findNext) != traveledOn){
-						traveledOn = rc.getLocation();
-						rc.move(findNext);
+				MapLocation fRoad = rc.getLocation();
+				int tempRoadsIndex = 0;
+				for(int i = rc.getLocation().x - 5; i < rc.getLocation().x + 5; i++){//For all X values
+					for(int j = rc.getLocation().y - 5; j < rc.getLocation().y + 5; j++){//For all Y values
+						MapLocation current = new MapLocation(i,j);
+						if(rc.senseTerrainTile(current).equals(TerrainTile.ROAD)){
+							tempRoads[tempRoadsIndex] = current;
+							tempRoadsIndex++;
+						}
 					}
 				}
-
-				
+				if(tempRoads[0] != null){//tests if tempRoads[] is empty
+					fRoad = tempRoads[0];
+				}
+				for(int k = 0; k < tempRoadsIndex; k++){//finds the farthest road location from the current soldier, that is also towards the target destination
+					MapLocation current = tempRoads[k];
+					if(current.distanceSquaredTo(rc.getLocation()) > fRoad.distanceSquaredTo(rc.getLocation()) && current.distanceSquaredTo(target) < fRoad.distanceSquaredTo(target)){
+						fRoad = current;
+					}
+				}
+				if(rc.getLocation() == fRoad){//Leave the road and go to the target destination
+					Direction diverge = rc.getLocation().directionTo(target);
+					if(diverge!= Direction.OMNI && diverge != Direction.NONE){
+						if(rc.canMove(diverge)){
+							rc.move(diverge);
+						}
+					}
+				}
+				else{
+					Direction findNext = rc.getLocation().directionTo(rc.getLocation().add(Direction.NORTH));
+					MapLocation search = rc.getLocation().add(findNext);
+					while(rc.senseTerrainTile(search)!=(TerrainTile.ROAD) && rc.getLocation().add(findNext) != traveledOn){
+						findNext = findNext.rotateLeft();
+						search = rc.getLocation().add(findNext);
+					}
+					if(findNext != Direction.OMNI && findNext != Direction.NONE){
+						if(rc.canMove(findNext) && rc.getLocation().add(findNext) != traveledOn){
+							traveledOn = rc.getLocation();
+							rc.move(findNext);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -155,7 +184,7 @@ public class RobotPlayer {
 				for(int i = 0; i < 7; i++){
 					spawnDir = spawnDir.rotateLeft();
 					if(rc.canMove(spawnDir)){
-						if(rc.isActive()){
+						if(rc.isActive() && rc.senseRobotCount() <=25){
 							rc.spawn(spawnDir);
 							soldiers++;
 						}
