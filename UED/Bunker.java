@@ -1,6 +1,5 @@
 package UED;
 
-import DeepBlue.Utilities;
 import battlecode.common.Clock;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
