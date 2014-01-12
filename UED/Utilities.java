@@ -30,8 +30,9 @@ public class Utilities
     static final int GoliathReadyForCommand = 61;
     static final int GoliathNextLocation = 62;
     static final int GoliathCurrentLocation = 63;
-    static final int PastrStartChannel = 10000;
 
+    static final int startPastrChannels = 10000;
+    static final int PastrDetailCount = 5; // [LastActiveRound, DefenderCount, EnemyCount, CowCount, PastrLocation]
 
     public static boolean BattleCruiserReady(RobotController rc)
     {
@@ -80,13 +81,13 @@ public class Utilities
     {
         try
         {
-            int numbOfPastrs = rc.readBroadcast(PastrStartChannel);
+            int numbOfPastrs = rc.readBroadcast(startPastrChannels);
 
             if (numbOfPastrs > 0)
             {
                 for (int j = 0; j < numbOfPastrs; j++)
                 {
-                    int numbOfAttackers = rc.readBroadcast((PastrStartChannel + (j*5) + 3));
+                    int numbOfAttackers = rc.readBroadcast((startPastrChannels + (j*5) + 3));
                     if (numbOfAttackers > 0 && numbOfAttackers < 5)
                     {
                         return true;
@@ -141,6 +142,112 @@ public class Utilities
         	e.printStackTrace();
         }
     }
+
+    //================================================================================
+    // PASTR Communication Methods
+    //================================================================================
+
+    public static int[] getDetailsForPastr(RobotController rc)
+    {
+        int pastrNumber = pastrNumberFromId(rc);
+        return getDetailsForPastrNumber(rc, pastrNumber);
+    }
+
+    public static int[] getDetailsForPastrNumber(RobotController rc, int pastrNumber)
+    {
+        int pastrDetails[] = new int[PastrDetailCount];
+        for (int i = 0; i < PastrDetailCount; i++)
+            pastrDetails[i] = -1;
+        if (pastrNumber >= 0) {
+            try {
+                int pastrCount = rc.readBroadcast(startPastrChannels);
+                for (int i = 0; i < PastrDetailCount; i++) {
+                    pastrDetails[i] = rc.readBroadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+i);
+                }
+            } catch (Exception e) {}
+        }
+        return pastrDetails;
+    }
+
+    public static void setDetailsForPastr(RobotController rc, int[] details)
+    {
+        System.out.print("Round:          " + details[0]);
+        System.out.print("Defender Count: " + details[1]);
+        System.out.print("Enemy Count:    " + details[2]);
+        System.out.print("Cow Count:      " + details[3]);
+        System.out.print("Location:       " + details[4]);
+
+        int pastrNumber = pastrNumberFromId(rc);
+        setDetailsForPastrNumber(rc, pastrNumber, details);
+    }
+
+    public static void setDetailsForPastrNumber(RobotController rc, int pastrNumber, int[] details)
+    {
+        if (details.length != PastrDetailCount)
+            return;
+
+        try {
+            int pastrCount = rc.readBroadcast(startPastrChannels);
+            if (pastrNumber >= 0) {
+                for (int i = 0; i < PastrDetailCount; i++) {
+                    rc.broadcast(startPastrChannels+1+pastrCount+PastrDetailCount*pastrNumber+i, details[i]);
+                }
+            } else {
+                addDetailsForPastrToChannels(rc, pastrCount, details);
+            }
+        } catch (Exception e) {}
+    }
+
+    public static int pastrNumberFromId(RobotController rc)
+    {
+        try {
+            int pastrCount = rc.readBroadcast(startPastrChannels);
+            for (int i = 0; i < pastrCount; i++) {
+                int idAtIndex = rc.readBroadcast(1+startPastrChannels+i);
+                if (idAtIndex == rc.getRobot().getID())
+                    return i;
+            }
+        } catch (Exception e) {}
+        return -1;
+    }
+
+    public static void addDetailsForPastrToChannels(RobotController rc, int pastrCount, int[] details)
+    {
+        if (details.length != PastrDetailCount)
+            return;
+
+        int newPastrCount = pastrCount + 1;
+        try {
+            rc.broadcast(startPastrChannels, newPastrCount);
+            rc.broadcast(startPastrChannels+newPastrCount, rc.getRobot().getID());
+            setDetailsForPastrNumber(rc, newPastrCount, details);
+        } catch (Exception e) {}
+    }
+
+    public static void removeDetailsForPastrToChannels(RobotController rc, int pastrCount, int pastrNumber)
+    {
+        int newPastrCount = pastrCount - 1;
+        try {
+            for (int i = 0; i < pastrCount-pastrNumber; i++) {
+                int laterPastrId = rc.readBroadcast(startPastrChannels+1+pastrNumber+i+1);
+                int[] laterPastrDetails = getDetailsForPastrNumber(rc, pastrNumber+i+1);
+                rc.broadcast(startPastrChannels+1+pastrNumber+i, laterPastrId);
+                setDetailsForPastrNumber(rc, pastrNumber+i, laterPastrDetails);
+            }
+            rc.broadcast(startPastrChannels, newPastrCount);
+        } catch (Exception e) {}
+    }
+
+    public static boolean pastrIsResponsive(int lastRound, int round)
+    {
+        if (round - lastRound > 10)
+            return false;
+        return true;
+    }
+
+    //================================================================================
+    // Helper Methods
+    //================================================================================
 
     public static void MoveDirection(RobotController rc, Direction dir, boolean sneak)
     {

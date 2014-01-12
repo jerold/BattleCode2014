@@ -1,9 +1,9 @@
-package DeepBlue;
+package UED;
 
+import DeepBlue.Utilities;
 import battlecode.common.Clock;
-import battlecode.common.RobotController;
 import battlecode.common.Robot;
-import battlecode.common.RobotType;
+import battlecode.common.RobotController;
 
 
 /**
@@ -32,11 +32,11 @@ public class Bunker {
                     details[0] = Clock.getRoundNum();
 
                     Robot[] friendly = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-                    Robot[] friendlyTroops = Utilities.findSoldiers(rc, friendly);
+                    Robot[] friendlyTroops = DeepBlue.Utilities.findSoldiers(rc, friendly);
                     details[1] = friendly.length;
 
                     Robot[] enemy = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-                    Robot[] enemyTroops = Utilities.findSoldiers(rc, enemy);
+                    Robot[] enemyTroops = DeepBlue.Utilities.findSoldiers(rc, enemy);
                     details[2] = enemyTroops.length;
 
                     double cowCount = 0.0;
@@ -47,7 +47,7 @@ public class Bunker {
                     }
                     details[3] = (int)cowCount;
 
-                    details[4] = Utilities.convertMapLocationToInt(rc.getLocation());
+                    details[4] = DeepBlue.Utilities.convertMapLocationToInt(rc.getLocation());
 
                     Utilities.setDetailsForPastr(rc, details);
                 }

@@ -1,5 +1,6 @@
 package UED;
 
+import DeepBlue.Bunker;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
@@ -59,7 +60,11 @@ public class RobotPlayer
             {
                 new SensorTower(rc).run();
             }
-            if (rc.getType() == RobotType.SOLDIER)
+            else if(rc.getType() == RobotType.PASTR)
+            {
+                new Bunker(rc).run();
+            }
+            else if (rc.getType() == RobotType.SOLDIER)
             {
                 try
                 {

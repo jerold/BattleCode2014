@@ -53,7 +53,7 @@ public class Utilities
     {
         try
         {
-            if (rc.isActive() && rc.getType() == RobotType.HQ)
+            if (rc.isActive() && rc.getType() == RobotType.HQ && (rc.senseRobotCount() < 25))
             {
                 Direction toEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
                 if (rc.senseObjectAtLocation(rc.getLocation().add(toEnemy)) == null) {}
@@ -87,8 +87,7 @@ public class Utilities
             }
         } catch (Exception e)
         {
-        	e.printStackTrace();
-            System.out.println("Utility Exception");
+            e.printStackTrace();
         }
     }
 
