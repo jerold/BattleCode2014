@@ -16,7 +16,7 @@ public class HQCircle
 	
 	public void run()
 	{
-		Utilities.MoveMapLocation(rc, rc.senseEnemyHQLocation().add(Direction.SOUTH, 3), true);
+		Utilities.MoveMapLocation(rc, rc.senseEnemyHQLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), 7), true);
 		while(true)
 		{
 			try

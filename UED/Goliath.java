@@ -33,6 +33,7 @@ public class Goliath
 	GameObject leader;
 	MapLocation target;
     MapLocation newTarget;
+    int waitTime = 0;
 
     // channels for communication
     static final int EnemyHQChannel = 0;
@@ -49,6 +50,7 @@ public class Goliath
     static final int BattleCruiserInArray = 60;
     static final int GoliathReadyForCommand = 61;
     static final int GoliathNextLocation = 62;
+    static final int GoliathCurrentLocation = 63;
     static final int PastStartChannel = 10000;
 	
 	public Goliath(RobotController rc)
@@ -67,6 +69,18 @@ public class Goliath
 			direction = directions[rand.nextInt(8)];
 			targetZone.add(direction);
 		}
+
+        try
+        {
+            if (rc.readBroadcast(GoliathNextLocation) == 0)
+            {
+                rc.broadcast(GoliathNextLocation, Utilities.convertMapLocationToInt(targetZone));
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            System.out.println("Goliath Exception");
+        }
 	}
 	
 	public void run()
@@ -114,21 +128,29 @@ public class Goliath
                         }
                         else
                         {
-                            // if we have low health either we go nuke or we slip away to build a pastr
                             if (Utilities.fightMode(rc))
                             {
-
                             }
                             else if (newTarget == null)
                             {
                                 newTarget = Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation));
                             }
-                            else if (rc.getLocation().isAdjacentTo(newTarget))
+                            else if (rc.getLocation().isAdjacentTo(newTarget) || rc.getLocation().equals(newTarget))
                             {
                                 if (newTarget.equals(Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation))))
                                 {
-
+                                    rc.broadcast(GoliathReadyForCommand, 1);
                                 }
+                                else
+                                {
+                                    newTarget = Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation));
+                                    waitTime = 0;
+                                }
+                            }
+                            else
+                            {
+                                waitTime = 0;
+                                Utilities.MoveMapLocation(rc, newTarget, false);
                             }
 
                             /*
