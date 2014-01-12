@@ -21,11 +21,17 @@ public class Utilities
     static final int GoliathOnline = 4;
     static final int GhostReady = 5;
     static final int BattleCruiserLoc = 6;
-    static final int BattleCruiserLoc2 = 7;
+    static final int BattleCruiserNumber = 7;
     static final int BattleCruiserArrived = 8;
-    static final int startBattleCruiserArray = 9;
+    static final int BattleCruiserReadyForNewCommand = 9;
+    static final int startBattleCruiserArray = 10;
     static final int endBattleCruiserArray = 59;
     static final int BattleCruiserInArray = 60;
+    static final int GoliathReadyForCommand = 61;
+    static final int GoliathNextLocation = 62;
+    static final int GoliathCurrentLocation = 63;
+    static final int PastrStartChannel = 10000;
+
 
     public static boolean BattleCruiserReady(RobotController rc)
     {
@@ -44,11 +50,61 @@ public class Utilities
         return false;
     }
 
+    public static boolean MapLocationsNextToEnemyHQ(RobotController rc, MapLocation[] enemyPastrs)
+    {
+        int adjacent = 0;
+        int faraway = 0;
+        MapLocation enemyHQ = rc.senseEnemyHQLocation();
+
+        for (int i = 0; i < enemyPastrs.length; i++)
+        {
+            if (enemyPastrs[i].distanceSquaredTo(enemyHQ) < 10)
+            {
+                adjacent ++;
+            }
+            else
+            {
+                faraway++;
+            }
+        }
+
+        if (adjacent > faraway)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean PastrUnderAttack(RobotController rc)
+    {
+        try
+        {
+            int numbOfPastrs = rc.readBroadcast(PastrStartChannel);
+
+            if (numbOfPastrs > 0)
+            {
+                for (int j = 0; j < numbOfPastrs; j++)
+                {
+                    int numbOfAttackers = rc.readBroadcast((PastrStartChannel + (j*5) + 3));
+                    if (numbOfAttackers > 0 && numbOfAttackers < 5)
+                    {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public static void SpawnSoldiers(RobotController rc)
     {
         try
         {
-            if (rc.isActive() && rc.getType() == RobotType.HQ)
+            if (rc.isActive() && rc.getType() == RobotType.HQ && (rc.senseRobotCount() < 25))
             {
                 Direction toEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
                 if (rc.senseObjectAtLocation(rc.getLocation().add(toEnemy)) == null) {}
@@ -679,6 +735,7 @@ public class Utilities
             nearByEnemies4 = nearByEnemies3;
             nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
             nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
+            nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
 
             // here we only do necessary scans to reduce bitcode usage
 
@@ -1890,7 +1947,7 @@ public class Utilities
                 if (rc.readBroadcast(BattleCruiserLoc) == 0)
                 {
                     amLeader = true;
-                    rc.broadcast(BattleCruiserLoc2, 0);
+                    rc.broadcast(BattleCruiserLoc, 0);
                 }
                 else
                 {
@@ -1899,15 +1956,15 @@ public class Utilities
             }
             else
             {
-                currentChannel = BattleCruiserLoc2;
-                if (rc.readBroadcast(BattleCruiserLoc2) == 0)
+                currentChannel = BattleCruiserLoc;
+                if (rc.readBroadcast(BattleCruiserLoc) == 0)
                 {
                     amLeader = true;
                     rc.broadcast(BattleCruiserLoc, 0);
                 }
                 else
                 {
-                    target = convertIntToMapLocation(rc.readBroadcast(BattleCruiserLoc2));
+                    target = convertIntToMapLocation(rc.readBroadcast(BattleCruiserLoc));
                 }
             }
 
