@@ -284,7 +284,7 @@ public class Utilities
                 	}
                 	else
                 	{
-                		rc.setIndicatorString(2, "Looking elswhere");
+                		//rc.setIndicatorString(2, "Looking elswhere");
                 		Direction dir2 = dir;
                 		MapLocation right;
                 		MapLocation left;
@@ -413,7 +413,7 @@ public class Utilities
 
                 			rc.yield();
                 		}
-                		rc.setIndicatorString(1, "Not trying to Avoid");
+                		//rc.setIndicatorString(1, "Not trying to Avoid");
                 	}
                 }
 
@@ -961,6 +961,25 @@ public class Utilities
             counter++;
         }
         return target;
+    }
+    
+    public static MapLocation findSoldiersCenterOfMass(RobotController rc, Robot[] gameObjects)
+    {
+        MapLocation com;
+        int x = 0;
+        int y = 0;
+        try {
+            for (int i = 0; i < gameObjects.length; i++)
+            {
+                MapLocation goLocation = rc.senseLocationOf(gameObjects[i]);
+                x += goLocation.x;
+                y += goLocation.y;
+            }
+            x = x/gameObjects.length;
+            y = y/gameObjects.length;
+        } catch (Exception e) {}
+        com = new MapLocation(x, y);
+        return com;
     }
 }
 

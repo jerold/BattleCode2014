@@ -11,11 +11,12 @@ public class SmartHQ
 	public static final int GHOST = 4;
 	public static final int MARINE = 5;
 	public static final int GOLIATH = 6;
+	public static final int SCOUT = 7;
 	private final int NUMGHOST = 2;
 	private final int NUMGOLIATH = 5;
-	private final int[] initial = {MULE, TOWER, MARINE, MARINE, DURAN, GHOST, GHOST, GOLIATH, GOLIATH, GOLIATH};
+	private final int[] initial = {SCOUT};
 	private final int[] defensive = {MARINE, MARINE, MARINE, GOLIATH};
-	private final int[] standard = {GOLIATH, GOLIATH, DURAN, GHOST, GHOST, MARINE};
+	private final int[] standard = {};
 	private final int[] offensive = {GOLIATH, GOLIATH, GOLIATH, DURAN, GHOST, GHOST};
 	
 	private int goliaths;

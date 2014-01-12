@@ -50,6 +50,10 @@ public class RobotPlayer
 					{
 						new SmartTower(rc).run();
 					}
+					else if(type == SmartHQ.SCOUT)
+					{
+						new Scout(rc).run();
+					}
 				}
 			}
 			catch(Exception e){}
