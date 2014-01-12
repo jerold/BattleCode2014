@@ -46,7 +46,8 @@ public class RobotPlayer
             {
                 try
                 {
-                    AlexeiStukov.run(rc);
+                    AlexeiStukov alexeiStukov = new AlexeiStukov((rc));
+                    alexeiStukov.run();
                 }
                 catch (Exception e)
                 {

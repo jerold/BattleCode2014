@@ -1,6 +1,5 @@
 package UED;
 
-import DeepBlue.Bunker;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 

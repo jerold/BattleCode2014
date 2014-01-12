@@ -22,13 +22,17 @@ public class Utilities
     static final int GoliathOnline = 4;
     static final int GhostReady = 5;
     static final int BattleCruiserLoc = 6;
-    static final int BattleCruiserLoc2 = 7;
+    static final int BattleCruiserNumber = 7;
     static final int BattleCruiserArrived = 8;
-    static final int startBattleCruiserArray = 9;
+    static final int BattleCruiserReadyForNewCommand = 9;
+    static final int startBattleCruiserArray = 10;
     static final int endBattleCruiserArray = 59;
     static final int BattleCruiserInArray = 60;
+    static final int GoliathReadyForCommand = 61;
+    static final int GoliathNextLocation = 62;
+    static final int GoliathCurrentLocation = 63;
 
-    static final int startPastrChannels = 1000;
+    static final int startPastrChannels = 10000;
     static final int PastrDetailCount = 5; // [LastActiveRound, DefenderCount, EnemyCount, CowCount, PastrLocation]
 
     public static boolean BattleCruiserReady(RobotController rc)
@@ -44,7 +48,56 @@ public class Utilities
         } catch (Exception e)
         {
             e.printStackTrace();
-            System.out.println("Utility Exception");
+        }
+        return false;
+    }
+
+    public static boolean MapLocationsNextToEnemyHQ(RobotController rc, MapLocation[] enemyPastrs)
+    {
+        int adjacent = 0;
+        int faraway = 0;
+        MapLocation enemyHQ = rc.senseEnemyHQLocation();
+
+        for (int i = 0; i < enemyPastrs.length; i++)
+        {
+            if (enemyPastrs[i].distanceSquaredTo(enemyHQ) < 10)
+            {
+                adjacent ++;
+            }
+            else
+            {
+                faraway++;
+            }
+        }
+
+        if (adjacent > faraway)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean PastrUnderAttack(RobotController rc)
+    {
+        try
+        {
+            int numbOfPastrs = rc.readBroadcast(startPastrChannels);
+
+            if (numbOfPastrs > 0)
+            {
+                for (int j = 0; j < numbOfPastrs; j++)
+                {
+                    int numbOfAttackers = rc.readBroadcast((startPastrChannels + (j*5) + 3));
+                    if (numbOfAttackers > 0 && numbOfAttackers < 5)
+                    {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
         }
         return false;
     }
@@ -87,99 +140,7 @@ public class Utilities
             }
         } catch (Exception e)
         {
-            e.printStackTrace();
-        }
-    }
-
-    public static void MoveDirection(RobotController rc, Direction dir, boolean sneak)
-    {
-        Direction newDir = Direction.NONE;
-        int counter = 1;
-        try
-        {
-            // here we do some checks to make sure that we don't throw any exceptions
-            if (rc.isActive())
-            {
-
-                if (dir != Direction.NONE && dir != Direction.OMNI)
-                {
-                    if (!rc.canMove(dir))
-                    {
-                        // now we loop through the other 7 directions to find one that works
-                        for (int i = 0; i < 7; i++)
-                        {
-                            newDir = dir;
-                            // first look right
-                            if (i % 2 == 0)
-                            {
-                                // now we rotate 45 right a certain numb of times
-                                for (int j = 0; j < counter; j++)
-                                {
-                                    newDir = newDir.rotateRight();
-                                }
-                            }
-                            // the look left
-                            else
-                            {
-                                // now we rotate 45 left a certain numb of times
-                                for (int j = 0; j < counter; j++)
-                                {
-                                    newDir = newDir.rotateLeft();
-                                }
-                                // now after we have looked both ways we update counter
-                                counter++;
-                            }
-                            // at end of for loop we check to see if we can move or if we need to keep looking
-                            if (rc.canMove(newDir))
-                            {
-                                i = 48;
-                            }
-                            // if we have gone through all our options and can't move then we will wait
-                            else if (i == 5 && !rc.canMove(newDir))
-                            {
-                                newDir = Direction.NONE;
-                            }
-                        }
-                    }
-                    // we are going to move in the direction of newDir and as we can move in direction dir we assign newDir to it
-                    else
-                    {
-                        newDir = dir;
-                    }
-
-                    if (newDir != Direction.NONE)
-                    {
-
-                        // now we decide if we are going to sneak or run
-                        if (sneak)
-                        {
-                            // another check to make sure we don't throw any exceptions
-                            if (rc.isActive() && rc.canMove(newDir))
-                            {
-                                rc.sneak(newDir);
-                            }
-                        }
-
-                        else
-                        {
-                            // another check to make sure we don't throw any exceptions
-                            if (rc.isActive() && rc.canMove(newDir))
-                            {
-                                rc.move(newDir);
-                            }
-                        }
-
-                    }
-
-                }
-
-            }
-        } catch (Exception e)
-        {
-            // tell the console we through an exception in utility object for debug purposes
-            System.out.println("Utility Exception");
-            e.printStackTrace();
-            //System.out.println(newDir);
+        	e.printStackTrace();
         }
     }
 
@@ -289,23 +250,94 @@ public class Utilities
     // Helper Methods
     //================================================================================
 
-    public static MapLocation findSoldiersCenterOfMass(RobotController rc, Robot[] gameObjects)
+    public static void MoveDirection(RobotController rc, Direction dir, boolean sneak)
     {
-        MapLocation com;
-        int x = 0;
-        int y = 0;
-        try {
-            for (int i = 0; i < gameObjects.length; i++)
+        Direction newDir = Direction.NONE;
+        int counter = 1;
+        try
+        {
+            // here we do some checks to make sure that we don't throw any exceptions
+            if (rc.isActive())
             {
-                MapLocation goLocation = rc.senseLocationOf(gameObjects[i]);
-                x += goLocation.x;
-                y += goLocation.y;
+
+                if (dir != Direction.NONE && dir != Direction.OMNI)
+                {
+                    if (!rc.canMove(dir))
+                    {
+                        // now we loop through the other 7 directions to find one that works
+                        for (int i = 0; i < 7; i++)
+                        {
+                            newDir = dir;
+                            // first look right
+                            if (i % 2 == 0)
+                            {
+                                // now we rotate 45 right a certain numb of times
+                                for (int j = 0; j < counter; j++)
+                                {
+                                    newDir = newDir.rotateRight();
+                                }
+                            }
+                            // the look left
+                            else
+                            {
+                                // now we rotate 45 left a certain numb of times
+                                for (int j = 0; j < counter; j++)
+                                {
+                                    newDir = newDir.rotateLeft();
+                                }
+                                // now after we have looked both ways we update counter
+                                counter++;
+                            }
+                            // at end of for loop we check to see if we can move or if we need to keep looking
+                            if (rc.canMove(newDir))
+                            {
+                                i = 48;
+                            }
+                            // if we have gone through all our options and can't move then we will wait
+                            else if (i == 5 && !rc.canMove(newDir))
+                            {
+                                newDir = Direction.NONE;
+                            }
+                        }
+                    }
+                    // we are going to move in the direction of newDir and as we can move in direction dir we assign newDir to it
+                    else
+                    {
+                        newDir = dir;
+                    }
+
+                    if (newDir != Direction.NONE)
+                    {
+
+                        // now we decide if we are going to sneak or run
+                        if (sneak)
+                        {
+                            // another check to make sure we don't throw any exceptions
+                            if (rc.isActive() && rc.canMove(newDir))
+                            {
+                                rc.sneak(newDir);
+                            }
+                        }
+
+                        else
+                        {
+                            // another check to make sure we don't throw any exceptions
+                            if (rc.isActive() && rc.canMove(newDir))
+                            {
+                                rc.move(newDir);
+                            }
+                        }
+
+                    }
+
+                }
+
             }
-            x = x/gameObjects.length;
-            y = y/gameObjects.length;
-        } catch (Exception e) {}
-        com = new MapLocation(x, y);
-        return com;
+        } catch (Exception e)
+        {
+            // tell the console we through an exception in utility object for debug purposes
+            e.printStackTrace();
+        }
     }
 
     public static Robot[] findSoldiers(RobotController rc, Robot[] gameObjects)
@@ -342,9 +374,7 @@ public class Utilities
         }  catch (Exception e)
         {
             // tell the console we through an exception in utility object for debug purposes
-            System.out.println("Utility Exception");
             e.printStackTrace();
-            //System.out.println(newDir);
         }
         return null;
     }
@@ -383,9 +413,7 @@ public class Utilities
         }  catch (Exception e)
         {
             // tell the console we through an exception in utility object for debug purposes
-            System.out.println("Utility Exception");
             e.printStackTrace();
-            //System.out.println(newDir);
         }
         return null;
     }
@@ -426,9 +454,7 @@ public class Utilities
         } catch (Exception e)
         {
             // tell the console we through an exception in utility object for debug purposes
-            System.out.println("Utility Exception");
             e.printStackTrace();
-            //System.out.println(newDir);
         }
         return null;
     }
@@ -471,6 +497,13 @@ public class Utilities
             {
                 if (rc.isActive())
                 {
+                    if (rc.getLocation().isAdjacentTo(target))
+                    {
+                        if (rc.senseObjectAtLocation(target) != null || rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+                        {
+                            break;
+                        }
+                    }
 
                     dir = rc.getLocation().directionTo(target);
                     newDir = Direction.NONE;
@@ -506,7 +539,6 @@ public class Utilities
                                 // another check to make sure we don't throw any exceptions
                                 if (rc.isActive() && rc.canMove(newDir))
                                 {
-                                    //System.out.println(newDir);
                                     rc.sneak(newDir);
                                 }
                             }
@@ -669,8 +701,6 @@ public class Utilities
                                 } catch (Exception e)
                                 {
                                     // tell the console we through an exception in utility object for debug purposes
-                                    //System.out.println("Utility Exception");
-                                    //System.out.println(e.toString());
                                     e.printStackTrace();
                                     rc.yield();
                                 }
@@ -681,7 +711,6 @@ public class Utilities
                                         for (int j = 0; j < (pastLocations.length-1); j++)
                                         {
                                             pastLocations[j] = pastLocations[j+1];
-                                            //System.out.println(pastLocations[j]);
                                         }
                                         // stick current local into array
                                         pastLocations[(pastLocations.length-1)] = rc.getLocation();
@@ -702,7 +731,6 @@ public class Utilities
                             for (int j = 0; j < (pastLocations.length-1); j++)
                             {
                                 pastLocations[j] = pastLocations[j+1];
-                                //System.out.println(pastLocations[j]);
                             }
                             // stick current local into array
                             pastLocations[(pastLocations.length-1)] = rc.getLocation();
@@ -713,9 +741,7 @@ public class Utilities
             catch (Exception e)
             {
                 // tell the console we through an exception in utility object for debug purposes
-                System.out.println("Utility Exception");
                 e.printStackTrace();
-                //System.out.println(e.toString());
 
             }
             rc.yield();
@@ -812,15 +838,24 @@ public class Utilities
             Robot[] nearByAllies2 = null;
             Robot[] nearByAllies3 = null;
 
-
             // simple shoot at an enemy if we see one will need to be improved later
             nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
             nearByEnemies4 = nearByEnemies3;
             nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
             nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
+            nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
 
             // here we only do necessary scans to reduce bitcode usage
-            if (nearByEnemies3.length > 0)
+
+            if (rc.getHealth() < 20)
+            {
+
+                SCV scv = new SCV(rc);
+                scv.run();
+                return true;
+
+            }
+            else if (nearByEnemies3.length > 0)
             {
                 nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
                 nearByAllies = findSoldiers(rc, nearByAllies);
@@ -930,6 +965,7 @@ public class Utilities
                     MapLocation enemySlot = rc.senseLocationOf(nearByEnemies2[0]);
                     nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
                     nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 9);
+                    GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
                     // if our brethern are in the field of action we must join them!
                     if (nearByAllies3.length > 0)
                     {
@@ -941,6 +977,10 @@ public class Utilities
                         {
                             fire(rc);
                         }
+                    }
+                    else if (nearByAllies4.length > (nearByEnemies2.length + 2))
+                    {
+                        MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
                     }
                     else if (nearByAllies2.length > 0)
                     {
@@ -957,6 +997,10 @@ public class Utilities
                                 fire(rc);
                             }
                         }
+                    }
+                    else if (nearByEnemies2.length == 1 && rc.getHealth() > (rc.senseRobotInfo(nearByEnemies2[0]).health + 10) && nearByEnemies3.length == 1)
+                    {
+                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
                     }
                     else
                     {
@@ -1302,7 +1346,6 @@ public class Utilities
                         spot = rc.getLocation().add(newDir);
                         for (int i = 0; i < nearByBots.length; i++)
                         {
-                            //System.out.println("entering for loop");
                             distancesToLocations[j] += spot.distanceSquaredTo(rc.senseLocationOf(nearByBots[i]));
                         }
                     }
@@ -1604,7 +1647,6 @@ public class Utilities
                                 // another check to make sure we don't throw any exceptions
                                 if (rc.isActive() && rc.canMove(newDir))
                                 {
-                                    //System.out.println(newDir);
                                     rc.sneak(newDir);
                                 }
                             }
@@ -1819,8 +1861,6 @@ public class Utilities
                                 {
                                     rc.setIndicatorString(0, "Catching Errors");
                                     // tell the console we through an exception in utility object for debug purposes
-                                    //System.out.println("Utility Exception");
-                                    //System.out.println(e.toString());
                                     e.printStackTrace();
                                     rc.yield();
                                 }
@@ -1829,7 +1869,6 @@ public class Utilities
                                     for (int j = 0; j < (pastLocations.length-1); j++)
                                     {
                                         pastLocations[j] = pastLocations[j+1];
-                                        //System.out.println(pastLocations[j]);
                                     }
                                     // stick current local into array
                                     pastLocations[(pastLocations.length-1)] = rc.getLocation();
@@ -1847,7 +1886,6 @@ public class Utilities
                         for (int j = 0; j < (pastLocations.length-1); j++)
                         {
                             pastLocations[j] = pastLocations[j+1];
-                            //System.out.println(pastLocations[j]);
                         }
                         // stick current local into array
                         pastLocations[(pastLocations.length-1)] = rc.getLocation();
@@ -1859,9 +1897,7 @@ public class Utilities
             {
                 rc.setIndicatorString(0, "Catching Errors");
                 // tell the console we through an exception in utility object for debug purposes
-                System.out.println("Utility Exception");
                 e.printStackTrace();
-                //System.out.println(e.toString());
                 rc.yield();
             }
         }
@@ -2024,7 +2060,7 @@ public class Utilities
                 if (rc.readBroadcast(BattleCruiserLoc) == 0)
                 {
                     amLeader = true;
-                    rc.broadcast(BattleCruiserLoc2, 0);
+                    rc.broadcast(BattleCruiserLoc, 0);
                 }
                 else
                 {
@@ -2033,15 +2069,15 @@ public class Utilities
             }
             else
             {
-                currentChannel = BattleCruiserLoc2;
-                if (rc.readBroadcast(BattleCruiserLoc2) == 0)
+                currentChannel = BattleCruiserLoc;
+                if (rc.readBroadcast(BattleCruiserLoc) == 0)
                 {
                     amLeader = true;
                     rc.broadcast(BattleCruiserLoc, 0);
                 }
                 else
                 {
-                    target = convertIntToMapLocation(rc.readBroadcast(BattleCruiserLoc2));
+                    target = convertIntToMapLocation(rc.readBroadcast(BattleCruiserLoc));
                 }
             }
 

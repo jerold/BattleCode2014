@@ -1,9 +1,8 @@
 package DeepBlue;
 
 import battlecode.common.Clock;
-import battlecode.common.RobotController;
 import battlecode.common.Robot;
-import battlecode.common.RobotType;
+import battlecode.common.RobotController;
 
 
 /**

@@ -2,7 +2,6 @@ package DeepBlue;
 
 import battlecode.common.Direction;
 import battlecode.common.MapLocation;
-import battlecode.common.Robot;
 import battlecode.common.RobotController;
 
 /**
@@ -46,11 +45,8 @@ public class Marines
             {
                 if (rc.isActive())
                 {
-                    Robot[] enemies = rc.senseNearbyGameObjects(Robot.class,10,rc.getTeam().opponent());
-                    Robot[] enemies2 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                     if (Utilities.fightMode(rc))
                     {
-
                     }
                     else if (rc.getLocation().equals(target))
                     {
@@ -58,7 +54,6 @@ public class Marines
                     }
                     else if (!gotToTarget)
                     {
-
                         Utilities.MoveMapLocation(rc, target, false);
                     }
                 }

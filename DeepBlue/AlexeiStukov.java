@@ -1,13 +1,8 @@
 package DeepBlue;
 
+import battlecode.common.*;
 
 import java.util.Random;
-
-import battlecode.common.GameObject;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
-import battlecode.common.*;
 
 /**
  * Created by fredkneeland on 1/7/14.
@@ -30,7 +25,7 @@ public class AlexeiStukov {
     static final int BATTLECRUISER = 10;
     static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
-    boolean putUpDistractor = false;
+     boolean putUpDistractor = false;
     static boolean putUpMule = false;
     static boolean putUpSensorTower = false;
     static boolean firstRound = true;
