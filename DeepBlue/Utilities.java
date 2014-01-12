@@ -212,6 +212,12 @@ public class Utilities
 
     public static void setDetailsForPastr(RobotController rc, int[] details)
     {
+        System.out.print("Round:          " + details[0]);
+        System.out.print("Defender Count: " + details[1]);
+        System.out.print("Enemy Count:    " + details[2]);
+        System.out.print("Cow Count:      " + details[3]);
+        System.out.print("Location:       " + details[4]);
+
         int pastrNumber = pastrNumberFromId(rc);
         setDetailsForPastrNumber(rc, pastrNumber, details);
     }
@@ -286,17 +292,20 @@ public class Utilities
 
     public static MapLocation findSoldiersCenterOfMass(RobotController rc, Robot[] gameObjects)
     {
-        MapLocation com = new MapLocation(0, 0);
+        MapLocation com;
+        int x = 0;
+        int y = 0;
         try {
             for (int i = 0; i < gameObjects.length; i++)
             {
                 MapLocation goLocation = rc.senseLocationOf(gameObjects[i]);
-                com.x += goLocation.x;
-                com.y += goLocation.y;
+                x += goLocation.x;
+                y += goLocation.y;
             }
-            com.x = com.x/gameObjects.length;
-            com.y = com.y/gameObjects.length;
+            x = x/gameObjects.length;
+            y = y/gameObjects.length;
         } catch (Exception e) {}
+        com = new MapLocation(x, y);
         return com;
     }
 

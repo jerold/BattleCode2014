@@ -58,7 +58,11 @@ public class RobotPlayer
             {
                 new SensorTower(rc).run();
             }
-            if (rc.getType() == RobotType.SOLDIER)
+            else if(rc.getType() == RobotType.PASTR)
+            {
+                new Bunker(rc).run();
+            }
+            else if (rc.getType() == RobotType.SOLDIER)
             {
                 try
                 {
