@@ -29,6 +29,7 @@ public class RobotPlayer
     static final int CENTERMULE = 15;
     static final int CENTERTOWER = 16;
     static final int HQTOWER = 17;
+    static final int BANSHEE = 18;
 
     // here are all of the channels
     // channels for communication
@@ -171,6 +172,11 @@ public class RobotPlayer
                         {
                             HQTower hqTower = new HQTower(rc);
                             hqTower.run();
+                        }
+                        else if (myType == BANSHEE)
+                        {
+                            Banshee banshee = new Banshee(rc);
+                            banshee.run();
                         }
                         //Duran leader to kill enemy pastr
                         else

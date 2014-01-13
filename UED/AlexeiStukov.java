@@ -30,6 +30,7 @@ public class AlexeiStukov {
     static final int CENTERMULE = 15;
     static final int CENTERTOWER = 16;
     static final int HQTOWER = 17;
+    static final int BANSHEE = 18;
     static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
     boolean putUpDistractor = false;
@@ -86,7 +87,8 @@ public class AlexeiStukov {
 
 
     // this is arrays of our troop combinations
-    static final int[] initialSpawnArray = {THOR, THOR, /*SUPPLY_DEPOT,*/ THOR, THOR, THOR};
+    // readd supply depot for Sprint tournment may also want to add HQ tower
+    static final int[] initialSpawnArray = {THOR, THOR, SUPPLY_DEPOT, HQTOWER, THOR, THOR, THOR};
     static final int[] BlockadeRunnerArray = {BATTLECRUISER};
     static final int[] KamikazeArray = {HELLION2, MARAUDER};
     static final int[] AllInMilkArray = {THOR, THOR2, SCV2};
@@ -328,11 +330,10 @@ public class AlexeiStukov {
 
 
 
-
+                    /*
                         if (smallMap)
                         {
                             rc.broadcast(TroopType, SmallMapArray[(numbOfSoldiers % SmallMapArray.length)]);
-                            //rc.broadcast(TroopType, BATTLECRUISER);
                         }
                         else if (numbOfSoldiers < initialSpawnArray.length)
                         {
@@ -378,7 +379,7 @@ public class AlexeiStukov {
                             }
                             else if (strategy == AllOutRush)
                             {
-                                rc.broadcast(TroopType, AllOutPastrRushArray[(numbOfSoldiers2%AllOutPastrRushArray.length)]);
+                                rc.broadcast(TroopType, AllOutRushArray[(numbOfSoldiers2%AllOutRushArray.length)]);
                             }
                             else
                             {
@@ -386,6 +387,9 @@ public class AlexeiStukov {
                             }
                             numbOfSoldiers2++;
                         }
+                        */
+
+                        rc.broadcast(TroopType, BANSHEE);
 
 
                         numbOfSoldiers++;

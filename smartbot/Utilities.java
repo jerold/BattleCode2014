@@ -508,8 +508,9 @@ public class Utilities
                 }
                 else if (enemies2.length > 0)
                 {
+                    rc.setIndicatorString(2, "Firing At Enemy");
                     MapLocation location = null;
-                    maxValue = 0;
+                    maxValue = 1;
                     for (int j = 0; j < enemies2.length; j++)
                     {
 

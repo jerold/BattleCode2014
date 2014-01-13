@@ -714,7 +714,7 @@ public class Utilities
         }
 
         // this method will run until we get to our target location
-        while (!rc.getLocation().equals(target))
+        while (!rc.getLocation().equals(target) || rc.getLocation().isAdjacentTo(target))
         {
             // we put the try block inside of the while loop so an exception won't terminate the method
             try
@@ -819,7 +819,7 @@ public class Utilities
                             }
 
                             // we will go hugging one side of obstacle until we get back on our original line
-                            while (!dir2.equals(dir) && !rc.getLocation().equals(target))// && rc.canMove(dir2))
+                            while (!dir2.equals(dir) && !rc.getLocation().equals(target) && !rc.getLocation().isAdjacentTo(target))// && rc.canMove(dir2))
                             {
                                 try
                                 {

@@ -65,6 +65,7 @@ public class SmartHQ
 						}
 					}
 				}
+                rc.yield();
 			}
 			catch(Exception e){}
 		}
