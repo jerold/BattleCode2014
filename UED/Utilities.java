@@ -1424,30 +1424,36 @@ public class Utilities
                 else if (enemies2.length > 0)
                 {
                     MapLocation location = null;
+                    MapLocation loc = null;
                     maxValue = 0;
                     for (int j = 0; j < enemies2.length; j++)
                     {
 
                         int value = 0;
-                        MapLocation loc = rc.senseRobotInfo(enemies2[j]).location;
-                        //for (int l = 0; l)
-                        loc = loc.subtract(rc.getLocation().directionTo(loc));
-                        for (int k = 0; k < 8; k++)
+                        MapLocation loc2 = rc.senseRobotInfo(enemies2[j]).location;
+                        Direction dir = rc.getLocation().directionTo(loc2).rotateRight().rotateRight();
+
+                        for (int l = 0; l<5; l++)
                         {
-                            try
+                            loc = loc2.subtract(dir);
+                            dir.rotateLeft();
+                            for (int k = 0; k < 8; k++)
                             {
-                                if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam().opponent())
+                                try
                                 {
-                                    value++;
+                                    if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam().opponent())
+                                    {
+                                        value++;
+                                    }
+                                    else if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam())
+                                    {
+                                        value--;
+                                    }
                                 }
-                                else if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam())
+                                catch(Exception e)
                                 {
-                                    value--;
+                                    e.printStackTrace();
                                 }
-                            }
-                            catch(Exception e)
-                            {
-                                e.printStackTrace();
                             }
                         }
                         if (maxValue < value)
