@@ -68,7 +68,7 @@ public class RobotPlayer
             }
             else if(rc.getType() == RobotType.NOISETOWER)
             {
-                if (rc.getLocation().distanceSquaredTo(Utilities.spotOfTrollTower(rc, rc.sensePastrLocations(rc.getTeam().opponent())[0])) < 10)
+                if (rc.getLocation().distanceSquaredTo(Utilities.spotOfTrollTower(rc, rc.senseEnemyHQLocation())) < 10)
                 {
                     new GenericTower(rc, true).run();
                 }

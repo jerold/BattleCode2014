@@ -33,6 +33,7 @@ public class GenericTower {
                 {
                     if (troll)
                     {
+                    	rc.setIndicatorString(0, "Troll");
                         pastrSpots = rc.sensePastrLocations(rc.getTeam().opponent());
 
                         for (int i = 0; i < pastrSpots.length; i++)
@@ -50,6 +51,7 @@ public class GenericTower {
                     }
                     else
                     {
+                    	rc.setIndicatorString(0, "Tower");
                         pastrSpots = rc.sensePastrLocations(rc.getTeam());
 
                         if (pastrSpots.length > 0)
