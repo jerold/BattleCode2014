@@ -456,7 +456,6 @@ public class Utilities
 
         return false;
     }
-
     public static void fire(RobotController rc)
     {
         int radius;
@@ -1068,6 +1067,32 @@ public class Utilities
 		}
 		
 		return target;
+    }
+    
+    public static void pullInto(RobotController rc, int radius, MapLocation center)
+    {
+    	for(int k = 0; k < directions.length; k++)
+    	{
+    		while(!rc.isActive()){}
+    		MapLocation toFire = center.add(directions[k], radius);
+    		try
+    		{
+    			while(toFire.distanceSquaredTo(center) > 3)
+    			{
+	    			if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+	    			{
+	    				try
+	    				{
+	    					rc.attackSquare(toFire);
+	    					rc.yield();
+	    				}
+	    				catch(Exception e){}
+	    			}
+	    			toFire = toFire.add(directions[k].opposite());
+    			}
+			}
+    		catch(Exception e){}
+    	}
     }
 }
 

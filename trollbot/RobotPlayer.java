@@ -29,9 +29,13 @@ public class RobotPlayer
 						created = true;
 					}
 				}
-				else
+				else if(rc.getType() == RobotType.SOLDIER)
 				{
 					new TrollTower(rc, Utilities.convertIntToMapLocation(rc.readBroadcast(0))).run();
+				}
+				else
+				{
+					new GenericTower(rc, true, Utilities.convertIntToMapLocation(rc.readBroadcast(0))).run();
 				}
 			}
 			catch(Exception e){}
