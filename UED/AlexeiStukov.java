@@ -59,6 +59,7 @@ public class AlexeiStukov {
     int startingGoliathSize = 0;
     int startingBattleCruiserSize = 0;
     boolean smallMap = false;
+    boolean bigMap = false;
 
 
     // channels for communication
@@ -94,7 +95,7 @@ public class AlexeiStukov {
     static final int[] AllInMilkArray = {THOR, THOR2, SCV2};
     static final int[] SmallSquadPastrAttackArray = {DURAN, GHOST, DURAN, GHOST, MARAUDER, THOR, GOLIATH};
     // take out SUPPLY_DEPOT before Sprint tournament also we should code well so it will stop doing this array as soon as the second THOR2 is created
-    static final int[] SecondCornerArray = {HQTOWER,SUPPLY_DEPOT, THOR2, THOR2, HELLION, HELLION, HELLION, HELLION, HELLION};
+    static final int[] SecondCornerArray = {/*HQTOWER,SUPPLY_DEPOT,*/ THOR2, THOR2, HELLION, HELLION, HELLION, HELLION, HELLION};
     static final int[] AllOutPastrRushArray = {MARAUDER, DURAN};
     static final int[] Balanced1PastrDefendArray = {GOLIATH, GOLIATH, THOR, GOLIATH, GOLIATH};
     static final int[] Balanced2PastrDefendArray = {GOLIATH, THOR, GOLIATH, THOR2, GOLIATH, GOLIATH};
@@ -102,6 +103,8 @@ public class AlexeiStukov {
     static final int[] PastrDefendArray = {THOR, GOLIATH, THOR, GOLIATH};
     static final int[] SmallMapArray = {BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, CENTERTOWER, CENTERMULE};
     static final int[] AllOutRushArray = {HELLION};
+    static final int[] BigMapStartArray = {THOR, THOR, SUPPLY_DEPOT, HQTOWER, THOR2, THOR2, THOR};
+    static final int[] BansheeHellionRushArray = {BANSHEE, HELLION};
 
     // these are our strategy possiblities
     static final int BlockadeRunner = 1;
@@ -115,6 +118,7 @@ public class AlexeiStukov {
     static final int TimingPush = 9;
     static final int PastrDefend = 10;
     static final int AllOutRush = 11;
+    static final int BansheeHellionRush = 12;
 
 
     public AlexeiStukov (RobotController rc)
@@ -149,6 +153,11 @@ public class AlexeiStukov {
             smallMap = true;
             Direction dir3 = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
             BattleCruiserTarget = center.add(dir3).add(dir3);
+        }
+
+        else if (Utilities.MapSize(rc) == 3)
+        {
+            bigMap = true;
         }
 
 
@@ -248,24 +257,24 @@ public class AlexeiStukov {
                                 }
                             }
                         }
-                        // if our opponent is going with the all  pastrs next to
+                        // if our opponent is going with the all  pastrs next to their hq
                         else if (Utilities.AllEnemyPastrsNextToHQ(rc, enemyPastrs))
                         {
                             // if we haven't gotten both soldiers out to the second corner then do so now
-                            if (ourPastrs.length < 3)
+                            if (ourPastrs.length < 3 && !bigMap)
                             {
                                 strategy = SecondCorner;
                             }
                             else
                             {
-                                strategy = AllOutRush;
+                                strategy = BansheeHellionRush;//AllOutRush;
                             }
                         }
                         // if the enemy has more milk than us and only has one pastr then they are probably going with a strategy where they defend one pastr
                         else if (opponentMilk > ourMilk && enemyPastrs.length == 1)
                         {
                             // if we haven't gotten both corners set up then
-                            if (ourPastrs.length < 3)
+                            if (ourPastrs.length < 3 && !bigMap)
                             {
                                 strategy = SecondCorner;
                             }
@@ -330,14 +339,21 @@ public class AlexeiStukov {
 
 
 
-                    /*
+
                         if (smallMap)
                         {
                             rc.broadcast(TroopType, SmallMapArray[(numbOfSoldiers % SmallMapArray.length)]);
                         }
                         else if (numbOfSoldiers < initialSpawnArray.length)
                         {
-                            rc.broadcast(TroopType, initialSpawnArray[numbOfSoldiers]);
+                            if (bigMap)
+                            {
+                                rc.broadcast(TroopType, BigMapStartArray[numbOfSoldiers]);
+                            }
+                            else
+                            {
+                                rc.broadcast(TroopType, initialSpawnArray[numbOfSoldiers]);
+                            }
                         }
                         else
                         {
@@ -381,13 +397,17 @@ public class AlexeiStukov {
                             {
                                 rc.broadcast(TroopType, AllOutRushArray[(numbOfSoldiers2%AllOutRushArray.length)]);
                             }
+                            else if (strategy == BansheeHellionRush)
+                            {
+                                rc.broadcast(TroopType, BansheeHellionRushArray[(numbOfSoldiers2%BansheeHellionRushArray.length)]);
+                            }
                             else
                             {
                                 rc.broadcast(TroopType, PastrDefendArray[(numbOfSoldiers2%PastrDefendArray.length)]);
                             }
                             numbOfSoldiers2++;
                         }
-                        */
+
 
                         rc.broadcast(TroopType, BANSHEE);
 

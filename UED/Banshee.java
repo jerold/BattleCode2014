@@ -120,27 +120,45 @@ public class Banshee {
 
                                 for (int i = 0; i < nearByEnemies.length; i++)
                                 {
-                                    if (rc.senseRobotInfo(nearByEnemies[i]).type == RobotType.NOISETOWER)
+                                    if (rc.senseRobotInfo(nearByEnemies[i]).type == RobotType.NOISETOWER && rc.senseLocationOf(nearByEnemies[i]).distanceSquaredTo(enemyHQ) > 1)
                                     {
                                         enemyTowers[index] = nearByEnemies[i];
                                         index++;
                                     }
                                 }
-                                int shortestDist = rc.getLocation().distanceSquaredTo(rc.senseLocationOf(enemyTowers[0]));
-                                enemyTower = enemyTowers[0];
-                                for (int j = 1; j < enemyTowers.length; j++)
+                                if (index > 0)
                                 {
-                                    if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(enemyTowers[j])) < shortestDist)
+                                    int shortestDist = rc.getLocation().distanceSquaredTo(rc.senseLocationOf(enemyTowers[0]));
+                                    enemyTower = enemyTowers[0];
+                                    for (int j = 1; j < enemyTowers.length; j++)
                                     {
-                                        shortestDist = rc.getLocation().distanceSquaredTo(rc.senseLocationOf(enemyTowers[j]));
-                                        enemyTower = enemyTowers[j];
+                                        if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(enemyTowers[j])) < shortestDist)
+                                        {
+                                            shortestDist = rc.getLocation().distanceSquaredTo(rc.senseLocationOf(enemyTowers[j]));
+                                            enemyTower = enemyTowers[j];
+                                        }
                                     }
+
+                                    towerLoc = rc.senseLocationOf(enemyTower);
+                                    direction = enemyHQ.directionTo(towerLoc);
+
+                                    newTarget = towerLoc.add(direction).add(direction);
                                 }
 
-                                towerLoc = rc.senseLocationOf(enemyTower);
-                                direction = enemyHQ.directionTo(towerLoc);
+                                for (int i = 0; i < nearByEnemies.length; i++)
+                                {
+                                    if (rc.senseRobotInfo(nearByEnemies[i]).type == RobotType.PASTR)
+                                    {
+                                        if (rc.senseLocationOf(nearByEnemies[i]).distanceSquaredTo(enemyHQ) > 1)
+                                        {
+                                            towerLoc = rc.senseLocationOf(enemyTower);
+                                            direction = enemyHQ.directionTo(towerLoc);
 
-                                newTarget = towerLoc.add(direction).add(direction);
+                                            newTarget = towerLoc.add(direction).add(direction);
+                                            i = 56;
+                                        }
+                                    }
+                                }
 
                                 Utilities.fire(rc);
                             }

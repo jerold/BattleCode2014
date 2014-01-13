@@ -27,7 +27,7 @@ public class SupplyDepot {
                 {
                     if(rc.isActive())
                     {
-                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
+                        //Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
                         moved = true;
                     }
                 }

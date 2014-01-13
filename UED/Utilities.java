@@ -60,7 +60,7 @@ public class Utilities
     {
         int size = 2;
 
-        if (rc.getMapHeight() > 75 || rc.getMapWidth() > 75)
+        if (rc.getMapHeight() > 59 || rc.getMapWidth() > 59)
         {
             size = 3;
         }
