@@ -43,15 +43,21 @@ public class Goliath
     static final int GoliathOnline = 4;
     static final int GhostReady = 5;
     static final int BattleCruiserLoc = 6;
-    static final int BattleCruiserLoc2 = 7;
+    static final int BattleCruiserNumber = 7;
     static final int BattleCruiserArrived = 8;
-    static final int startBattleCruiserArray = 9;
+    static final int BattleCruiserReadyForNewCommand = 9;
+    static final int startBattleCruiserArray = 10;
+    static final int RushEnemyHQ = 11;
+    static final int RushEnemyPastrs = 12;
+    static final int GoliathConvertToThors = 13;
+    static final int GoliathNumber = 14;
     static final int endBattleCruiserArray = 59;
     static final int BattleCruiserInArray = 60;
     static final int GoliathReadyForCommand = 61;
     static final int GoliathNextLocation = 62;
     static final int GoliathCurrentLocation = 63;
-    static final int PastStartChannel = 10000;
+
+    static final int PastrStartChannel = 10000;
 	
 	public Goliath(RobotController rc)
 	{
@@ -76,6 +82,8 @@ public class Goliath
             {
                 rc.broadcast(GoliathNextLocation, Utilities.convertMapLocationToInt(targetZone));
             }
+
+            rc.broadcast(GoliathNumber, rc.readBroadcast(GoliathNumber) + 1);
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -147,6 +155,7 @@ public class Goliath
                             {
                                 if (newTarget.equals(Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation))))
                                 {
+                                    rc.setIndicatorString(1, "Waiting for Command");
                                     rc.broadcast(GoliathReadyForCommand, 1);
                                 }
                                 else
@@ -154,9 +163,11 @@ public class Goliath
                                     newTarget = Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation));
                                     waitTime = 0;
                                 }
+                                rc.setIndicatorString(2, ""+newTarget);
                             }
                             else
                             {
+                                rc.setIndicatorString(1, "Moving To Target");
                                 waitTime = 0;
                                 Utilities.MoveMapLocation(rc, newTarget, false);
                             }

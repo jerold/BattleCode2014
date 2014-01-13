@@ -20,6 +20,7 @@ public class BattleCruiser
     boolean arrived = false;
     boolean arrived2 = false;
     MapLocation newTarget;
+    boolean upDatedCounter = false;
 
     // channels for communication
     static final int EnemyHQChannel = 0;
@@ -69,11 +70,18 @@ public class BattleCruiser
 
         try
         {
-            rc.broadcast(BattleCruiserNumber, rc.readBroadcast(BattleCruiserNumber) + 1);
+            if (rc.readBroadcast(BattleCruiserArrived) == 0)
+            {
+                rc.broadcast(BattleCruiserNumber, rc.readBroadcast(BattleCruiserNumber) + 1);
+                upDatedCounter = true;
+            }
+            /*
+            rc.broadcast(BattleCruiserNumber, rc.readBroadcast(BattleCruiserNumber) + 1);*/
             if (rc.readBroadcast(BattleCruiserLoc) == 0)
             {
                 rc.broadcast(BattleCruiserReadyForNewCommand, 1);
             }
+
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -92,9 +100,10 @@ public class BattleCruiser
                 if (rc.getHealth() < 30)
                 {
                     rc.broadcast(BattleCruiserNumber, rc.readBroadcast(BattleCruiserNumber) - 1);
-                    Hellion hellion = new Hellion(rc);
+                    Hellion hellion = new Hellion(rc, false);
                     hellion.run();
                 }
+
                 if (rc.isActive())
                 {
                     rc.setIndicatorString(1, ""+rc.readBroadcast(BattleCruiserNumber));
@@ -123,6 +132,21 @@ public class BattleCruiser
                     }
                     else
                     {
+                        rc.setIndicatorString(2, "Ready To Go");
+                        if (!upDatedCounter)
+                        {
+                            if ((rc.readBroadcast(BattleCruiserLoc)) == 0)
+                            {
+                                rc.broadcast(BattleCruiserNumber, rc.readBroadcast(BattleCruiserNumber) + 1);
+                            }
+                            else
+                            {
+                                if (rc.getLocation().isAdjacentTo(Utilities.convertIntToMapLocation(BattleCruiserLoc)))
+                                {
+                                    rc.broadcast(BattleCruiserNumber, rc.readBroadcast(BattleCruiserNumber) + 1);
+                                }
+                            }
+                        }
                         if (Utilities.fightMode(rc))
                         {
                             /*if (rc.isActive())
@@ -136,11 +160,11 @@ public class BattleCruiser
                                     if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < newTarget.distanceSquaredTo(rc.senseEnemyHQLocation()))
                                     {
                                         rc.broadcast(BattleCruiserLoc, Utilities.convertMapLocationToInt(rc.getLocation()));
-                                        rc.setIndicatorString(1, "Calling in the big guns");
                                     }
                                 }
 
                         }
+
                         else if (newTarget == null)
                         {
                             newTarget = Utilities.convertIntToMapLocation(rc.readBroadcast(BattleCruiserLoc));
@@ -161,7 +185,6 @@ public class BattleCruiser
                         }
                         else
                         {
-                            rc.setIndicatorString(2, ""+newTarget);
                             Utilities.MoveMapLocation(rc, newTarget, false);
                         }
 
@@ -172,7 +195,7 @@ public class BattleCruiser
             {
                 e.printStackTrace();
                 rc.setIndicatorString(0, "Error");
-                System.out.println("Thor Exception");
+                System.out.println("BattleCruiser Exception");
             }
             rc.yield();
         }

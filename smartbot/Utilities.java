@@ -466,6 +466,7 @@ public class Utilities
             {
                 radius = 15;
                 Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
+                Robot[] enemies2 = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
                 Direction[] dirs = Direction.values();
                 Robot target = null;
                 int maxValue = 0;
@@ -488,7 +489,7 @@ public class Utilities
                             }
                         }
                         catch(Exception e){
-                        	e.printStackTrace();
+                            e.printStackTrace();
                         }
                     }
 
@@ -504,6 +505,47 @@ public class Utilities
                 if(target != null)
                 {
                     rc.attackSquare(rc.senseRobotInfo(target).location);
+                }
+                else if (enemies2.length > 0)
+                {
+                    MapLocation location = null;
+                    maxValue = 0;
+                    for (int j = 0; j < enemies2.length; j++)
+                    {
+
+                        int value = 0;
+                        MapLocation loc = rc.senseRobotInfo(enemies2[j]).location;
+                        loc = loc.subtract(rc.getLocation().directionTo(loc));
+                        for (int k = 0; k < 8; k++)
+                        {
+                            try
+                            {
+                                if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam().opponent())
+                                {
+                                    value++;
+                                }
+                                else if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam())
+                                {
+                                    value--;
+                                }
+                            }
+                            catch(Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                        if (maxValue < value)
+                        {
+                            maxValue = value;
+                            location = loc;
+                        }
+                    }
+
+
+                    if (rc.canAttackSquare(location))
+                    {
+                        rc.attackSquare(location);
+                    }
                 }
 
             }

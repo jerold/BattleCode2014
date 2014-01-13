@@ -1,4 +1,4 @@
-package UED;
+package hqtowerbuild;
 
 /**
  * Created by fredkneeland on 1/7/14.
@@ -158,28 +158,6 @@ public class Utilities
         if (adjacent > faraway)
         {
             return true;
-        }
-
-        return false;
-    }
-
-    public static boolean AllEnemyPastrsNextToHQ(RobotController rc, MapLocation[] enemyPastrs)
-    {
-        if (enemyPastrs.length > 0)
-        {
-            for (int i = 0; i < enemyPastrs.length; i++)
-            {
-                if (enemyPastrs[i].distanceSquaredTo(rc.senseEnemyHQLocation()) > 10)
-                {
-                    return false;
-                }
-            }
-            if (enemyPastrs.length > 0)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         return false;
@@ -1071,7 +1049,7 @@ public class Utilities
 
             // here we only do necessary scans to reduce bitcode usage
 
-            /*if (rc.getHealth() < 20)
+            if (rc.getHealth() < 20)
             {
 
                 SCV scv = new SCV(rc);
@@ -1079,7 +1057,7 @@ public class Utilities
                 return true;
 
             }
-            else*/ if (nearByEnemies3.length > 0)
+            else if (nearByEnemies3.length > 0)
             {
                 nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
                 nearByAllies = findSoldiers(rc, nearByAllies);
@@ -1270,18 +1248,14 @@ public class Utilities
                     // if we have friends ahead then we must join them
                     if (AlliesAhead(rc, nearByAllies, target) > 0)
                     {
-                        /*if (!MapLocationInRangeOfEnemyHQ(rc, target))
-                        {*/
+                        if (!MapLocationInRangeOfEnemyHQ(rc, target))
+                        {
                             Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), false);
-                        /*}
+                        }
                         else
                         {
                             fire(rc);
-                        }*/
-                    }
-                    else if (rc.senseNearbyGameObjects(Robot.class,  target, 10, rc.getTeam()).length > 0)
-                    {
-                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                        }
                     }
                     // if we see enemy pastrs then kill them!
                     else if (nearByEnemies4.length > 0)

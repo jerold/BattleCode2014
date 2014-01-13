@@ -1,4 +1,4 @@
-package UED;
+package hqtowerbuild;
 
 import battlecode.common.*;
 
