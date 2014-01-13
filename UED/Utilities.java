@@ -1852,11 +1852,37 @@ public class Utilities
         }
     }
 
+    public static void pullInto(RobotController rc, int radius, MapLocation center)
+    {
+        for(int k = 0; k < directions.length; k++)
+        {
+            while(!rc.isActive()){}
+            MapLocation toFire = center.add(directions[k], radius);
+            try
+            {
+                while(toFire.distanceSquaredTo(center) > 3)
+                {
+                    if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+                    {
+                        try
+                        {
+                            rc.attackSquare(toFire);
+                            rc.yield();
+                        }
+                        catch(Exception e){}
+                    }
+                    toFire = toFire.add(directions[k].opposite());
+                }
+            }
+            catch(Exception e){}
+        }
+    }
+
     public static MapLocation spotOfSensorTower(RobotController rc, boolean corner1)
     {
         rand = new Random();
         MapLocation target = null;
-        int corner=0;
+        int corner;
 
         if (corner1)
         {
@@ -1864,22 +1890,22 @@ public class Utilities
         }
         else
         {
-            corner = findOpposingCorner(rc);
+            corner = Utilities.findOpposingCorner(rc);
         }
 
         switch(corner)
         {
             case 1:
-                target = new MapLocation(5, 5);
+                target = new MapLocation(0, 10);
                 break;
             case 2:
-                target = new MapLocation(rc.getMapWidth() - 6, 5);
+                target = new MapLocation(rc.getMapWidth() - 1, 10);
                 break;
             case 3:
-                target = new MapLocation(5, rc.getMapHeight() - 6);
+                target = new MapLocation(0, rc.getMapHeight() - 11);
                 break;
             default:
-                target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
+                target = new MapLocation(rc.getMapWidth() - 1, rc.getMapHeight() - 11);
                 break;
         }
 
@@ -2485,6 +2511,54 @@ public class Utilities
             e.printStackTrace();
             rc.yield();
         }
+    }
+
+    public static MapLocation spotOfTrollTower(RobotController rc, MapLocation pastr)
+    {
+        MapLocation target = pastr;
+        int width = rc.getMapWidth();
+        int height = rc.getMapHeight();
+        int dist = 350;
+
+        if(pastr.x < width / 2)
+        {
+            while(target.distanceSquaredTo(pastr) < dist && target.x > 0)
+            {
+                target = target.add(Direction.WEST);
+            }
+        }
+        else
+        {
+            while(target.distanceSquaredTo(pastr) < dist && target.x < rc.getMapWidth() - 1)
+            {
+                target = target.add(Direction.EAST);
+            }
+        }
+        if(pastr.y < height / 2)
+        {
+            while(target.distanceSquaredTo(pastr) < dist && target.y < height - 1)
+            {
+                target = target.add(Direction.SOUTH);
+            }
+        }
+        else
+        {
+            while(target.distanceSquaredTo(pastr) < dist && target.y > 0)
+            {
+                target = target.add(Direction.NORTH);
+            }
+        }
+
+        while(rc.senseTerrainTile(target) == TerrainTile.VOID && target.x < width / 2)
+        {
+            target = target.add(Direction.EAST);
+        }
+        while(rc.senseTerrainTile(target) == TerrainTile.VOID && target.x > width / 2)
+        {
+            target = target.add(Direction.WEST);
+        }
+
+        return target;
     }
 }
 

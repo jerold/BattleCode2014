@@ -1,6 +1,6 @@
 package UED;
 
-import battlecode.common.RobotController;
+import battlecode.common.*;
 import battlecode.common.RobotType;
 
 /**
@@ -30,6 +30,9 @@ public class RobotPlayer
     static final int CENTERTOWER = 16;
     static final int HQTOWER = 17;
     static final int BANSHEE = 18;
+    static final int MISSILETURRET = 19;
+
+    static MapLocation[] ourPastrs;
 
     // here are all of the channels
     // channels for communication
@@ -65,13 +68,30 @@ public class RobotPlayer
             }
             else if(rc.getType() == RobotType.NOISETOWER)
             {
+                if (rc.getLocation().equals(Utilities.spotOfTrollTower(rc, rc.sensePastrLocations(rc.getTeam().opponent())[0])))
+                {
+                    new GenericTower(rc, true, rc.sensePastrLocations(rc.getTeam().opponent())[0]).run();
+                }
                 if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 20)
                 {
-                    new HQTower(rc).run();
+
+                    new GenericTower(rc, false, rc.senseHQLocation());
+
                 }
                 else
                 {
-                    new SensorTower(rc, true).run();
+                    ourPastrs = rc.sensePastrLocations(rc.getTeam());
+                    MapLocation loc = ourPastrs[0];
+                    int distance = rc.getLocation().distanceSquaredTo(loc);
+                    for (int i = 1; i < ourPastrs.length; i++)
+                    {
+                        if (ourPastrs[i].distanceSquaredTo(rc.getLocation()) < distance)
+                        {
+                            loc = ourPastrs[i];
+                            distance = ourPastrs[i].distanceSquaredTo(rc.getLocation());
+                        }
+                    }
+                        new GenericTower(rc, false, loc);
                 }
             }
             else if(rc.getType() == RobotType.PASTR)
@@ -177,6 +197,11 @@ public class RobotPlayer
                         {
                             Banshee banshee = new Banshee(rc);
                             banshee.run();
+                        }
+                        else if (myType == MISSILETURRET)
+                        {
+                            MissileTurret missileTurret = new MissileTurret(rc, rc.sensePastrLocations(rc.getTeam().opponent())[0]);
+                            missileTurret.run();
                         }
                         //Duran leader to kill enemy pastr
                         else

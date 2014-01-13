@@ -456,6 +456,7 @@ public class Utilities
 
         return false;
     }
+
     public static void fire(RobotController rc)
     {
         int radius;

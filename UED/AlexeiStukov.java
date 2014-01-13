@@ -31,6 +31,7 @@ public class AlexeiStukov {
     static final int CENTERTOWER = 16;
     static final int HQTOWER = 17;
     static final int BANSHEE = 18;
+    static final int MISSILETURRET = 19;
     static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
     boolean putUpDistractor = false;
@@ -60,6 +61,9 @@ public class AlexeiStukov {
     int startingBattleCruiserSize = 0;
     boolean smallMap = false;
     boolean bigMap = false;
+    boolean hatWorn = false;
+    boolean setMemory = false;
+    boolean setUpTrollTower = false;
 
 
     // channels for communication
@@ -105,6 +109,8 @@ public class AlexeiStukov {
     static final int[] AllOutRushArray = {HELLION};
     static final int[] BigMapStartArray = {THOR, THOR, SUPPLY_DEPOT, HQTOWER, THOR2, THOR2, THOR};
     static final int[] BansheeHellionRushArray = {BANSHEE, HELLION};
+    static final int[] SmallPastrDefendArray = {THOR};
+    static final int[] LargePastrDefendArray = {THOR, THOR2};
 
     // these are our strategy possiblities
     static final int BlockadeRunner = 1;
@@ -119,6 +125,7 @@ public class AlexeiStukov {
     static final int PastrDefend = 10;
     static final int AllOutRush = 11;
     static final int BansheeHellionRush = 12;
+    static final int AllOutPastrDefend = 13;
 
 
     public AlexeiStukov (RobotController rc)
@@ -215,9 +222,16 @@ public class AlexeiStukov {
                         double ourMilk = rc.senseTeamMilkQuantity(rc.getTeam());
                         // if our opponent has almost gotten all their milk and we haven't
 
-                        rc.setIndicatorString(1, "Hello World");
+                        //rc.setIndicatorString(1, "Hello World");
 
                         strategy2 = strategy;
+
+                        if ((ourMilk > 9000000) && (opponentMilk < 5000000) && (ourPastrs.length > 0) && !hatWorn)
+                        {
+                            rc.wearHat();
+                            rc.setIndicatorString(1, "Wearing hat");
+                            hatWorn = true;
+                        }
 
                         /**
                          * Here we will determine our current strategy against our opponent
@@ -225,6 +239,7 @@ public class AlexeiStukov {
                          * note: This strategy will always take place after we have put out our first 6 units which will be our standard start
                          *
                          */
+
                         // in this case our opponent is probably beating us so we must take down their pastrs and quickly
                         if (opponentMilk > 7500000 && Clock.getRoundNum() < 750)
                         {
@@ -260,6 +275,11 @@ public class AlexeiStukov {
                         // if our opponent is going with the all  pastrs next to their hq
                         else if (Utilities.AllEnemyPastrsNextToHQ(rc, enemyPastrs))
                         {
+                            if (!setMemory)
+                            {
+                                setMemory = true;
+                                rc.setTeamMemory(1, 1);
+                            }
                             // if we haven't gotten both soldiers out to the second corner then do so now
                             if (ourPastrs.length < 3 && !bigMap)
                             {
@@ -269,6 +289,10 @@ public class AlexeiStukov {
                             {
                                 strategy = BansheeHellionRush;//AllOutRush;
                             }
+                        }
+                        else if (ourMilk > (opponentMilk+2500000) && ourPastrs.length > 0)
+                        {
+                            strategy = AllOutPastrDefend;
                         }
                         // if the enemy has more milk than us and only has one pastr then they are probably going with a strategy where they defend one pastr
                         else if (opponentMilk > ourMilk && enemyPastrs.length == 1)
@@ -340,7 +364,14 @@ public class AlexeiStukov {
 
 
 
-                        if (smallMap)
+                        if (teamMemory[1] == 1 && numbOfSoldiers < 1)
+                        {
+                            // then we send out our troll tower right away
+                            setUpTrollTower = true;
+                            rc.broadcast(TroopType, MISSILETURRET);
+                        }
+
+                        else if (smallMap)
                         {
                             rc.broadcast(TroopType, SmallMapArray[(numbOfSoldiers % SmallMapArray.length)]);
                         }
@@ -354,6 +385,13 @@ public class AlexeiStukov {
                             {
                                 rc.broadcast(TroopType, initialSpawnArray[numbOfSoldiers]);
                             }
+                        }
+                        // In this we set up troll tower
+                        else if (teamMemory[1] == 0 && Utilities.AllEnemyPastrsNextToHQ(rc, rc.sensePastrLocations(rc.getTeam().opponent())) && !setUpTrollTower)
+                        {
+                            rc.setTeamMemory(1, 1);
+                            setUpTrollTower = true;
+
                         }
                         else
                         {
@@ -401,6 +439,17 @@ public class AlexeiStukov {
                             {
                                 rc.broadcast(TroopType, BansheeHellionRushArray[(numbOfSoldiers2%BansheeHellionRushArray.length)]);
                             }
+                            else if (strategy == AllOutPastrDefend)
+                            {
+                                if (bigMap)
+                                {
+                                    rc.broadcast(TroopType, LargePastrDefendArray[(numbOfSoldiers2%LargePastrDefendArray.length)]);
+                                }
+                                else
+                                {
+                                   rc.broadcast(TroopType, SmallPastrDefendArray[(numbOfSoldiers%SmallPastrDefendArray.length)]);
+                                }
+                            }
                             else
                             {
                                 rc.broadcast(TroopType, PastrDefendArray[(numbOfSoldiers2%PastrDefendArray.length)]);
@@ -409,7 +458,7 @@ public class AlexeiStukov {
                         }
 
 
-                        rc.broadcast(TroopType, BANSHEE);
+                        //rc.broadcast(TroopType, BANSHEE);
 
 
                         numbOfSoldiers++;

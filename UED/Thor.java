@@ -1,7 +1,6 @@
 package UED;
 
 import battlecode.common.*;
-import greedy.Marine;
 
 import java.util.Random;
 
