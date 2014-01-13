@@ -1860,18 +1860,18 @@ public class Utilities
     {
         for(int k = 0; k < directions.length; k++)
         {
-            while(!rc.isActive()){}
+            while(!rc.isActive()){rc.yield();}
             MapLocation toFire = center.add(directions[k], radius);
             try
             {
-                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
                 {
                     rc.attackSquare(toFire);
                     rc.yield();
                 }
             }
             catch(Exception e){}
-            while(!rc.isActive()){}
+            while(!rc.isActive()){rc.yield();}
             toFire = center;
             for(int a = 0; a < radius / 2; a++)
             {
@@ -1880,7 +1880,7 @@ public class Utilities
             }
             try
             {
-                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
                 {
                     rc.attackSquare(toFire);
                     rc.yield();
@@ -1894,13 +1894,13 @@ public class Utilities
     {
         for(int k = 0; k < directions.length; k++)
         {
-            while(!rc.isActive()){}
+            while(!rc.isActive()){rc.yield();}
             MapLocation toFire = center.add(directions[k], radius);
             try
             {
                 while(toFire.distanceSquaredTo(center) > 3)
                 {
-                    if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+                    if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
                     {
                         try
                         {

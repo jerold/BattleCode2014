@@ -33,7 +33,7 @@ public class GenericTower {
                 {
                     if (troll)
                     {
-                    	rc.setIndicatorString(0, "Troll");
+                    	//rc.setIndicatorString(0, "Troll");
                         pastrSpots = rc.sensePastrLocations(rc.getTeam().opponent());
 
                         for (int i = 0; i < pastrSpots.length; i++)
@@ -51,29 +51,27 @@ public class GenericTower {
                     }
                     else
                     {
-                    	rc.setIndicatorString(0, "Tower");
+                    	//rc.setIndicatorString(0, "Tower");
                         pastrSpots = rc.sensePastrLocations(rc.getTeam());
 
                         if (pastrSpots.length > 0)
                         {
-                            int dist = rc.getLocation().distanceSquaredTo(pastrSpots[0]);
-                            if (dist < 400)
-                            {
-                                target = pastrSpots[0];
-                            }
+                            int dist = 400;
+                            int tempDist;
 
-                            for (int i = 1; i < pastrSpots.length; i++)
+                            for (int i = 0; i < pastrSpots.length; i++)
                             {
-                                if (dist > rc.getLocation().distanceSquaredTo(pastrSpots[i]))
+                            	tempDist = rc.getLocation().distanceSquaredTo(pastrSpots[i]);
+                                if (dist > tempDist)
                                 {
                                     target = pastrSpots[i];
-                                    dist = rc.getLocation().distanceSquaredTo(pastrSpots[i]);
+                                    dist = tempDist;
                                 }
                             }
                         }
                     }
 
-                    rc.setIndicatorString(1, ""+target);
+                    //rc.setIndicatorString(1, ""+target);
                 }
                 else if(troll)
                 {
@@ -90,7 +88,7 @@ public class GenericTower {
                 {
                     try
                     {
-                        rc.setIndicatorString(0, "Tower");
+                        //rc.setIndicatorString(0, "Tower");
                         MapLocation[] enemies = rc.sensePastrLocations(rc.getTeam().opponent());
                         MapLocation[] allies = rc.sensePastrLocations(rc.getTeam());
                         MapLocation pastrE = null;
@@ -116,7 +114,7 @@ public class GenericTower {
                         {
                             if(pull)
                             {
-                                Utilities.pullInto(rc, 15, target);
+                                Utilities.pullInto(rc, 20, target);
                                 pull = false;
                             }
                             else
@@ -131,7 +129,7 @@ public class GenericTower {
                         {
                             if(pull)
                             {
-                                Utilities.pullInto(rc, 15, target);
+                                Utilities.pullInto(rc, 20, target);
                                 pull = false;
                             }
                             else
@@ -139,7 +137,7 @@ public class GenericTower {
                                 for(int k = 20; k > 4; k -= 1)
                                 {
                                     Utilities.fireCircle(rc, k, target);
-                                    while(!rc.isActive()){}
+                                    while(!rc.isActive()){rc.yield();}
                                     rc.attackSquare(pastrE);
                                 }
                             }
