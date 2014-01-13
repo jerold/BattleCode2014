@@ -123,6 +123,7 @@ public class BattleCruiser
                     }
                     else
                     {
+                        rc.setIndicatorString(2, "Ready To Go");
                         if (Utilities.fightMode(rc))
                         {
                             /*if (rc.isActive())
@@ -136,7 +137,6 @@ public class BattleCruiser
                                     if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < newTarget.distanceSquaredTo(rc.senseEnemyHQLocation()))
                                     {
                                         rc.broadcast(BattleCruiserLoc, Utilities.convertMapLocationToInt(rc.getLocation()));
-                                        rc.setIndicatorString(1, "Calling in the big guns");
                                     }
                                 }
 
@@ -161,7 +161,6 @@ public class BattleCruiser
                         }
                         else
                         {
-                            rc.setIndicatorString(2, ""+newTarget);
                             Utilities.MoveMapLocation(rc, newTarget, false);
                         }
 
@@ -172,7 +171,7 @@ public class BattleCruiser
             {
                 e.printStackTrace();
                 rc.setIndicatorString(0, "Error");
-                System.out.println("Thor Exception");
+                System.out.println("BattleCruiser Exception");
             }
             rc.yield();
         }

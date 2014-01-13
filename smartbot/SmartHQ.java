@@ -41,7 +41,7 @@ public class SmartHQ
 		{
 			try
 			{
-				Utilities.fire(rc);
+				//Utilities.fire(rc);
 				if(rc.isActive())
 				{
 					if(bots == currentStrat.length)

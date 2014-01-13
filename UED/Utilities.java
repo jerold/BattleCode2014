@@ -54,7 +54,66 @@ public class Utilities
     // returns a 1 for small a 2 for medium and a 3 for large
     public static int MapSize(RobotController rc)
     {
-        return 0;
+        int size = 2;
+
+        if (rc.getMapHeight() > 75 || rc.getMapWidth() > 75)
+        {
+            size = 3;
+        }
+        else if (rc.getMapHeight() > 30 || rc.getMapWidth() > 30)
+        {
+            size = 2;
+        }
+        else
+        {
+            size = 1;
+        }
+
+        return size;
+    }
+
+    public static int GoliathSquadSize(RobotController rc)
+    {
+        int size = 1;
+        int Map = MapSize(rc);
+
+        if (Map == 3)
+        {
+            size = 6;
+        }
+        else if (Map == 2)
+        {
+            size = 5;
+        }
+        else
+        {
+            size = 3;
+        }
+
+
+        return size;
+    }
+
+    public static int BattleCruiserSize(RobotController rc)
+    {
+        int size = 1;
+        int Map = MapSize(rc);
+
+        if (Map == 3)
+        {
+            size = 10;
+        }
+        else if (Map == 2)
+        {
+            size = 8;
+        }
+        else
+        {
+            size = 5;
+        }
+
+
+        return size;
     }
 
     // user must check that pastrLoc contains at least one item

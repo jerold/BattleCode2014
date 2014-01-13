@@ -24,6 +24,30 @@ public class Ghost
     Random rand = new Random();
     Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
 
+    // channels for communication
+    static final int EnemyHQChannel = 0;
+    static final int OurHQChannel = 1;
+    static final int TroopType = 2;
+    static final int GhostNumb = 3;
+    static final int GoliathOnline = 4;
+    static final int GhostReady = 5;
+    static final int BattleCruiserLoc = 6;
+    static final int BattleCruiserNumber = 7;
+    static final int BattleCruiserArrived = 8;
+    static final int BattleCruiserReadyForNewCommand = 9;
+    static final int startBattleCruiserArray = 10;
+    static final int RushEnemyHQ = 11;
+    static final int RushEnemyPastrs = 12;
+    static final int GoliathConvertToThors = 13;
+    static final int GoliathNumber = 14;
+    static final int endBattleCruiserArray = 59;
+    static final int BattleCruiserInArray = 60;
+    static final int GoliathReadyForCommand = 61;
+    static final int GoliathNextLocation = 62;
+    static final int GoliathCurrentLocation = 63;
+
+    static final int PastrStartChannel = 10000;
+
     public Ghost(RobotController rc)
     {
         rc.setIndicatorString(0, "Ghost");
@@ -41,10 +65,10 @@ public class Ghost
         }
         */
 
-        target = Utilities.spotOfSensorTower(rc, true);
-        Direction dir = target.directionTo(rc.senseEnemyHQLocation());
+        target = rc.senseHQLocation();
+        Direction dir = target.directionTo(rc.senseEnemyHQLocation()).rotateRight().rotateRight();
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 3; i++)
         {
             target = target.add(dir);
         }
@@ -65,6 +89,12 @@ public class Ghost
             e.printStackTrace();
             System.out.println("Ghost Exception");
         }
+
+        target = target.subtract(rc.getLocation().directionTo(target)).subtract(rc.getLocation().directionTo(target));
+        if (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+        {
+            target = target.add(rc.getLocation().directionTo(waitingZone));
+        }
     }
 
     public void run()
@@ -77,7 +107,8 @@ public class Ghost
                 {
                     if (!gotToWaitingZone)
                     {
-                        if (rc.readBroadcast(4) == 5)
+                        /*
+                        if (rc.readBroadcast(GhostReady) == 5)
                         {
                             gotToWaitingZone = true;
                             if (rc.canSenseSquare(waitingZone))
@@ -86,21 +117,16 @@ public class Ghost
                             }
                             else
                             {
-                                rc.broadcast(2, 0);
                                 Duran Samir = new Duran(rc);
                                 Samir.run();
                             }
                             rc.setIndicatorString(3, "Got Message");
                         }
                         else
-                        {
-                            target = target.subtract(rc.getLocation().directionTo(target)).subtract(rc.getLocation().directionTo(target));
-                            if (rc.senseTerrainTile(target).equals(TerrainTile.VOID))
-                            {
-                                target = target.add(rc.getLocation().directionTo(waitingZone));
-                            }
+                        {*/
+
                             Utilities.MoveMapLocation(rc, target, false);
-                            if (rc.getLocation().equals(target))
+                            if (rc.getLocation().equals(target) || rc.getLocation().isAdjacentTo(target))
                             {
                                 gotToWaitingZone = true;
                                 if (rc.senseObjectAtLocation(waitingZone) != null)
@@ -109,12 +135,11 @@ public class Ghost
                                 }
                                 else
                                 {
-                                    rc.broadcast(2, 0);
                                     Duran Samir = new Duran(rc);
                                     Samir.run();
                                 }
                             }
-                        }
+                        //}
 
                     }
                     else
@@ -151,7 +176,6 @@ public class Ghost
                         }
                         else
                         {
-                            rc.broadcast(2, 0);
                             Duran Samir = new Duran(rc);
 
                             Samir.run();

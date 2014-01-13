@@ -22,6 +22,15 @@ public class RobotPlayer
 				}
 				else
 				{
+                    if (rc.getRobot().getID() % 2 == 0)
+                    {
+                        new HQTower(rc).run();
+                    }
+                    else
+                    {
+                        new SupplyDepot(rc).run();
+                    }
+                    /*
 					if(type == 0)
 					{
 						type = rc.readBroadcast(0);
@@ -54,6 +63,7 @@ public class RobotPlayer
 					{
 						new Scout(rc).run();
 					}
+					*/
 				}
 			}
 			catch(Exception e){}

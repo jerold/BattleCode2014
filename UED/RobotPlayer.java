@@ -2,7 +2,6 @@ package UED;
 
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-import greedy.*;
 
 /**
  * Created by fredkneeland on 1/7/14.
@@ -27,6 +26,8 @@ public class RobotPlayer
     static final int HELLION2 = 12;
     static final int SCV2 = 13;
     static final int MARAUDER = 14;
+    static final int CENTERMULE = 15;
+    static final int CENTERTOWER = 16;
 
     // here are all of the channels
     // channels for communication
@@ -146,6 +147,18 @@ public class RobotPlayer
                             Marauder marauder = new Marauder(rc);
                             marauder.run();
                         }
+                        else if (myType == CENTERMULE)
+                        {
+                            CenterMULE centerMULE = new CenterMULE((rc));
+                            centerMULE.run();
+                        }
+                        else if (myType == CENTERTOWER)
+                        {
+                            CenterTower centerTower = new CenterTower(rc);
+                            centerTower.run();
+                            //Hellion hellion = new Hellion(rc, true);
+                            //hellion.run();
+                        }
                         //Duran leader to kill enemy pastr
                         else
                         {
@@ -158,6 +171,7 @@ public class RobotPlayer
                     e.printStackTrace();
                     System.out.println("Soldier Exception");
                 }
+                rc.yield();
             }
         }
     }

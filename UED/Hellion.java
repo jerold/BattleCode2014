@@ -23,7 +23,7 @@ public class Hellion {
         {
             for (int i = 0; i < 6; i++)
             {
-                target2 = target2.add(direction);
+                target2 = target2.subtract(direction);
             }
 
             if (rc.senseTerrainTile(target2).equals(TerrainTile.VOID))
@@ -85,22 +85,22 @@ public class Hellion {
                     MapLocation enemyHQ = rc.senseEnemyHQLocation();
                     int distanceToEnemyHQ = rc.getLocation().distanceSquaredTo(enemyHQ);
                     Direction dir = rc.getLocation().directionTo(enemyHQ);
-                    if (distanceToEnemyHQ < 4)
+                    if (distanceToEnemyHQ < 16)
                     {
-                        if (rc.canMove(dir))
+                        if (rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam().opponent()).length > 0)
+                        {
+                            rc.selfDestruct();
+                        }
+                        else
                         {
                             Utilities.MoveDirection(rc, dir, false);
-                            if (rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam().opponent()).length > 0)
-                            {
-                                rc.selfDestruct();
-                            }
                         }
                     }
                     else if (distanceToEnemyHQ < 24 && rc.getHealth() < 50)
                     {
                         Utilities.fire(rc);
                     }
-                    else if (distanceToEnemyHQ < 30)
+                    else if (distanceToEnemyHQ < 50 || rc.getLocation().equals(target) || rc.getLocation().isAdjacentTo(target))
                     {
                         Utilities.MoveDirection(rc, dir, false);
                     }

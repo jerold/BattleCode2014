@@ -27,6 +27,8 @@ public class AlexeiStukov {
     static final int HELLION2 = 12;
     static final int SCV2 = 13;
     static final int MARAUDER = 14;
+    static final int CENTERMULE = 15;
+    static final int CENTERTOWER = 16;
     static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
     boolean putUpDistractor = false;
@@ -54,6 +56,7 @@ public class AlexeiStukov {
     int strategy2 = 0;
     int startingGoliathSize = 0;
     int startingBattleCruiserSize = 0;
+    boolean smallMap = false;
 
 
     // channels for communication
@@ -93,6 +96,7 @@ public class AlexeiStukov {
     static final int[] Balanced2PastrDefendArray = {GOLIATH, THOR, GOLIATH, THOR2, GOLIATH, GOLIATH};
     static final int[] TimingPushArray = {GOLIATH, GOLIATH, GOLIATH, GOLIATH, GOLIATH, HELLION, THOR};
     static final int[] PastrDefendArray = {THOR, GOLIATH, THOR, GOLIATH};
+    static final int[] SmallMapArray = {BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, CENTERTOWER, CENTERMULE};
 
     // these are our strategy possiblities
     static final int BlockadeRunner = 1;
@@ -130,6 +134,20 @@ public class AlexeiStukov {
             dir = directions[rand.nextInt(8)];
             BattleCruiserTarget = BattleCruiserTarget.add(dir);
         }
+
+        startingBattleCruiserSize = Utilities.BattleCruiserSize(rc);
+        startingGoliathSize = Utilities.GoliathSquadSize(rc);
+
+        // if we are on a small map and their is enough gap in between our hqs then we will set up in the middle
+        if (Utilities.MapSize(rc) == 1 && (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) > 150))
+        {
+            smallMap = true;
+            Direction dir3 = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
+            BattleCruiserTarget = center.add(dir3).add(dir3);
+        }
+
+
+
         //GoliathTarget = center;
     }
 
@@ -145,11 +163,14 @@ public class AlexeiStukov {
                     //rc.setIndicatorString(0, ""+rc.getActionDelay());
                     //rc.setIndicatorString(1, ""+rc.isActive());
 
-                    if (Clock.getRoundNum() > 350 && Clock.getRoundNum() % 100 == 0)
+                    /*if (Clock.getRoundNum() > 350 && Clock.getRoundNum() % 100 == 0)
                     {
                         enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                         ourPastrs = rc.sensePastrLocations(rc.getTeam());
-                    }
+                    }*/
+
+                    enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                    ourPastrs = rc.sensePastrLocations(rc.getTeam());
 
 
 
@@ -173,8 +194,7 @@ public class AlexeiStukov {
                         double ourMilk = rc.senseTeamMilkQuantity(rc.getTeam());
                         // if our opponent has almost gotten all their milk and we haven't
 
-                        rc.setIndicatorString(1, ""+opponentMilk);
-                        rc.setIndicatorString(2, ""+ourMilk);
+                        rc.setIndicatorString(1, "Hello World");
 
                         strategy2 = strategy;
 
@@ -271,7 +291,13 @@ public class AlexeiStukov {
 
 
 
-                        if (numbOfSoldiers < initialSpawnArray.length)
+                        /*
+                        if (smallMap)
+                        {
+                            rc.broadcast(TroopType, SmallMapArray[(numbOfSoldiers % SmallMapArray.length)]);
+                            //rc.broadcast(TroopType, BATTLECRUISER);
+                        }
+                        else if (numbOfSoldiers < initialSpawnArray.length)
                         {
                             rc.broadcast(TroopType, initialSpawnArray[numbOfSoldiers]);
                         }
@@ -283,53 +309,55 @@ public class AlexeiStukov {
                             }
                             else if (strategy == Kamikaze)
                             {
-                                rc.broadcast(TroopType, KamikazeArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                                rc.broadcast(TroopType, KamikazeArray[(numbOfSoldiers2%KamikazeArray.length)]);
                             }
                             else if (strategy == AllInMilk)
                             {
-                                rc.broadcast(TroopType, AllInMilkArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                                rc.broadcast(TroopType, AllInMilkArray[(numbOfSoldiers2%AllInMilkArray.length)]);
                             }
                             else if (strategy == SmallSquadPastrAttack)
                             {
-                                rc.broadcast(TroopType, SmallSquadPastrAttackArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                                rc.broadcast(TroopType, SmallSquadPastrAttackArray[(numbOfSoldiers2%SmallSquadPastrAttackArray.length)]);
                             }
                             else if (strategy == SecondCorner)
                             {
-                                rc.broadcast(TroopType, SecondCornerArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                                rc.broadcast(TroopType, SecondCornerArray[(numbOfSoldiers2%SecondCornerArray.length)]);
                             }
                             else if (strategy == AllOutPastrRush)
                             {
-                                rc.broadcast(TroopType, AllOutPastrRushArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                                rc.broadcast(TroopType, AllOutPastrRushArray[(numbOfSoldiers2%AllOutPastrRushArray.length)]);
                             }
                             else if (strategy == Balanced1PastrDefend)
                             {
-                                rc.broadcast(TroopType, Balanced1PastrDefendArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                                rc.broadcast(TroopType, Balanced1PastrDefendArray[(numbOfSoldiers2%Balanced1PastrDefendArray.length)]);
                             }
                             else if (strategy == Balanced2PastrDefend)
                             {
-                                rc.broadcast(TroopType, Balanced2PastrDefendArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                                rc.broadcast(TroopType, Balanced2PastrDefendArray[(numbOfSoldiers2%Balanced2PastrDefendArray.length)]);
                             }
                             else if (strategy == TimingPush)
                             {
-                                rc.broadcast(TroopType, TimingPushArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                                rc.broadcast(TroopType, TimingPushArray[(numbOfSoldiers2%TimingPushArray.length)]);
                             }
                             else
                             {
-                                rc.broadcast(TroopType, PastrDefendArray[(numbOfSoldiers2%BlockadeRunnerArray.length)]);
+                                rc.broadcast(TroopType, PastrDefendArray[(numbOfSoldiers2%PastrDefendArray.length)]);
                             }
                             numbOfSoldiers2++;
                         }
+                        */
+                        rc.broadcast(TroopType, HELLION2);
 
                         numbOfSoldiers++;
                         Utilities.SpawnSoldiers(rc);
 
                         // these tell our troops to move forward when they have collected
-                        if (rc.readBroadcast(BattleCruiserNumber) > startingBattleCruiserSize)
+                        if (rc.readBroadcast(BattleCruiserNumber) >= startingBattleCruiserSize)
                         {
                             rc.broadcast(BattleCruiserArrived, 1);
                         }
 
-                        if (rc.readBroadcast(GoliathNumber) > startingGoliathSize)
+                        if (rc.readBroadcast(GoliathNumber) >= startingGoliathSize)
                         {
                             rc.broadcast(GoliathOnline, 1);
                         }
