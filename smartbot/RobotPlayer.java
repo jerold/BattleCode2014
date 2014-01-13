@@ -18,19 +18,10 @@ public class RobotPlayer
 				}
 				else if(rc.getType() == RobotType.NOISETOWER)
 				{
-					new SmartTower(rc).run();
+					new GenericTower(rc, false, Utilities.spotOfPastr(rc)).run();
 				}
 				else
 				{
-                    if (rc.getRobot().getID() % 2 == 0)
-                    {
-                        new HQTower(rc).run();
-                    }
-                    else
-                    {
-                        new SupplyDepot(rc).run();
-                    }
-                    /*
 					if(type == 0)
 					{
 						type = rc.readBroadcast(0);
@@ -53,17 +44,16 @@ public class RobotPlayer
 					}
 					else if(type == SmartHQ.MULE)
 					{
-						new SupplyDepot(rc).run();
+						new MULE(rc).run();
 					}
 					else if(type == SmartHQ.TOWER)
 					{
-						new HQTower(rc).run();
+						new SmartTower(rc).run();
 					}
 					else if(type == SmartHQ.TROLL)
 					{
 						new Scout(rc).run();
 					}
-					*/
 				}
 			}
 			catch(Exception e){}
