@@ -1430,6 +1430,7 @@ public class Utilities
 
                         int value = 0;
                         MapLocation loc = rc.senseRobotInfo(enemies2[j]).location;
+                        //for (int l = 0; l)
                         loc = loc.subtract(rc.getLocation().directionTo(loc));
                         for (int k = 0; k < 8; k++)
                         {
