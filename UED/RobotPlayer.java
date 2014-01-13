@@ -75,13 +75,13 @@ public class RobotPlayer
                 if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 20)
                 {
 
-                    new GenericTower(rc, false);
+                    new GenericTower(rc, false).run();
 
                 }
                 else
                 {
 
-                   new GenericTower(rc, false);
+                   new GenericTower(rc, false).run();
                 }
             }
             else if(rc.getType() == RobotType.PASTR)
