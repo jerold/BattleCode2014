@@ -190,8 +190,16 @@ public class RobotPlayer
                         }
                         else if (myType == MISSILETURRET)
                         {
-                            MissileTurret missileTurret = new MissileTurret(rc, rc.sensePastrLocations(rc.getTeam().opponent())[0]);
-                            missileTurret.run();
+                            if (rc.sensePastrLocations(rc.getTeam().opponent()).length > 0)
+                            {
+                                MissileTurret missileTurret = new MissileTurret(rc, rc.sensePastrLocations(rc.getTeam().opponent())[0]);
+                                missileTurret.run();
+                            }
+                            else
+                            {
+                                MissileTurret missileTurret = new MissileTurret(rc, rc.senseEnemyHQLocation());
+                                missileTurret.run();
+                            }
                         }
                         //Duran leader to kill enemy pastr
                         else

@@ -1390,7 +1390,7 @@ public class Utilities
                 {
                     MapLocation loc = rc.senseRobotInfo(enemies[k]).location;
                     int value = 2;
-                    for(int a = 0; a < 8; a++)
+                    for (int a = 0; a < 8; a++)
                     {
                         try
                         {

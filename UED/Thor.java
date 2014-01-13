@@ -128,7 +128,7 @@ public class Thor
                     {
                         rc.setIndicatorString(1, ""+target);
 
-                        rc.setIndicatorString(2, "Made It");
+                        //rc.setIndicatorString(2, "Made It");
                         // if someone else has gotten to sensorTower location then we will go elsewhere otherwise we become senserTower
                         if (sensorOver)
                         {
@@ -167,11 +167,12 @@ public class Thor
                         {
                             if (!firstPastr)
                             {
-                                Utilities.MoveMapLocation(rc, target, true);
+                                Utilities.MoveMapLocation(rc, target2, true);
                                 firstPastr = true;
                             }
                             else
                             {
+                                rc.setIndicatorString(2, "Target 2"+target2);
                                 if (rc.getLocation().equals(target2))
                                 {
                                     rc.construct(RobotType.NOISETOWER);

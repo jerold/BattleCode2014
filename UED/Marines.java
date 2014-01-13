@@ -46,6 +46,10 @@ public class Marines
                     if (Utilities.fightMode(rc))
                     {
                     }
+                    else if (rc.senseCowsAtLocation(rc.getLocation()) > 500)
+                    {
+                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(rc.senseHQLocation()), false);
+                    }
                     else if (rc.getLocation().equals(target))
                     {
                         gotToTarget = true;
