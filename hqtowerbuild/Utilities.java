@@ -60,7 +60,7 @@ public class Utilities
     {
         int size = 2;
 
-        if (rc.getMapHeight() > 75 || rc.getMapWidth() > 75)
+        if (rc.getMapHeight() > 59 || rc.getMapWidth() > 59)
         {
             size = 3;
         }
@@ -158,6 +158,28 @@ public class Utilities
         if (adjacent > faraway)
         {
             return true;
+        }
+
+        return false;
+    }
+
+    public static boolean AllEnemyPastrsNextToHQ(RobotController rc, MapLocation[] enemyPastrs)
+    {
+        if (enemyPastrs.length > 0)
+        {
+            for (int i = 0; i < enemyPastrs.length; i++)
+            {
+                if (enemyPastrs[i].distanceSquaredTo(rc.senseEnemyHQLocation()) > 10)
+                {
+                    return false;
+                }
+            }
+            if (enemyPastrs.length > 0)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         return false;
@@ -464,7 +486,7 @@ public class Utilities
 
                 if (dir != Direction.NONE && dir != Direction.OMNI)
                 {
-                    if (!rc.canMove(dir))
+                    if (!rc.canMove(dir) || MapLocationInRangeOfEnemyHQ(rc, rc.getLocation().add(dir)))
                     {
                         // now we loop through the other 7 directions to find one that works
                         for (int i = 0; i < 7; i++)
@@ -491,12 +513,12 @@ public class Utilities
                                 counter++;
                             }
                             // at end of for loop we check to see if we can move or if we need to keep looking
-                            if (rc.canMove(newDir))
+                            if (rc.canMove(newDir) && !MapLocationInRangeOfEnemyHQ(rc, rc.getLocation().add(dir)))
                             {
                                 i = 48;
                             }
                             // if we have gone through all our options and can't move then we will wait
-                            else if (i == 5 && !rc.canMove(newDir))
+                            else if (i == 5 && (!rc.canMove(newDir)) || MapLocationInRangeOfEnemyHQ(rc, rc.getLocation().add(dir)))
                             {
                                 newDir = Direction.NONE;
                             }
@@ -692,7 +714,7 @@ public class Utilities
         }
 
         // this method will run until we get to our target location
-        while (!rc.getLocation().equals(target))
+        while (!rc.getLocation().equals(target) || rc.getLocation().isAdjacentTo(target))
         {
             // we put the try block inside of the while loop so an exception won't terminate the method
             try
@@ -797,7 +819,7 @@ public class Utilities
                             }
 
                             // we will go hugging one side of obstacle until we get back on our original line
-                            while (!dir2.equals(dir) && !rc.getLocation().equals(target))// && rc.canMove(dir2))
+                            while (!dir2.equals(dir) && !rc.getLocation().equals(target) && !rc.getLocation().isAdjacentTo(target))// && rc.canMove(dir2))
                             {
                                 try
                                 {
@@ -1248,14 +1270,18 @@ public class Utilities
                     // if we have friends ahead then we must join them
                     if (AlliesAhead(rc, nearByAllies, target) > 0)
                     {
-                        if (!MapLocationInRangeOfEnemyHQ(rc, target))
-                        {
+                        /*if (!MapLocationInRangeOfEnemyHQ(rc, target))
+                        {*/
                             Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), false);
-                        }
+                        /*}
                         else
                         {
                             fire(rc);
-                        }
+                        }*/
+                    }
+                    else if (rc.senseNearbyGameObjects(Robot.class,  target, 10, rc.getTeam()).length > 0)
+                    {
+                        Utilities.MoveDirection(rc, rc.getLocation().directionTo(target), false);
                     }
                     // if we see enemy pastrs then kill them!
                     else if (nearByEnemies4.length > 0)
@@ -1364,7 +1390,7 @@ public class Utilities
                 {
                     MapLocation loc = rc.senseRobotInfo(enemies[k]).location;
                     int value = 2;
-                    for(int a = 0; a < 8; a++)
+                    for (int a = 0; a < 8; a++)
                     {
                         try
                         {
@@ -1398,29 +1424,36 @@ public class Utilities
                 else if (enemies2.length > 0)
                 {
                     MapLocation location = null;
+                    MapLocation loc = null;
                     maxValue = 0;
                     for (int j = 0; j < enemies2.length; j++)
                     {
 
                         int value = 0;
-                        MapLocation loc = rc.senseRobotInfo(enemies2[j]).location;
-                        loc = loc.subtract(rc.getLocation().directionTo(loc));
-                        for (int k = 0; k < 8; k++)
+                        MapLocation loc2 = rc.senseRobotInfo(enemies2[j]).location;
+                        Direction dir = rc.getLocation().directionTo(loc2).rotateRight().rotateRight();
+
+                        for (int l = 0; l<5; l++)
                         {
-                            try
+                            loc = loc2.subtract(dir);
+                            dir.rotateLeft();
+                            for (int k = 0; k < 8; k++)
                             {
-                                if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam().opponent())
+                                try
                                 {
-                                    value++;
+                                    if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam().opponent())
+                                    {
+                                        value++;
+                                    }
+                                    else if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam())
+                                    {
+                                        value--;
+                                    }
                                 }
-                                else if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam())
+                                catch(Exception e)
                                 {
-                                    value--;
+                                    e.printStackTrace();
                                 }
-                            }
-                            catch(Exception e)
-                            {
-                                e.printStackTrace();
                             }
                         }
                         if (maxValue < value)
@@ -1796,18 +1829,18 @@ public class Utilities
     {
         for(int k = 0; k < directions.length; k++)
         {
-            while(!rc.isActive()){}
+            while(!rc.isActive()){rc.yield();}
             MapLocation toFire = center.add(directions[k], radius);
             try
             {
-                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
                 {
                     rc.attackSquare(toFire);
                     rc.yield();
                 }
             }
             catch(Exception e){}
-            while(!rc.isActive()){}
+            while(!rc.isActive()){rc.yield();}
             toFire = center;
             for(int a = 0; a < radius / 2; a++)
             {
@@ -1816,10 +1849,36 @@ public class Utilities
             }
             try
             {
-                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
                 {
                     rc.attackSquare(toFire);
                     rc.yield();
+                }
+            }
+            catch(Exception e){}
+        }
+    }
+
+    public static void pullInto(RobotController rc, int radius, MapLocation center)
+    {
+        for(int k = 0; k < directions.length; k++)
+        {
+            while(!rc.isActive()){rc.yield();}
+            MapLocation toFire = center.add(directions[k], radius);
+            try
+            {
+                while(toFire.distanceSquaredTo(center) > 3)
+                {
+                    if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
+                    {
+                        try
+                        {
+                            rc.attackSquare(toFire);
+                            rc.yield();
+                        }
+                        catch(Exception e){}
+                    }
+                    toFire = toFire.add(directions[k].opposite());
                 }
             }
             catch(Exception e){}
@@ -1830,7 +1889,7 @@ public class Utilities
     {
         rand = new Random();
         MapLocation target = null;
-        int corner=0;
+        int corner;
 
         if (corner1)
         {
@@ -1838,22 +1897,22 @@ public class Utilities
         }
         else
         {
-            corner = findOpposingCorner(rc);
+            corner = Utilities.findOpposingCorner(rc);
         }
 
         switch(corner)
         {
             case 1:
-                target = new MapLocation(5, 5);
+                target = new MapLocation(0, 10);
                 break;
             case 2:
-                target = new MapLocation(rc.getMapWidth() - 6, 5);
+                target = new MapLocation(rc.getMapWidth() - 1, 10);
                 break;
             case 3:
-                target = new MapLocation(5, rc.getMapHeight() - 6);
+                target = new MapLocation(0, rc.getMapHeight() - 11);
                 break;
             default:
-                target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
+                target = new MapLocation(rc.getMapWidth() - 1, rc.getMapHeight() - 11);
                 break;
         }
 
@@ -2459,6 +2518,54 @@ public class Utilities
             e.printStackTrace();
             rc.yield();
         }
+    }
+
+    public static MapLocation spotOfTrollTower(RobotController rc, MapLocation pastr)
+    {
+        MapLocation target = pastr;
+        int width = rc.getMapWidth();
+        int height = rc.getMapHeight();
+        int dist = 350;
+
+        if(pastr.x < width / 2)
+        {
+            while(target.distanceSquaredTo(pastr) < dist && target.x > 0)
+            {
+                target = target.add(Direction.WEST);
+            }
+        }
+        else
+        {
+            while(target.distanceSquaredTo(pastr) < dist && target.x < rc.getMapWidth() - 1)
+            {
+                target = target.add(Direction.EAST);
+            }
+        }
+        if(pastr.y < height / 2)
+        {
+            while(target.distanceSquaredTo(pastr) < dist && target.y < height - 1)
+            {
+                target = target.add(Direction.SOUTH);
+            }
+        }
+        else
+        {
+            while(target.distanceSquaredTo(pastr) < dist && target.y > 0)
+            {
+                target = target.add(Direction.NORTH);
+            }
+        }
+
+        while(rc.senseTerrainTile(target) == TerrainTile.VOID && target.x < width / 2)
+        {
+            target = target.add(Direction.EAST);
+        }
+        while(rc.senseTerrainTile(target) == TerrainTile.VOID && target.x > width / 2)
+        {
+            target = target.add(Direction.WEST);
+        }
+
+        return target;
     }
 }
 

@@ -18,7 +18,7 @@ public class RobotPlayer
 				}
 				else if(rc.getType() == RobotType.NOISETOWER)
 				{
-					new HQTower(rc).run();
+					new GenericTower(rc, false).run();
 				}
 				else
 				{

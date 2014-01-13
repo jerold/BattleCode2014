@@ -42,13 +42,6 @@ public class HQTower
 						rc.construct(RobotType.NOISETOWER);
 					}
 				}
-				else if(rc.getType() == RobotType.NOISETOWER)
-				{
-					for(int k = 20; k > 2; k -= 2)
-					{
-						Utilities.fireCircle(rc, k, target);
-					}
-				}
 			}
 			catch(Exception e){}
 		}
