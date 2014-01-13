@@ -155,6 +155,7 @@ public class Goliath
                             {
                                 if (newTarget.equals(Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation))))
                                 {
+                                    rc.setIndicatorString(1, "Waiting for Command");
                                     rc.broadcast(GoliathReadyForCommand, 1);
                                 }
                                 else
@@ -162,9 +163,11 @@ public class Goliath
                                     newTarget = Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation));
                                     waitTime = 0;
                                 }
+                                rc.setIndicatorString(2, ""+newTarget);
                             }
                             else
                             {
+                                rc.setIndicatorString(1, "Moving To Target");
                                 waitTime = 0;
                                 Utilities.MoveMapLocation(rc, newTarget, false);
                             }

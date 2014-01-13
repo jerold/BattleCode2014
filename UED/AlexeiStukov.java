@@ -85,7 +85,7 @@ public class AlexeiStukov {
 
 
     // this is arrays of our troop combinations
-    static final int[] initialSpawnArray = {THOR, THOR, SUPPLY_DEPOT, THOR, THOR, THOR};
+    static final int[] initialSpawnArray = {THOR, THOR, /*SUPPLY_DEPOT,*/ THOR, THOR, THOR};
     static final int[] BlockadeRunnerArray = {BATTLECRUISER};
     static final int[] KamikazeArray = {HELLION2, MARAUDER};
     static final int[] AllInMilkArray = {THOR, THOR2, SCV2};
@@ -139,7 +139,7 @@ public class AlexeiStukov {
         startingGoliathSize = Utilities.GoliathSquadSize(rc);
 
         // if we are on a small map and their is enough gap in between our hqs then we will set up in the middle
-        if (Utilities.MapSize(rc) == 1 && (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) > 150))
+        if (Utilities.MapSize(rc) == 1 && (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) > 200))
         {
             smallMap = true;
             Direction dir3 = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
@@ -291,7 +291,7 @@ public class AlexeiStukov {
 
 
 
-                        /*
+
                         if (smallMap)
                         {
                             rc.broadcast(TroopType, SmallMapArray[(numbOfSoldiers % SmallMapArray.length)]);
@@ -345,8 +345,7 @@ public class AlexeiStukov {
                             }
                             numbOfSoldiers2++;
                         }
-                        */
-                        rc.broadcast(TroopType, HELLION2);
+
 
                         numbOfSoldiers++;
                         Utilities.SpawnSoldiers(rc);

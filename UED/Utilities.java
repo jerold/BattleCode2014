@@ -25,6 +25,10 @@ public class Utilities
     static final int BattleCruiserArrived = 8;
     static final int BattleCruiserReadyForNewCommand = 9;
     static final int startBattleCruiserArray = 10;
+    static final int RushEnemyHQ = 11;
+    static final int RushEnemyPastrs = 12;
+    static final int GoliathConvertToThors = 13;
+    static final int GoliathNumber = 14;
     static final int endBattleCruiserArray = 59;
     static final int BattleCruiserInArray = 60;
     static final int GoliathReadyForCommand = 61;
@@ -79,11 +83,11 @@ public class Utilities
 
         if (Map == 3)
         {
-            size = 6;
+            size = 5;
         }
         else if (Map == 2)
         {
-            size = 5;
+            size = 4;
         }
         else
         {
@@ -268,26 +272,27 @@ public class Utilities
         MapLocation GoliathPosition = null;
         MapLocation GoliathTarget = null;
         MapLocation GoliathNextSpot = null;
-        MapLocation[] enemyPastrs = null;
-        MapLocation[] ourPastrs = null;
+        MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+        MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
         int a = 0;
         try
         {
             if (rc.readBroadcast(GoliathReadyForCommand) == 1)
             {
+                rc.setIndicatorString(0, "Ready For command");
+                a = rc.readBroadcast(GoliathNextLocation);
+                if (a != 0)
+                {
+                    GoliathPosition = convertIntToMapLocation(a);
+                }
+                else
+                {
+                    GoliathPosition = rc.senseHQLocation();
+                }
 
-                GoliathPosition = Utilities.convertIntToMapLocation(rc.readBroadcast(GoliathNextLocation));
+
                 if (GoliathTarget == null || GoliathPosition.isAdjacentTo(GoliathTarget) || GoliathPosition.equals(GoliathTarget))
                 {
-
-                    if (enemyPastrs.length == 0)
-                    {
-                        enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
-                    }
-                    if (ourPastrs.length == 0)
-                    {
-                        ourPastrs = rc.sensePastrLocations(rc.getTeam());
-                    }
 
                     if (enemyPastrs.length > 0)
                     {
@@ -322,12 +327,20 @@ public class Utilities
                     GoliathNextSpot = GoliathNextSpot.add(dir);
                 }
 
-                rc.broadcast(GoliathNextLocation, Utilities.convertMapLocationToInt(GoliathNextSpot));
+                rc.broadcast(GoliathNextLocation, convertMapLocationToInt(GoliathNextSpot));
                 rc.broadcast(GoliathReadyForCommand, 0);
+
+                rc.setIndicatorString(0, ""+GoliathPosition);
+                rc.setIndicatorString(2, ""+GoliathTarget);
+            }
+            else
+            {
+                rc.setIndicatorString(0, "Not Ready Yet");
             }
         } catch (Exception e)
         {
             e.printStackTrace();
+            rc.setIndicatorString(2, "Error");
         }
     }
 
