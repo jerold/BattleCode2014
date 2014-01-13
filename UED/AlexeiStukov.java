@@ -91,8 +91,8 @@ public class AlexeiStukov {
     static final int[] KamikazeArray = {HELLION2, MARAUDER};
     static final int[] AllInMilkArray = {THOR, THOR2, SCV2};
     static final int[] SmallSquadPastrAttackArray = {DURAN, GHOST, DURAN, GHOST, MARAUDER, THOR, GOLIATH};
-    // take out SUPPLY_DEPOT before
-    static final int[] SecondCornerArray = {HQTOWER,SUPPLY_DEPOT, THOR2, THOR2, HELLION};
+    // take out SUPPLY_DEPOT before Sprint tournament also we should code well so it will stop doing this array as soon as the second THOR2 is created
+    static final int[] SecondCornerArray = {HQTOWER,SUPPLY_DEPOT, THOR2, THOR2, HELLION, HELLION, HELLION, HELLION, HELLION};
     static final int[] AllOutPastrRushArray = {MARAUDER, DURAN};
     static final int[] Balanced1PastrDefendArray = {GOLIATH, GOLIATH, THOR, GOLIATH, GOLIATH};
     static final int[] Balanced2PastrDefendArray = {GOLIATH, THOR, GOLIATH, THOR2, GOLIATH, GOLIATH};
@@ -113,7 +113,6 @@ public class AlexeiStukov {
     static final int TimingPush = 9;
     static final int PastrDefend = 10;
     static final int AllOutRush = 11;
-
 
 
     public AlexeiStukov (RobotController rc)
@@ -251,7 +250,7 @@ public class AlexeiStukov {
                         else if (Utilities.AllEnemyPastrsNextToHQ(rc, enemyPastrs))
                         {
                             // if we haven't gotten both soldiers out to the second corner then do so now
-                            if (ourPastrs.length < 2)
+                            if (ourPastrs.length < 3)
                             {
                                 strategy = SecondCorner;
                             }
