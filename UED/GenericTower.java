@@ -58,14 +58,16 @@ public class GenericTower {
 
                             for (int i = 1; i < pastrSpots.length; i++)
                             {
-                                if (dist > rc.getLocation().distanceSquaredTo(pastrSpots[0]))
+                                if (dist > rc.getLocation().distanceSquaredTo(pastrSpots[i]))
                                 {
                                     target = pastrSpots[i];
-                                    dist = rc.getLocation().distanceSquaredTo(pastrSpots[0]);
+                                    dist = rc.getLocation().distanceSquaredTo(pastrSpots[i]);
                                 }
                             }
                         }
                     }
+
+                    rc.setIndicatorString(1, ""+target);
                 }
                 else if(troll)
                 {
