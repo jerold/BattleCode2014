@@ -94,6 +94,11 @@ public class RobotPlayer
                 {
                     if (rc.isActive())
                     {
+                        if (true)
+                        {
+                            Firebat firebat = new Firebat(rc);
+                            firebat.run();
+                        }
                         if (myType == 0)
                         {
                             myType = rc.readBroadcast(TroopType);

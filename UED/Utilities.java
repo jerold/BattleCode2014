@@ -1408,8 +1408,6 @@ public class Utilities
                         }
                     }
 
-                    rc.setIndicatorString(0, "" + value);
-
                     if(value > maxValue)
                     {
                         maxValue = value;
@@ -1423,6 +1421,7 @@ public class Utilities
                 }
                 else if (enemies2.length > 0)
                 {
+                    //rc.setIndicatorString(1, "Splash Shooting");
                     MapLocation location = null;
                     MapLocation loc = null;
                     maxValue = 0;
@@ -1431,29 +1430,49 @@ public class Utilities
 
                         int value = 0;
                         MapLocation loc2 = rc.senseRobotInfo(enemies2[j]).location;
+                        rc.setIndicatorString(1, "Loc 2:"+loc2);
                         Direction dir = rc.getLocation().directionTo(loc2).rotateRight().rotateRight();
 
-                        for (int l = 0; l<5; l++)
+                        for (int l = 0; l < 3; l++)
                         {
                             loc = loc2.subtract(dir);
-                            dir.rotateLeft();
-                            for (int k = 0; k < 8; k++)
+                            dir = dir.rotateLeft();
+                            if (rc.getLocation().distanceSquaredTo(loc) <= 15)
                             {
-                                try
+                                for (int k = 0; k < 8; k++)
                                 {
-                                    if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam().opponent())
+                                    try
                                     {
-                                        value++;
+                                        if (rc.canSenseSquare(loc.add(dirs[k])))
+                                        {
+                                            GameObject enemy = rc.senseObjectAtLocation(loc.add(dirs[k]));
+
+                                            if (enemy != null)
+                                            {
+                                                if(enemy.getTeam() == rc.getTeam().opponent())
+                                                {
+                                                    value++;
+                                                }
+                                                else if(enemy.getTeam() == rc.getTeam())
+                                                {
+                                                    value--;
+                                                }
+                                            }
+                                        }
                                     }
-                                    else if(rc.senseObjectAtLocation(loc.add(dirs[k])).getTeam() == rc.getTeam())
+                                    catch(Exception e)
                                     {
-                                        value--;
+                                        rc.setIndicatorString(0, "Error");
+                                        e.printStackTrace();
                                     }
                                 }
-                                catch(Exception e)
-                                {
-                                    e.printStackTrace();
-                                }
+                            }
+
+                            if (value > 0)
+                            {
+                                location = loc;
+                                l = 3;
+                                j = enemies2.length;
                             }
                         }
                         if (maxValue < value)
@@ -1463,13 +1482,13 @@ public class Utilities
                         }
                     }
 
+                    rc.setIndicatorString(2, "Target: "+location);
 
                     if (rc.canAttackSquare(location))
                     {
                         rc.attackSquare(location);
                     }
                 }
-
             }
             else
             {
@@ -1496,6 +1515,7 @@ public class Utilities
             }
         }
         catch(Exception e){
+            rc.setIndicatorString(0, "Error 2");
         	e.printStackTrace();
         }
     }
@@ -1627,6 +1647,17 @@ public class Utilities
         } catch(Exception e){
             e.printStackTrace();
         }
+    }
+
+    public static boolean nuke(RobotController rc)
+    {
+        GameObject[] nearbyBots = rc.senseNearbyGameObjects(Robot.class, 15);
+
+        if (nearbyBots.length > 0)
+        {
+            
+        }
+        return false;
     }
 
     public static boolean turnNuke(RobotController rc)

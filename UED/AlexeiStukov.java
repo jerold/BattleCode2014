@@ -485,6 +485,7 @@ public class AlexeiStukov {
                 {
                     e.printStackTrace();
                     System.out.println("HQ Exception");
+                    rc.setIndicatorString(0, "Error 3");
                 }
                 rc.yield();
             }
