@@ -51,6 +51,9 @@ public class SCV
         {
             try
             {
+                Thor thor = new Thor(rc, true);
+                thor.run();
+                /*
                 if (!arrived)
                 {
                     Utilities.MoveMapLocation(rc, goToSpot, false);
@@ -79,6 +82,7 @@ public class SCV
                         rc.construct(RobotType.PASTR);
                     }
                 }
+                */
             } catch (Exception e)
             {
                 e.printStackTrace();

@@ -486,7 +486,7 @@ public class Utilities
 
                 if (dir != Direction.NONE && dir != Direction.OMNI)
                 {
-                    if (!rc.canMove(dir))
+                    if (!rc.canMove(dir) || MapLocationInRangeOfEnemyHQ(rc, rc.getLocation().add(dir)))
                     {
                         // now we loop through the other 7 directions to find one that works
                         for (int i = 0; i < 7; i++)
@@ -513,12 +513,12 @@ public class Utilities
                                 counter++;
                             }
                             // at end of for loop we check to see if we can move or if we need to keep looking
-                            if (rc.canMove(newDir))
+                            if (rc.canMove(newDir) && !MapLocationInRangeOfEnemyHQ(rc, rc.getLocation().add(dir)))
                             {
                                 i = 48;
                             }
                             // if we have gone through all our options and can't move then we will wait
-                            else if (i == 5 && !rc.canMove(newDir))
+                            else if (i == 5 && (!rc.canMove(newDir)) || MapLocationInRangeOfEnemyHQ(rc, rc.getLocation().add(dir)))
                             {
                                 newDir = Direction.NONE;
                             }
@@ -1071,7 +1071,7 @@ public class Utilities
 
             // here we only do necessary scans to reduce bitcode usage
 
-            /*if (rc.getHealth() < 20)
+            if (rc.getHealth() < 20)
             {
 
                 SCV scv = new SCV(rc);
@@ -1079,7 +1079,7 @@ public class Utilities
                 return true;
 
             }
-            else*/ if (nearByEnemies3.length > 0)
+            else if (nearByEnemies3.length > 0)
             {
                 nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
                 nearByAllies = findSoldiers(rc, nearByAllies);

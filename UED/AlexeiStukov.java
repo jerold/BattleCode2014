@@ -200,7 +200,7 @@ public class AlexeiStukov {
                         {
 
                             BattleCruiserTarget = rc.senseEnemyHQLocation();
-                            for (int i = 0; i < 7; i++)
+                            for (int i = 0; i < 6; i++)
                             {
                                 BattleCruiserTarget = BattleCruiserTarget.subtract((rc.senseHQLocation().directionTo(rc.senseEnemyHQLocation())));
                             }
