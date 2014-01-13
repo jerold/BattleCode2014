@@ -64,6 +64,7 @@ public class AlexeiStukov {
     boolean hatWorn = false;
     boolean setMemory = false;
     boolean setUpTrollTower = false;
+    boolean enemy1pastrStrat = true;
 
 
     // channels for communication
@@ -197,10 +198,14 @@ public class AlexeiStukov {
                     {
                         if (Utilities.AllEnemyPastrsNextToHQ(rc, enemyPastrs))
                         {
+
                             BattleCruiserTarget = rc.senseEnemyHQLocation();
+                            for (int i = 0; i < 7; i++)
+                            {
+                                BattleCruiserTarget = BattleCruiserTarget.subtract((rc.senseHQLocation().directionTo(rc.senseEnemyHQLocation())));
+                            }
                         }
                     }
-
 
                     // give BattleCruiser next location
                     Utilities.GiveBattleCruisersNextLocation(rc, BattleCruiserTarget);
@@ -391,7 +396,7 @@ public class AlexeiStukov {
                         {
                             rc.setTeamMemory(1, 1);
                             setUpTrollTower = true;
-
+                            rc.broadcast(TroopType, MISSILETURRET);
                         }
                         else
                         {
