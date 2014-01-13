@@ -40,7 +40,7 @@ public class GenericTower
 	            	try
 	            	{
 	            		rc.setIndicatorString(0, "Tower");
-		            	Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 30, rc.getTeam().opponent());
+		            	MapLocation[] enemies = rc.sensePastrLocations(rc.getTeam().opponent());
 		            	MapLocation[] allies = rc.sensePastrLocations(rc.getTeam());
 		            	MapLocation pastrE = null;
 		            	boolean enemyPastr = false;
@@ -48,10 +48,10 @@ public class GenericTower
 		            	
 		            	for(int k = 0; k < enemies.length; k++)
 		            	{
-		            		if(rc.senseRobotInfo(enemies[k]).type == RobotType.PASTR)
+		            		if(enemies[k].distanceSquaredTo(target) < 400)
 		            		{
 		            			enemyPastr = true;
-		            			pastrE = rc.senseRobotInfo(enemies[k]).location;
+		            			pastrE = enemies[k];
 		            		}
 		            	}
 		            	for(int k = 0; k < allies.length; k++)

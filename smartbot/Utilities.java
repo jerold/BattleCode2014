@@ -937,6 +937,32 @@ public class Utilities
     		catch(Exception e){}
     	}
     }
+    
+    public static void pullInto(RobotController rc, int radius, MapLocation center)
+    {
+    	for(int k = 0; k < directions.length; k++)
+    	{
+    		while(!rc.isActive()){}
+    		MapLocation toFire = center.add(directions[k], radius);
+    		try
+    		{
+    			while(toFire.distanceSquaredTo(center) > 3)
+    			{
+	    			if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
+	    			{
+	    				try
+	    				{
+	    					rc.attackSquare(toFire);
+	    					rc.yield();
+	    				}
+	    				catch(Exception e){}
+	    			}
+	    			toFire = toFire.add(directions[k].opposite());
+    			}
+			}
+    		catch(Exception e){}
+    	}
+    }
 
     public static MapLocation spotOfSensorTower(RobotController rc)
     {
@@ -948,16 +974,16 @@ public class Utilities
         switch(corner)
         {
             case 1:
-                target = new MapLocation(5, 5);
+                target = new MapLocation(0, 10);
                 break;
             case 2:
-                target = new MapLocation(rc.getMapWidth() - 6, 5);
+                target = new MapLocation(rc.getMapWidth() - 1, 10);
                 break;
             case 3:
-                target = new MapLocation(5, rc.getMapHeight() - 6);
+                target = new MapLocation(0, rc.getMapHeight() - 11);
                 break;
             default:
-                target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
+                target = new MapLocation(rc.getMapWidth() - 1, rc.getMapHeight() - 11);
                 break;
         }
 
