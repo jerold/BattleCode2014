@@ -18,7 +18,6 @@ public class GenericTower {
     {
         this.rc = rc;
         this.troll = troll;
-        this.target = target;
         pull = true;
 
     }
@@ -38,10 +37,15 @@ public class GenericTower {
 
                         for (int i = 0; i < pastrSpots.length; i++)
                         {
-                            if (pastrSpots[i].distanceSquaredTo(rc.senseEnemyHQLocation()) < 10)
+                            if (pastrSpots[i].distanceSquaredTo(rc.senseEnemyHQLocation()) < 10 && pastrSpots[i].distanceSquaredTo(rc.getLocation()) < 400)
                             {
                                 target = pastrSpots[i];
                             }
+                        }
+                        
+                        if(target == null)
+                        {
+                        	target = rc.senseEnemyHQLocation();
                         }
                     }
                     else
