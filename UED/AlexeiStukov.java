@@ -29,6 +29,7 @@ public class AlexeiStukov {
     static final int MARAUDER = 14;
     static final int CENTERMULE = 15;
     static final int CENTERTOWER = 16;
+    static final int HQTOWER = 17;
     static int ghostSendOuts = 2;
     static final int GOLIATH_SIZE = 5;
     boolean putUpDistractor = false;
@@ -90,13 +91,15 @@ public class AlexeiStukov {
     static final int[] KamikazeArray = {HELLION2, MARAUDER};
     static final int[] AllInMilkArray = {THOR, THOR2, SCV2};
     static final int[] SmallSquadPastrAttackArray = {DURAN, GHOST, DURAN, GHOST, MARAUDER, THOR, GOLIATH};
-    static final int[] SecondCornerArray = {THOR2, THOR2, THOR2, THOR2, THOR2};
+    // take out SUPPLY_DEPOT before
+    static final int[] SecondCornerArray = {HQTOWER,SUPPLY_DEPOT, THOR2, THOR2, HELLION};
     static final int[] AllOutPastrRushArray = {MARAUDER, DURAN};
     static final int[] Balanced1PastrDefendArray = {GOLIATH, GOLIATH, THOR, GOLIATH, GOLIATH};
     static final int[] Balanced2PastrDefendArray = {GOLIATH, THOR, GOLIATH, THOR2, GOLIATH, GOLIATH};
     static final int[] TimingPushArray = {GOLIATH, GOLIATH, GOLIATH, GOLIATH, GOLIATH, HELLION, THOR};
     static final int[] PastrDefendArray = {THOR, GOLIATH, THOR, GOLIATH};
     static final int[] SmallMapArray = {BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, CENTERTOWER, CENTERMULE};
+    static final int[] AllOutRushArray = {HELLION};
 
     // these are our strategy possiblities
     static final int BlockadeRunner = 1;
@@ -109,6 +112,7 @@ public class AlexeiStukov {
     static final int Balanced2PastrDefend = 8;
     static final int TimingPush = 9;
     static final int PastrDefend = 10;
+    static final int AllOutRush = 11;
 
 
 
@@ -172,6 +176,13 @@ public class AlexeiStukov {
                     enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                     ourPastrs = rc.sensePastrLocations(rc.getTeam());
 
+                    if (smallMap)
+                    {
+                        if (Utilities.AllEnemyPastrsNextToHQ(rc, enemyPastrs))
+                        {
+                            BattleCruiserTarget = rc.senseEnemyHQLocation();
+                        }
+                    }
 
 
                     // give BattleCruiser next location
@@ -236,6 +247,19 @@ public class AlexeiStukov {
                                 }
                             }
                         }
+                        // if our opponent is going with the all  pastrs next to
+                        else if (Utilities.AllEnemyPastrsNextToHQ(rc, enemyPastrs))
+                        {
+                            // if we haven't gotten both soldiers out to the second corner then do so now
+                            if (ourPastrs.length < 2)
+                            {
+                                strategy = SecondCorner;
+                            }
+                            else
+                            {
+                                strategy = AllOutRush;
+                            }
+                        }
                         // if the enemy has more milk than us and only has one pastr then they are probably going with a strategy where they defend one pastr
                         else if (opponentMilk > ourMilk && enemyPastrs.length == 1)
                         {
@@ -257,7 +281,21 @@ public class AlexeiStukov {
                         // if our enemy has only a few pastrs then we should do a timing push
                         else if (enemyPastrs.length < 3 && enemyPastrs.length > 0)
                         {
-                            strategy = TimingPush;
+                            if (Utilities.MapLocationsNextToEnemyHQ(rc, enemyPastrs))
+                            {
+                                if (ourPastrs.length < 3)
+                                {
+                                    strategy = SecondCorner;
+                                }
+                                else
+                                {
+                                    strategy = AllOutRush;
+                                }
+                            }
+                            else
+                            {
+                                strategy = TimingPush;
+                            }
                         }
                         // if our enemey has lots of pastrs we should send out small groups to go around killing them
                         else if (enemyPastrs.length > 2)
@@ -338,6 +376,10 @@ public class AlexeiStukov {
                             else if (strategy == TimingPush)
                             {
                                 rc.broadcast(TroopType, TimingPushArray[(numbOfSoldiers2%TimingPushArray.length)]);
+                            }
+                            else if (strategy == AllOutRush)
+                            {
+                                rc.broadcast(TroopType, AllOutPastrRushArray[(numbOfSoldiers2%AllOutPastrRushArray.length)]);
                             }
                             else
                             {

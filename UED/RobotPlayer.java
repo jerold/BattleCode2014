@@ -28,6 +28,7 @@ public class RobotPlayer
     static final int MARAUDER = 14;
     static final int CENTERMULE = 15;
     static final int CENTERTOWER = 16;
+    static final int HQTOWER = 17;
 
     // here are all of the channels
     // channels for communication
@@ -63,7 +64,14 @@ public class RobotPlayer
             }
             else if(rc.getType() == RobotType.NOISETOWER)
             {
-                new SensorTower(rc, true).run();
+                if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 20)
+                {
+                    new HQTower(rc).run();
+                }
+                else
+                {
+                    new SensorTower(rc, true).run();
+                }
             }
             else if(rc.getType() == RobotType.PASTR)
             {
@@ -158,6 +166,11 @@ public class RobotPlayer
                             centerTower.run();
                             //Hellion hellion = new Hellion(rc, true);
                             //hellion.run();
+                        }
+                        else if (myType == HQTOWER)
+                        {
+                            HQTower hqTower = new HQTower(rc);
+                            hqTower.run();
                         }
                         //Duran leader to kill enemy pastr
                         else

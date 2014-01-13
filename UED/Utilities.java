@@ -163,6 +163,28 @@ public class Utilities
         return false;
     }
 
+    public static boolean AllEnemyPastrsNextToHQ(RobotController rc, MapLocation[] enemyPastrs)
+    {
+        if (enemyPastrs.length > 0)
+        {
+            for (int i = 0; i < enemyPastrs.length; i++)
+            {
+                if (enemyPastrs[i].distanceSquaredTo(rc.senseEnemyHQLocation()) > 10)
+                {
+                    return false;
+                }
+            }
+            if (enemyPastrs.length > 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
     public static boolean PastrUnderAttack(RobotController rc)
     {
         try
