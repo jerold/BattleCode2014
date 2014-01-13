@@ -70,28 +70,18 @@ public class RobotPlayer
             {
                 if (rc.getLocation().equals(Utilities.spotOfTrollTower(rc, rc.sensePastrLocations(rc.getTeam().opponent())[0])))
                 {
-                    new GenericTower(rc, true, rc.sensePastrLocations(rc.getTeam().opponent())[0]).run();
+                    new GenericTower(rc, true).run();
                 }
                 if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 20)
                 {
 
-                    new GenericTower(rc, false, rc.senseHQLocation());
+                    new GenericTower(rc, false);
 
                 }
                 else
                 {
-                    ourPastrs = rc.sensePastrLocations(rc.getTeam());
-                    MapLocation loc = ourPastrs[0];
-                    int distance = rc.getLocation().distanceSquaredTo(loc);
-                    for (int i = 1; i < ourPastrs.length; i++)
-                    {
-                        if (ourPastrs[i].distanceSquaredTo(rc.getLocation()) < distance)
-                        {
-                            loc = ourPastrs[i];
-                            distance = ourPastrs[i].distanceSquaredTo(rc.getLocation());
-                        }
-                    }
-                        new GenericTower(rc, false, loc);
+
+                   new GenericTower(rc, false);
                 }
             }
             else if(rc.getType() == RobotType.PASTR)

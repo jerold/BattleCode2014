@@ -11,13 +11,16 @@ public class GenericTower {
     boolean troll;
     MapLocation target;
     boolean pull;
+    MapLocation[] pastrSpots;
+    MapLocation loc;
 
-    public GenericTower(RobotController rc, boolean troll, MapLocation target)
+    public GenericTower(RobotController rc, boolean troll)
     {
         this.rc = rc;
         this.troll = troll;
         this.target = target;
         pull = true;
+
     }
 
     public void run()
@@ -27,7 +30,44 @@ public class GenericTower {
 
             if(rc.getType() == RobotType.NOISETOWER)
             {
-                if(troll)
+                if (target == null)
+                {
+                    if (troll)
+                    {
+                        pastrSpots = rc.sensePastrLocations(rc.getTeam().opponent());
+
+                        for (int i = 0; i < pastrSpots.length; i++)
+                        {
+                            if (pastrSpots[i].distanceSquaredTo(rc.senseEnemyHQLocation()) < 10)
+                            {
+                                target = pastrSpots[i];
+                            }
+                        }
+                    }
+                    else
+                    {
+                        pastrSpots = rc.sensePastrLocations(rc.getTeam());
+
+                        if (pastrSpots.length > 0)
+                        {
+                            int dist = rc.getLocation().distanceSquaredTo(pastrSpots[0]);
+                            if (dist < 400)
+                            {
+                                target = pastrSpots[0];
+                            }
+
+                            for (int i = 1; i < pastrSpots.length; i++)
+                            {
+                                if (dist > rc.getLocation().distanceSquaredTo(pastrSpots[0]))
+                                {
+                                    target = pastrSpots[i];
+                                    dist = rc.getLocation().distanceSquaredTo(pastrSpots[0]);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if(troll)
                 {
                     try
                     {
