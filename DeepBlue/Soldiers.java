@@ -4,11 +4,13 @@ import battlecode.common.*;
 
 /**
  * Created by Jerold Albertson on 1/12/14.
+ *
  */
 public class Soldiers {
     static RobotController rc;
     static UnitCache cache;
     static RoadMap map;
+    static Navigator nav;
 
     static Direction allDirections[] = Direction.values();
     static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
@@ -18,6 +20,10 @@ public class Soldiers {
         rc = inRc;
         cache = new UnitCache(rc);
         map = new RoadMap(rc, cache);
+        nav = new Navigator(rc,cache, map);
+
+        // Temp THIS IS NOT A GOOD IDEA
+        nav.setDestination(rc.senseEnemyHQLocation());
 
         while (true) {
             if (!rc.isActive()) { rc.yield(); continue; }
@@ -25,6 +31,15 @@ public class Soldiers {
             cache.reset();
 
             map.checkForUpdates();
+
+            // Do unit strategy picker
+            // stragegy picks destinations and performs special tasks
+
+            if (nav.engaging())
+                nav.adjustFire(); // Micro Movements based on enemy contact
+            else
+                nav.maneuver(false); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
+            nav.tryMove();
 
             rc.yield();
         }

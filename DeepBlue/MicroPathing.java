@@ -12,6 +12,8 @@ public class MicroPathing {
     static MapLocation[] trail = new MapLocation[MAX_TRAIL_LENGTH];
     static int headIndex = 0;
     static int trailLength = 0;
+    static Direction allDirections[] = Direction.values();
+    static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
 
     public static boolean canMove(Direction dir, boolean selfAvoiding,RobotController rc){
         //include both rc.canMove and the snail Trail requirements
@@ -29,7 +31,7 @@ public class MicroPathing {
         return rc.canMove(dir);
     }
 
-    public static void tryToMove(Direction chosenDirection,boolean selfAvoiding,RobotController rc, int[] directionalLooks, Direction[] allDirections) throws GameActionException{
+    public static Direction getNextDirection(Direction chosenDirection,boolean selfAvoiding,RobotController rc) throws GameActionException{
         while(trailLength<2)
             addLocationToTrail(new MapLocation(-1, -1));
         if(rc.isActive()){
@@ -38,11 +40,11 @@ public class MicroPathing {
                 int forwardInt = chosenDirection.ordinal();
                 Direction trialDir = allDirections[(forwardInt+directionalOffset+8)%8];
                 if(canMove(trialDir,selfAvoiding,rc)){
-                    rc.move(trialDir);
-                    break;
+                    return trialDir;
                 }
             }
         }
+        return chosenDirection;
     }
 
     static MapLocation getLocationFromTrail(int index)

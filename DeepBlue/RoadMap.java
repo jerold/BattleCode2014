@@ -1,10 +1,10 @@
 package DeepBlue;
 
 import battlecode.common.*;
-import com.sun.swing.internal.plaf.synth.resources.synth_sv;
 
 /**
  * Created by Jerold Albertson on 1/12/14.
+ *
  */
 public class RoadMap {
 
