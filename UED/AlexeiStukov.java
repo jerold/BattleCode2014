@@ -94,7 +94,7 @@ public class AlexeiStukov {
 
     // this is arrays of our troop combinations
     // readd supply depot for Sprint tournment may also want to add HQ tower
-    static final int[] initialSpawnArray = {THOR, THOR, SUPPLY_DEPOT, HQTOWER, THOR, THOR, THOR};
+    static final int[] initialSpawnArray = {THOR, THOR, SUPPLY_DEPOT, HQTOWER, THOR, THOR2, THOR2};
     static final int[] BlockadeRunnerArray = {BATTLECRUISER};
     static final int[] KamikazeArray = {HELLION2, MARAUDER};
     static final int[] AllInMilkArray = {THOR, THOR2, SCV2};
@@ -198,7 +198,6 @@ public class AlexeiStukov {
                     {
                         if (Utilities.AllEnemyPastrsNextToHQ(rc, enemyPastrs))
                         {
-
                             BattleCruiserTarget = rc.senseEnemyHQLocation();
                             for (int i = 0; i < 6; i++)
                             {
@@ -246,7 +245,7 @@ public class AlexeiStukov {
                          */
 
                         // in this case our opponent is probably beating us so we must take down their pastrs and quickly
-                        if (opponentMilk > 7500000 && Clock.getRoundNum() < 750)
+                        if (opponentMilk >= 7500000 && Clock.getRoundNum() < 750)
                         {
                             // if we aren't almost to the win quantity then we need to respond
                             if (ourMilk < 90000000 || ourPastrs.length == 0)
@@ -285,6 +284,7 @@ public class AlexeiStukov {
                                 setMemory = true;
                                 rc.setTeamMemory(1, 1);
                             }
+                            /*
                             // if we haven't gotten both soldiers out to the second corner then do so now
                             if (ourPastrs.length < 3 && !bigMap)
                             {
@@ -293,6 +293,14 @@ public class AlexeiStukov {
                             else
                             {
                                 strategy = BansheeHellionRush;//AllOutRush;
+                            }*/
+                            if (ourPastrs.length < 2)
+                            {
+                                strategy = BansheeHellionRush;
+                            }
+                            else
+                            {
+                                strategy = BansheeHellionRush;
                             }
                         }
                         else if (ourMilk > (opponentMilk+2500000) && ourPastrs.length > 0)
@@ -357,7 +365,6 @@ public class AlexeiStukov {
                             {
                                 strategy = BlockadeRunner;
                             }
-
                         }
 
                         if (strategy == strategy2) {}
@@ -365,9 +372,6 @@ public class AlexeiStukov {
                         {
                             numbOfSoldiers2 = 0;
                         }
-
-
-
 
                         if (teamMemory[1] == 1 && numbOfSoldiers < 1)
                         {

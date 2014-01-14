@@ -2,6 +2,7 @@ package UED;
 
 /**
  * Created by fredkneeland on 1/7/14.
+ * Tab was here =]
  */
 import java.util.Random;
 
@@ -1062,6 +1063,8 @@ public class Utilities
             Robot[] nearByAllies2 = null;
             Robot[] nearByAllies3 = null;
 
+            boolean alliesEngaged = false;
+
             // simple shoot at an enemy if we see one will need to be improved later
             nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
             nearByEnemies4 = nearByEnemies3;
@@ -1091,7 +1094,6 @@ public class Utilities
                 {
                     nearByEnemies2 = findSoldiersAtDistance(rc, nearByEnemies3, 24);//rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
                     //nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 10);//rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam());
-
                 }
 
 
@@ -1102,10 +1104,11 @@ public class Utilities
                 {
                     MapLocation enemySlot = rc.senseLocationOf(nearbyEnemies[0]);
 
-                    nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
-                    nearByAllies3 = findSoldiers(rc, nearByAllies3);
+                    //nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
+                    //nearByAllies3 = findSoldiers(rc, nearByAllies3);
+                    alliesEngaged = AlliesEngaged(rc, nearByEnemies3, nearByAllies);
                     // if there are other bots in range then we should fire
-                    if (nearByAllies3.length > 0)//= nearbyEnemies.length)
+                    if (alliesEngaged)//= nearbyEnemies.length)
                     {
                         fire(rc);
                     }
@@ -1176,7 +1179,6 @@ public class Utilities
                             {
                                 fire(rc);
                             }
-
                         }
                         else
                         {
@@ -1188,12 +1190,13 @@ public class Utilities
                 else if (nearByEnemies2.length > 0)//<= (nearByAllies.length + 1) && (rc.getHealth() >= rc.senseRobotInfo(nearByEnemies3[0]).health || nearByAllies.length >= nearByEnemies2.length))
                 {
                     MapLocation enemySlot = rc.senseLocationOf(nearByEnemies2[0]);
-                    nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
-                    nearByAllies3 = findSoldiers(rc, nearByAllies3);
+                    //nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
+                    //nearByAllies3 = findSoldiers(rc, nearByAllies3);
+                    alliesEngaged = AlliesEngaged(rc, nearByEnemies3, nearByAllies);
                     nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 9);
                     GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
                     // if our brethern are in the field of action we must join them!
-                    if (nearByAllies3.length > 0)
+                    if (alliesEngaged)
                     {
                         if (!MapLocationInRangeOfEnemyHQ(rc, enemySlot))
                         {
@@ -1232,7 +1235,6 @@ public class Utilities
                     {
                         if (nearByEnemies4.length > 0)
                         {
-
                             Robot[] nearByEnemies5 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
                             if (nearByEnemies5.length > 0)
                             {
@@ -1258,7 +1260,6 @@ public class Utilities
                                 fire(rc);
                             }
                         }
-
                     }
                 }
                 /**
@@ -1356,6 +1357,28 @@ public class Utilities
 
         return false;
 
+    }
+
+    public static boolean AlliesEngaged(RobotController rc, GameObject[] enemies, GameObject[] allies)
+    {
+        boolean alliesEngaged = false;
+        try
+        {
+            for (int i = 0; i < enemies.length; i++)
+            {
+                for (int j = 0; j < allies.length; j++)
+                {
+                    if (rc.senseLocationOf(enemies[i]).distanceSquaredTo(rc.senseLocationOf(allies[j])) <= 10)
+                    {
+                        alliesEngaged = true;
+                    }
+                }
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return alliesEngaged;
     }
 
     // this method returns true if a MapLocation is inside of an array false otherwise
