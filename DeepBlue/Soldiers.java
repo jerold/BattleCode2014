@@ -36,9 +36,9 @@ public class Soldiers {
             // stragegy picks destinations and performs special tasks
 
             if (nav.engaging())
-                nav.adjustFire(); // Micro Movements based on enemy contact
+                nav.adjustFire(false); // Micro Movements based on enemy contact
             else
-                nav.maneuver(false); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
+                nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
             nav.tryMove();
 
             rc.yield();

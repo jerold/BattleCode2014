@@ -11,7 +11,7 @@ public class RoadMap {
     RobotController rc;
     UnitCache cache;
 
-    static int[][] neighborTileOffsets = new int[][]{ {-1,-1}, {0,-1}, {1,-1}, {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0} };
+    static int[][] neighborTileOffsets = new int[][]{ {0,-1}, {1,0}, {0,1}, {-1,0}, {-1,-1}, {1,-1}, {1,1}, {-1,1} };
 
     static int MAX_WIDTH = 100; // Prevent heavy processing on larger maps
     int MAP_WIDTH;
@@ -23,6 +23,12 @@ public class RoadMap {
         DefaultBug,
         SmartBug,
         FlowBug
+    }
+
+    public enum FlowMapFilter {
+        roadGradient,
+        voidGradient,
+        compGradient
     }
 
     PathingStrategy pathingStrat;
@@ -46,6 +52,22 @@ public class RoadMap {
         if (rc.getType() == RobotType.HQ)
             resetMapLoadedFlags();
     }
+
+    //================================================================================
+    // Facilitator Methods
+    //================================================================================
+
+    public int flowValueForDirection(Direction dir) throws GameActionException
+    {
+        MapLocation targetLocation = rc.getLocation().add(dir);
+        return flowMap[targetLocation.x][targetLocation.y];
+    }
+
+
+
+    //================================================================================
+    // Map Updates, Checks, and Assessments Methods
+    //================================================================================
 
     public void checkForUpdates() throws GameActionException
     {
@@ -72,7 +94,7 @@ public class RoadMap {
     {
         if (mapUploaded && flowUploaded) return;
 
-        int maxDistanceFromRoad = 5;
+        int maxGradient = 6;
 
         // Map Details are read in from the game board
         if (!mapUploaded) {
@@ -84,7 +106,7 @@ public class RoadMap {
                     switch (ordValue)
                     {
                         case 0:
-                            flowValue = maxDistanceFromRoad;
+                            flowValue = maxGradient;
                             break;
                         case 1:
                             flowValue = 0;
@@ -94,7 +116,7 @@ public class RoadMap {
                             break;
                     }
                     roadMap[y][x] = ordValue;
-                    flowMap[y][x] = flowValue;
+                    flowMap[y][x] = VectorFunctions.locToInt(new MapLocation(flowValue, flowValue == 999 ? 0 : maxGradient)); // x:Road Gradient, y:Void Gradient
                 }
             }
 
@@ -107,29 +129,32 @@ public class RoadMap {
         // Flow Gradient leads to roads and somewhat away from void space
         if (!flowUploaded) {
             rc.setIndicatorString(1, "Working On Flow");
-            for (int j=flowprogress; j<maxDistanceFromRoad;j++) {
+            for (int j=flowprogress; j<maxGradient;j++) {
                 for (int y=0; y<MAP_HEIGHT-0;y++) {
                     for (int x=0; x<MAP_WIDTH-0;x++) {
-                        if (flowMap[y][x] == j) {
+                        MapLocation tileFlow = VectorFunctions.intToLoc(flowMap[y][x]);
+                        if (tileFlow.x == j) { // update Road Gradient
                             for (int i=0; i<neighborTileOffsets.length;i++) {
                                 if (y+neighborTileOffsets[i][0] > 0
                                         && y+neighborTileOffsets[i][0] < MAP_HEIGHT
                                         && x+neighborTileOffsets[i][1] > 0
                                         && x+neighborTileOffsets[i][1] < MAP_WIDTH) {
 
-                                    if (flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] > j && flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] != 999)
-                                        flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = j+1;
+                                    MapLocation neighborTileFlow = VectorFunctions.intToLoc(flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]]);
+                                    if (neighborTileFlow.x > j && neighborTileFlow.x != 999)
+                                        flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = VectorFunctions.locToInt(new MapLocation(j+1, neighborTileFlow.y));
                                 }
                             }
-                        } else if (j == 0 && flowMap[y][x] == 999) {
-                            for (int i=0; i<neighborTileOffsets.length;i++) {
+                        } else if (tileFlow.y == j) { // update Void Gradient
+                            for (int i=0; i<neighborTileOffsets.length/2;i++) { // 1st half represents up/down/left/right
                                 if (y+neighborTileOffsets[i][0] > 0
                                         && y+neighborTileOffsets[i][0] < MAP_HEIGHT
                                         && x+neighborTileOffsets[i][1] > 0
                                         && x+neighborTileOffsets[i][1] < MAP_WIDTH) {
 
-                                    if (flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] != 999 && flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] != 0)
-                                        flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = maxDistanceFromRoad+1;
+                                    MapLocation neighborTileFlow = VectorFunctions.intToLoc(flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]]);
+                                    if (neighborTileFlow.y > j)
+                                        flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = VectorFunctions.locToInt(new MapLocation(neighborTileFlow.x, j+1));
                                 }
                             }
                         }
@@ -179,7 +204,9 @@ public class RoadMap {
     {
         if (flowUploaded) {
             System.out.println("Write");
-            printMap();
+            printMap(FlowMapFilter.roadGradient);
+            printMap(FlowMapFilter.voidGradient);
+            printMap(FlowMapFilter.compGradient);
         }
 
         for (int y=0; y<MAP_HEIGHT;y++) {
@@ -197,14 +224,27 @@ public class RoadMap {
         rc.broadcast(Utilities.mapLoadedChannel, VectorFunctions.locToInt(new MapLocation(mapUploaded ? 1 : 0, flowUploaded ? 1 : 0)));
     }
 
-    public void printMap()
+    public void printMap(FlowMapFilter filter)
     {
         for (int i=0; i<MAP_WIDTH;i++) {
             for (int j=0; j<MAP_HEIGHT;j++) {
-                if (flowMap[i][j] != 999)
-                    System.out.print(flowMap[i][j]);
+                MapLocation tileFlow = VectorFunctions.intToLoc(flowMap[i][j]);
+                int pVal = 0;
+                switch (filter) {
+                    case roadGradient:
+                        pVal = tileFlow.x;
+                        break;
+                    case voidGradient:
+                        pVal = tileFlow.y;
+                        break;
+                    case compGradient:
+                        pVal = tileFlow.x-tileFlow.y;
+                }
+
+                if (tileFlow.x != 999)
+                    System.out.print(pVal + ",");
                 else
-                    System.out.print(" ");
+                    System.out.print(" ,");
             }
             System.out.println("");
         }
