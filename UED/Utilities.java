@@ -1103,6 +1103,7 @@ public class Utilities
                     MapLocation enemySlot = rc.senseLocationOf(nearbyEnemies[0]);
 
                     nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
+                    nearByAllies3 = findSoldiers(rc, nearByAllies3);
                     // if there are other bots in range then we should fire
                     if (nearByAllies3.length > 0)//= nearbyEnemies.length)
                     {
@@ -1188,6 +1189,7 @@ public class Utilities
                 {
                     MapLocation enemySlot = rc.senseLocationOf(nearByEnemies2[0]);
                     nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
+                    nearByAllies3 = findSoldiers(rc, nearByAllies3);
                     nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 9);
                     GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
                     // if our brethern are in the field of action we must join them!
