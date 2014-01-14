@@ -2,6 +2,8 @@ package DeepBlue;
 
 import battlecode.common.*;
 
+import java.util.ArrayList;
+
 /**
  * Created by Jerold Albertson on 1/12/14.
  *
@@ -25,10 +27,9 @@ public class RoadMap {
         FlowBug
     }
 
-    public enum FlowMapFilter {
-        roadGradient,
-        voidGradient,
-        compGradient
+    public enum PrintMapFilter {
+        mapData,
+        flowData
     }
 
     PathingStrategy pathingStrat;
@@ -94,7 +95,7 @@ public class RoadMap {
     {
         if (mapUploaded && flowUploaded) return;
 
-        int maxGradient = 6;
+        int maxGradient = 5;
 
         // Map Details are read in from the game board
         if (!mapUploaded) {
@@ -116,7 +117,7 @@ public class RoadMap {
                             break;
                     }
                     roadMap[y][x] = ordValue;
-                    flowMap[y][x] = VectorFunctions.locToInt(new MapLocation(flowValue, flowValue == 999 ? 0 : maxGradient)); // x:Road Gradient, y:Void Gradient
+                    flowMap[y][x] = VectorFunctions.locToInt(new MapLocation(flowValue, flowValue == 999 ? maxGradient : 0)); // x:Road Gradient, y:Void Gradient
                 }
             }
 
@@ -129,6 +130,76 @@ public class RoadMap {
         // Flow Gradient leads to roads and somewhat away from void space
         if (!flowUploaded) {
             rc.setIndicatorString(1, "Working On Flow");
+
+//            ArrayList<int[]> roads = new ArrayList<int[]>();
+//            ArrayList<int[]> voids = new ArrayList<int[]>();
+//            ArrayList<int[]> toCheck;
+//
+//            for (int y=0; y<MAP_HEIGHT-0;y++) {
+//                for (int x=0; x<MAP_WIDTH-0;x++) {
+//                    if (flowMap[y][x] == 0) {
+//                        roads.add(new int[]{y, x});
+//                    } else if (flowMap[y][x] == 999)
+//                        voids.add(new int[]{y, x});
+//                }
+//            }
+//
+//            toCheck = roads;
+//            int[] tile, tileN;
+//            int x, xN, y, yN, tileValue, tileNvalue;
+//            while (!toCheck.isEmpty()) {
+//                tile = toCheck.remove(0);
+//                y = tile[0];
+//                x = tile[1];
+//                tileValue = flowMap[y][x];
+//                System.out.println("ROADS To Check: " + toCheck.size() + ", Tile Value: " + tileValue);
+//
+//                for (int i=0; i<neighborTileOffsets.length;i++) {
+//                    if (y+neighborTileOffsets[i][0] > 0
+//                            && y+neighborTileOffsets[i][0] < MAP_HEIGHT
+//                            && x+neighborTileOffsets[i][1] > 0
+//                            && x+neighborTileOffsets[i][1] < MAP_WIDTH) {
+//
+//                        tileN = new int[]{y+neighborTileOffsets[i][0], x+neighborTileOffsets[i][1]};
+//                        yN = tileN[0];
+//                        xN = tileN[1];
+//                        tileNvalue = flowMap[yN][xN];
+//                        if (tileNvalue == maxGradient) {
+//                            flowMap[yN][xN] = tileValue+1;
+//                            if (tileValue+1 < maxGradient)
+//                                toCheck.add(tileN);
+//                        }
+//                    }
+//                }
+//            }
+//
+//            toCheck = voids;
+//            while (!toCheck.isEmpty()) {
+//                tile = toCheck.remove(0);
+//                y = tile[0];
+//                x = tile[1];
+//                tileValue = flowMap[y][x];
+//                System.out.println("VOIDS To Check: " + toCheck.size() + ", Tile Value: " + tileValue);
+//
+//                for (int i=0; i<neighborTileOffsets.length/2;i++) {
+//                    if (y+neighborTileOffsets[i][0] > 0
+//                            && y+neighborTileOffsets[i][0] < MAP_HEIGHT
+//                            && x+neighborTileOffsets[i][1] > 0
+//                            && x+neighborTileOffsets[i][1] < MAP_WIDTH) {
+//
+//                        tileN = new int[]{y+neighborTileOffsets[i][0], x+neighborTileOffsets[i][1]};
+//                        yN = tileN[0];
+//                        xN = tileN[1];
+//                        tileNvalue = flowMap[yN][xN];
+//                        if (tileNvalue != 0 && tileNvalue != 999)
+//                            flowMap[yN][xN] = maxGradient;
+//                    }
+//                }
+//            }
+
+
+
+
             for (int j=flowprogress; j<maxGradient;j++) {
                 for (int y=0; y<MAP_HEIGHT-0;y++) {
                     for (int x=0; x<MAP_WIDTH-0;x++) {
@@ -145,7 +216,7 @@ public class RoadMap {
                                         flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = VectorFunctions.locToInt(new MapLocation(j+1, neighborTileFlow.y));
                                 }
                             }
-                        } else if (tileFlow.y == j) { // update Void Gradient
+                        } else if (j%2 == 0 && tileFlow.y == maxGradient-j/2) { // update Void Gradient
                             for (int i=0; i<neighborTileOffsets.length/2;i++) { // 1st half represents up/down/left/right
                                 if (y+neighborTileOffsets[i][0] > 0
                                         && y+neighborTileOffsets[i][0] < MAP_HEIGHT
@@ -153,20 +224,33 @@ public class RoadMap {
                                         && x+neighborTileOffsets[i][1] < MAP_WIDTH) {
 
                                     MapLocation neighborTileFlow = VectorFunctions.intToLoc(flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]]);
-                                    if (neighborTileFlow.y > j)
-                                        flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = VectorFunctions.locToInt(new MapLocation(neighborTileFlow.x, j+1));
+                                    if (neighborTileFlow.y < maxGradient-j/2)
+                                        flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = VectorFunctions.locToInt(new MapLocation(neighborTileFlow.x, maxGradient-j/2-1));
                                 }
                             }
                         }
                     }
                 }
 
+
                 flowprogress++;
                 return;
             }
 
+            // Clean Up
+            for (int y=0; y<MAP_HEIGHT-0;y++) {
+                for (int x=0; x<MAP_WIDTH-0;x++) {
+                    MapLocation tileFlow = VectorFunctions.intToLoc(flowMap[y][x]);
+                    if (roadMap[y][x] == 2)
+                        flowMap[y][x] = 999;
+                    else
+                        flowMap[y][x] = tileFlow.x+tileFlow.y;
+                }
+            }
+
             rc.setIndicatorString(1, "Done with Flow");
             flowUploaded = true;
+            System.out.println("Finished Flow: " + Clock.getRoundNum());
             broadcastMapAndFlow();
         }
     }
@@ -204,9 +288,8 @@ public class RoadMap {
     {
         if (flowUploaded) {
             System.out.println("Write");
-            printMap(FlowMapFilter.roadGradient);
-            printMap(FlowMapFilter.voidGradient);
-            printMap(FlowMapFilter.compGradient);
+            printMap(PrintMapFilter.mapData);
+            printMap(PrintMapFilter.flowData);
         }
 
         for (int y=0; y<MAP_HEIGHT;y++) {
@@ -224,27 +307,57 @@ public class RoadMap {
         rc.broadcast(Utilities.mapLoadedChannel, VectorFunctions.locToInt(new MapLocation(mapUploaded ? 1 : 0, flowUploaded ? 1 : 0)));
     }
 
-    public void printMap(FlowMapFilter filter)
+    public char asciiTranslatorForFlowValue(int fVal)
+    {
+        switch (fVal) {
+            case 0:
+                return ' ';
+            case 1:
+                return '.';
+            case 2:
+                return ':';
+            case 3:
+                return ';';
+            case 4:
+                return '+';
+            case 5:
+                return '=';
+            case 6:
+                return 'x';
+            case 7:
+                return 'X';
+            case 8:
+                return '$';
+            default:
+                return '&';
+        }
+    }
+
+    public int flowValueForXY(int x, int y)
+    {
+        MapLocation tileFlow = VectorFunctions.intToLoc(flowMap[y][x]);
+        return tileFlow.x+tileFlow.y;
+    }
+
+    public void printMap(PrintMapFilter filter)
     {
         for (int i=0; i<MAP_WIDTH;i++) {
             for (int j=0; j<MAP_HEIGHT;j++) {
                 MapLocation tileFlow = VectorFunctions.intToLoc(flowMap[i][j]);
                 int pVal = 0;
                 switch (filter) {
-                    case roadGradient:
-                        pVal = tileFlow.x;
+                    case mapData:
+                        pVal = roadMap[i][j];
                         break;
-                    case voidGradient:
-                        pVal = tileFlow.y;
+                    case flowData:
+                        pVal = flowMap[i][j];
                         break;
-                    case compGradient:
-                        pVal = tileFlow.x-tileFlow.y;
                 }
 
-                if (tileFlow.x != 999)
-                    System.out.print(pVal + ",");
+                if (pVal != 999)
+                    System.out.print(asciiTranslatorForFlowValue(pVal) + "" + asciiTranslatorForFlowValue(pVal));
                 else
-                    System.out.print(" ,");
+                    System.out.print("##");
             }
             System.out.println("");
         }
