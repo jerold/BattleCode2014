@@ -29,7 +29,7 @@ public class GenericTower {
 
             if(rc.getType() == RobotType.NOISETOWER)
             {
-                if (target == null)
+                if (target == null || Clock.getRoundNum() % 25 == 0)
                 {
                     if (troll)
                     {
@@ -73,6 +73,7 @@ public class GenericTower {
 
                     //rc.setIndicatorString(1, ""+target);
                 }
+                if(target == null){}
                 else if(troll)
                 {
                     try
@@ -123,6 +124,7 @@ public class GenericTower {
                                 {
                                     Utilities.fireCircle(rc, k, target);
                                 }
+                                pull = true;
                             }
                         }
                         else if(enemyPastr && allyPastr)
@@ -140,6 +142,7 @@ public class GenericTower {
                                     while(!rc.isActive()){rc.yield();}
                                     rc.attackSquare(pastrE);
                                 }
+                                pull = true;
                             }
                         }
                         else if(enemyPastr)

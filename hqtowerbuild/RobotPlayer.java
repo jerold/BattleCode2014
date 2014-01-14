@@ -28,19 +28,19 @@ public class RobotPlayer
 					}
 					if(type == SmartHQ.DURAN)
 					{
-						new Duran(rc).run();
+						//new Duran(rc).run();
 					}
 					else if(type == SmartHQ.GHOST)
 					{
-						new Ghost(rc).run();
+						//new Ghost(rc).run();
 					}
 					else if(type == SmartHQ.MULE)
 					{
-						new SupplyDepot(rc).run();
+						//new SupplyDepot(rc).run();
 					}
 					else if(type == SmartHQ.TOWER)
 					{
-						new HQTower(rc).run();
+						//new HQTower(rc).run();
 					}
 				}
 			}
