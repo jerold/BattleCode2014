@@ -4,6 +4,7 @@ import battlecode.common.*;
 
 /**
  * Created by Jerold Albertson on 1/12/14.
+ *
  */
 public class Structures {
     static RobotController rc;
