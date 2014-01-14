@@ -1,4 +1,4 @@
-package UED;
+package UED2;
 
 import battlecode.common.*;
 import battlecode.common.RobotType;
