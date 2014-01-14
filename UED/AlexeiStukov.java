@@ -104,7 +104,7 @@ public class AlexeiStukov {
     static final int[] AllOutPastrRushArray = {MARAUDER, DURAN};
     static final int[] Balanced1PastrDefendArray = {GOLIATH, GOLIATH, THOR, GOLIATH, GOLIATH};
     static final int[] Balanced2PastrDefendArray = {GOLIATH, THOR, GOLIATH, THOR2, GOLIATH, GOLIATH};
-    static final int[] TimingPushArray = {GOLIATH, GOLIATH, GOLIATH, GOLIATH, GOLIATH, HELLION, THOR};
+    static final int[] TimingPushArray = {DURAN, GHOST, GOLIATH, GOLIATH, GOLIATH, GOLIATH, GOLIATH, HELLION, THOR};
     static final int[] PastrDefendArray = {THOR, GOLIATH, THOR, GOLIATH};
     static final int[] SmallMapArray = {BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, BATTLECRUISER, CENTERTOWER, CENTERMULE};
     static final int[] AllOutRushArray = {HELLION};

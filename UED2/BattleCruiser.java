@@ -97,6 +97,12 @@ public class BattleCruiser
         {
             try
             {
+            	if(rc.readBroadcast(65) == 1)
+                {
+            		rc.setIndicatorString(1, "Wearing hat");
+                	rc.broadcast(65, 0);
+                	new HatBot(rc).run();
+                }
                 if (rc.getHealth() < 30)
                 {
                     rc.broadcast(BattleCruiserNumber, rc.readBroadcast(BattleCruiserNumber) - 1);

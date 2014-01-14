@@ -80,7 +80,13 @@ public class Hellion {
         {
             try
             {
-                if (kamikaze)
+                if(rc.readBroadcast(65) == 1)
+                {
+                	rc.setIndicatorString(1, "Wearing hat");
+                	rc.broadcast(65, 0);
+                	new HatBot(rc).run();
+                }
+            	if (kamikaze)
                 {
                     MapLocation enemyHQ = rc.senseEnemyHQLocation();
                     int distanceToEnemyHQ = rc.getLocation().distanceSquaredTo(enemyHQ);

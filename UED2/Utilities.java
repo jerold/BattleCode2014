@@ -1864,7 +1864,7 @@ public class Utilities
             MapLocation toFire = center.add(directions[k], radius);
             try
             {
-                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
+                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire) && rc.senseTerrainTile(toFire) != TerrainTile.VOID)
                 {
                     rc.attackSquare(toFire);
                     rc.yield();
@@ -1880,7 +1880,7 @@ public class Utilities
             }
             try
             {
-                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
+                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire) && rc.senseTerrainTile(toFire) != TerrainTile.VOID)
                 {
                     rc.attackSquare(toFire);
                     rc.yield();
@@ -2560,30 +2560,46 @@ public class Utilities
 
         if(pastr.x < width / 2)
         {
-            while(target.distanceSquaredTo(pastr) < dist && target.x > 0)
+            while(target.distanceSquaredTo(pastr) < dist && target.x > 6)
             {
                 target = target.add(Direction.WEST);
             }
-        }
-        else
-        {
-            while(target.distanceSquaredTo(pastr) < dist && target.x < rc.getMapWidth() - 1)
+            while(target.x < 6)
             {
                 target = target.add(Direction.EAST);
             }
         }
+        else
+        {
+            while(target.distanceSquaredTo(pastr) < dist && target.x < rc.getMapWidth() - 7)
+            {
+                target = target.add(Direction.EAST);
+            }
+            while(target.x > rc.getMapWidth() - 7)
+            {
+                target = target.add(Direction.WEST);
+            }
+        }
         if(pastr.y < height / 2)
         {
-            while(target.distanceSquaredTo(pastr) < dist && target.y < height - 1)
+            while(target.distanceSquaredTo(pastr) < dist && target.y < height - 7)
             {
                 target = target.add(Direction.SOUTH);
+            }
+            while(target.y > height - 7)
+            {
+                target = target.add(Direction.NORTH);
             }
         }
         else
         {
-            while(target.distanceSquaredTo(pastr) < dist && target.y > 0)
+            while(target.distanceSquaredTo(pastr) < dist && target.y > 6)
             {
                 target = target.add(Direction.NORTH);
+            }
+            while(target.y < 6)
+            {
+                target = target.add(Direction.SOUTH);
             }
         }
 

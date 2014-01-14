@@ -13,6 +13,7 @@ import battlecode.common.*;
  */
 public class AlexeiStukov {
     int numbOfSoldiers = 0;
+    double ourMilk;
     static final int GOLIATH = 1;
     static final int GHOST = 2;
     static final int DURAN = 3;
@@ -88,6 +89,7 @@ public class AlexeiStukov {
     static final int GoliathReadyForCommand = 61;
     static final int GoliathNextLocation = 62;
     static final int GoliathCurrentLocation = 63;
+    static final int HatChannel = 65;
 
     static final int PastrStartChannel = 10000;
 
@@ -224,18 +226,17 @@ public class AlexeiStukov {
                     {
                         // here we determine what we should do
                         double opponentMilk = rc.senseTeamMilkQuantity(rc.getTeam().opponent());
-                        double ourMilk = rc.senseTeamMilkQuantity(rc.getTeam());
+                        ourMilk = rc.senseTeamMilkQuantity(rc.getTeam());
                         // if our opponent has almost gotten all their milk and we haven't
 
                         //rc.setIndicatorString(1, "Hello World");
 
                         strategy2 = strategy;
-
-                        if ((ourMilk > 9000000) && (opponentMilk < 5000000) && (ourPastrs.length > 0) && !hatWorn)
+                        
+                        if(ourMilk > 9000000 && opponentMilk < 5000000 && ourPastrs.length > 0)
                         {
-                            rc.wearHat();
-                            rc.setIndicatorString(1, "Wearing hat");
-                            hatWorn = true;
+                        	rc.setIndicatorString(1, "Wear hat");
+                        	rc.broadcast(HatChannel, 1);
                         }
 
                         /**
@@ -246,7 +247,7 @@ public class AlexeiStukov {
                          */
 
                         // in this case our opponent is probably beating us so we must take down their pastrs and quickly
-                        if (opponentMilk >= 7500000 && Clock.getRoundNum() < 750)
+                        if (opponentMilk >= 5000000 && Clock.getRoundNum() < 500)
                         {
                             // if we aren't almost to the win quantity then we need to respond
                             if (ourMilk < 90000000 || ourPastrs.length == 0)
@@ -485,7 +486,7 @@ public class AlexeiStukov {
                 {
                     e.printStackTrace();
                     System.out.println("HQ Exception");
-                    rc.setIndicatorString(0, "Error 3");
+                    //rc.setIndicatorString(0, "Error 3");
                 }
                 rc.yield();
             }
