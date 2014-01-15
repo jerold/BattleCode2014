@@ -19,13 +19,14 @@ public class Headquarter {
         rc = inRc;
         cache = new UnitCache(rc);
         map = new RoadMap(rc, cache);
+        tryToSpawn();
 
         while (true) {
             if (!rc.isActive()) { rc.yield(); continue; }
 
             cache.reset();
 
-            tryToSpawn();
+            //tryToSpawn();
 
             map.checkForUpdates();
 

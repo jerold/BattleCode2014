@@ -7,6 +7,9 @@ import battlecode.common.*;
  *
  */
 public class Navigator {
+
+    static final int DIRECTION_WEIGHT_TRAIL = 3;
+
     RobotController rc;
     UnitCache cache;
     RoadMap map;
@@ -37,7 +40,13 @@ public class Navigator {
      */
     public void adjustFire(boolean passive) throws GameActionException
     {
+        if (passive) {
+            maneuver();
+            return;
+        } else
+            directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
+        // Movement while in range of enemies
     }
 
     /*
@@ -45,18 +54,12 @@ public class Navigator {
      */
     public void maneuver() throws GameActionException
     {
-        for (int i=0; i<8; i++) {
-
-        }
-
-        Direction direction = null;
-        MapLocation rcLocation = rc.getLocation();
-
-        if (map.pathingStrat == RoadMap.PathingStrategy.DefaultBug) {
-            int ordinalDirection = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc).ordinal();
-            directions[ordinalDirection] += 1;
-        }
-
+        if (map.pathingStrat == RoadMap.PathingStrategy.DefaultBug)
+            defaultDirectionAssessment();
+        else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
+            smartDirectionAssessment();
+        else
+            flowDirectionAssessment();
     }
 
     /*
@@ -64,18 +67,25 @@ public class Navigator {
      */
     public void tryMove() throws GameActionException
     {
-//        rc.move(bestDirection());
-//        directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+        rc.setIndicatorString(0, "Strategy: " + (map.pathingStrat == RoadMap.PathingStrategy.FlowBug ? "Flow" : "Not Flow"));
+        rc.setIndicatorString(1, "North: " + directions[0] + ", NE: " + directions[1] + ", East: " + directions[2] + ", SE: " + directions[3]);
+        rc.setIndicatorString(2, "South: " + directions[4] + ", SW: " + directions[5] + ", West: " + directions[6] + ", NW: " + directions[7]);
+
+        if (rc.isActive()) {
+            Direction dir = bestDirection();
+            if (rc.canMove(dir))
+                rc.move(dir);
+        }
     }
 
     public Direction bestDirection()
     {
-        double max = stayPut;
+        double min = stayPut;
         Direction bestDirection = null;
 
         for (int i = 0; i < 8; ++i) {
-            if (max >= directions[i]) continue;
-            max = directions[i];
+            if (min <= directions[i]) continue;
+            min = directions[i];
             bestDirection = Utilities.directionByOrdinal[i];
         }
         return bestDirection;
@@ -84,5 +94,37 @@ public class Navigator {
     public void setDestination(MapLocation location) throws GameActionException
     {
         destination = location;
+    }
+
+    //================================================================================
+    // Default Methods
+    //================================================================================
+
+    public void defaultDirectionAssessment() throws GameActionException
+    {
+        directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+    }
+
+    //================================================================================
+    // Smart Methods
+    //================================================================================
+
+    public void smartDirectionAssessment() throws GameActionException
+    {
+        directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+    }
+
+    //================================================================================
+    // Flow Methods
+    //================================================================================
+
+    public void flowDirectionAssessment() throws GameActionException
+    {
+        directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+        directions[MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc).ordinal()] -= DIRECTION_WEIGHT_TRAIL;
+
+        for (int i=0; i<8; i++) {
+            directions[i] += map.flowValueForLocation(rc.getLocation().add(Utilities.directionByOrdinal[i]));
+        }
     }
 }

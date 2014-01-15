@@ -58,13 +58,10 @@ public class RoadMap {
     // Facilitator Methods
     //================================================================================
 
-    public int flowValueForDirection(Direction dir) throws GameActionException
+    public int flowValueForLocation(MapLocation loc) throws GameActionException
     {
-        MapLocation targetLocation = rc.getLocation().add(dir);
-        return flowMap[targetLocation.x][targetLocation.y];
+        return flowMap[loc.x][loc.y];
     }
-
-
 
     //================================================================================
     // Map Updates, Checks, and Assessments Methods
@@ -197,9 +194,6 @@ public class RoadMap {
 //                }
 //            }
 
-
-
-
             for (int j=flowprogress; j<maxGradient;j++) {
                 for (int y=0; y<MAP_HEIGHT-0;y++) {
                     for (int x=0; x<MAP_WIDTH-0;x++) {
@@ -231,7 +225,6 @@ public class RoadMap {
                         }
                     }
                 }
-
 
                 flowprogress++;
                 return;
@@ -279,6 +272,7 @@ public class RoadMap {
                     flowMap[y][x] = mapDetails.y;
                 }
             }
+            // printMap(PrintMapFilter.flowData);
         }
 
         rc.setIndicatorString(1, "Finished With Reading In Map and Flow");
@@ -286,11 +280,11 @@ public class RoadMap {
 
     public void broadcastMapAndFlow() throws GameActionException
     {
-        if (flowUploaded) {
-            System.out.println("Write");
-            printMap(PrintMapFilter.mapData);
-            printMap(PrintMapFilter.flowData);
-        }
+//        if (flowUploaded) {
+//            System.out.println("Write");
+//            printMap(PrintMapFilter.mapData);
+//            printMap(PrintMapFilter.flowData);
+//        }
 
         for (int y=0; y<MAP_HEIGHT;y++) {
             for (int x=0; x<MAP_WIDTH;x++) {
@@ -331,12 +325,6 @@ public class RoadMap {
             default:
                 return '&';
         }
-    }
-
-    public int flowValueForXY(int x, int y)
-    {
-        MapLocation tileFlow = VectorFunctions.intToLoc(flowMap[y][x]);
-        return tileFlow.x+tileFlow.y;
     }
 
     public void printMap(PrintMapFilter filter)
