@@ -2,13 +2,7 @@ package theSwarm;
 
 import java.util.Random;
 
-import battlecode.common.Direction;
-import battlecode.common.GameObject;
-import battlecode.common.MapLocation;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
-import battlecode.common.TerrainTile;
+import battlecode.common.*;
 
 public class Movement {
 	static Random rand;
@@ -255,6 +249,15 @@ public class Movement {
         // this method will run until we get to our target location
         while (!rc.getLocation().equals(target) || rc.getLocation().isAdjacentTo(target))
         {
+            Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+
+            if (nearByEnemies.length > 0)
+            {
+                int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+
+                FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
+            }
             // we put the try block inside of the while loop so an exception won't terminate the method
             try
             {
@@ -271,10 +274,10 @@ public class Movement {
                     dir = rc.getLocation().directionTo(target);
                     newDir = Direction.NONE;
 
-                    if (fightMode(rc))
+                    /*if (fightMode(rc))
                     {
                     }
-                    else if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
+                    else*/ if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
                     {
                         MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
                     }
@@ -359,6 +362,15 @@ public class Movement {
                             // we will go hugging one side of obstacle until we get back on our original line
                             while (!dir2.equals(dir) && !rc.getLocation().equals(target) && !rc.getLocation().isAdjacentTo(target))// && rc.canMove(dir2))
                             {
+                                nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+
+                                if (nearByEnemies.length > 0)
+                                {
+                                    int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                                    int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+
+                                    FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
+                                }
                                 try
                                 {
                                     if (rc.isActive())
@@ -367,11 +379,11 @@ public class Movement {
                                         dir2 = rc.getLocation().directionTo(target);
 
 
-                                        if (fightMode(rc))
+                                        /*if (fightMode(rc))
                                         {
 
                                         }
-                                        else if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
+                                        else*/ if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
                                         {
                                             MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
                                         }
@@ -976,6 +988,13 @@ public class Movement {
 
                 if(target != null)
                 {
+                    if (rc.senseRobotInfo(target).health <= 50)
+                    {
+                        int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+
+                        FightMicro.recordEnemyBotKilled(rc, AllEnemyBots, target);
+
+                    }
                     rc.attackSquare(rc.senseRobotInfo(target).location);
                 }
                 else if (enemies2.length > 0)
@@ -1065,6 +1084,20 @@ public class Movement {
 
                 if(target != null)
                 {
+                    if (rc.senseRobotInfo(target).health <= 10)
+                    {
+                        if (rc.senseRobotInfo(target).type == RobotType.SOLDIER)
+                        {
+                            int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                            FightMicro.recordEnemyBotKilled(rc, AllEnemyBots, target);
+
+                        }
+                        else if (rc.senseRobotInfo(target).type == RobotType.NOISETOWER)
+                        {
+                            int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                            FightMicro.recordEnemyBotKilled(rc, AllEnemyNoiseTowers, target);
+                        }
+                    }
                     rc.attackSquare(rc.senseRobotInfo(target).location);
                 }
             }

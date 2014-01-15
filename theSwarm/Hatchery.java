@@ -20,6 +20,12 @@ public class Hatchery {
 	{
 		while (true)
 		{
+            try
+            {
+                rc.setIndicatorString(0, "1: "+rc.readBroadcast(20000) + " 2: "+rc.readBroadcast(20001) + " 3: "+rc.readBroadcast(20002) + "4: "+rc.readBroadcast(20003));
+            } catch (Exception e) {}
+            rc.setIndicatorString(1, "Number of Enemies: "+FightMicro.NumbOfKnownEnemyBots(rc, FightMicro.AllEnemyBots(rc)));
+            rc.setIndicatorString(2, "All Enemy Bots:"+FightMicro.AllEnemyBots(rc)[1] + " 2: " +FightMicro.AllEnemyBots(rc)[2]);
 			Movement.fire(rc);
 			if (rc.isActive())
 			{

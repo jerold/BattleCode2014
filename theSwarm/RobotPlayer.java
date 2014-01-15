@@ -2,7 +2,8 @@ package theSwarm;
 
 import battlecode.common.*;
 
-public class RobotPlayer {
+public class RobotPlayer
+{
 	static RobotController rc;
 	
 	
@@ -18,7 +19,6 @@ public class RobotPlayer {
 				{
 					Hatchery hatchery = new Hatchery(rc);
 					hatchery.run();
-					
 				}
 				
 				else if (rc.getType() == RobotType.NOISETOWER)
