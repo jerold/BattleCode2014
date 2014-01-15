@@ -277,7 +277,12 @@ public class Movement {
                     /*if (fightMode(rc))
                     {
                     }
-                    else*/ if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
+                    else*/
+                    if (rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent() ).length > 0)
+                    {
+                    	fire(rc);
+                    }		
+                    else if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
                     {
                         MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
                     }

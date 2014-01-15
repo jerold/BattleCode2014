@@ -11,8 +11,8 @@ public class FightMicro
 	static final int StartOurBotChannel = 21000;
 	static final int StartOurNoiseTower = 21025;
 
-    static final int IDOffset = 1000000;
-    static final int HealthOffset = 10000;
+    static final int IDOffset = 100000;
+    static final int HealthOffset = 1000;
 
     /**
      * This function reads all of the enemy bots off the messaging board and returns them as an array of ints
@@ -74,7 +74,7 @@ public class FightMicro
      */
 	public static int CreateBotInfo(RobotController rc, Robot bot)
 	{
-		int info = -1;
+		int info = 0;
 		int helper = 0;
 		
 		try
@@ -83,6 +83,14 @@ public class FightMicro
 			{
 				info += bot.getID() * IDOffset;
 				helper =(int) (rc.senseRobotInfo(bot).health/10);
+				if (helper < 1)
+				{
+					helper = 1;
+				}
+				if (helper == 10)
+				{
+					helper = 0;
+				}
 				helper *= HealthOffset;
 				info += helper;
 				info += Movement.convertMapLocationToInt(rc.senseRobotInfo(bot).location);
@@ -100,26 +108,18 @@ public class FightMicro
     {
         try
         {
-            int botID = outBot % IDOffset;
+            int botID = outBot / IDOffset;
             boolean foundInList = false;
             int index = 0;
 
             while (AllEnemyBots[index] != 0 && index < AllEnemyBots.length)
             {
-                /*for (int i = 0; i < AllEnemyBots.length; i++)
-                {*/
-                    index++;
-                    if ((AllEnemyBots[index] % IDOffset) == botID)
+                    if ((AllEnemyBots[index] / IDOffset) == botID)
                     {
                         rc.broadcast((index+StartEnemyChannel), outBot);
                         foundInList = true;
                     }
-                    /*
-                    else if (AllEnemyBots[i] == 0)
-                    {
-                        i = AllEnemyBots.length;
-                    }*/
-                //}
+                    index++;  
             }
 
             if (!foundInList)
@@ -143,18 +143,19 @@ public class FightMicro
             boolean foundInList = false;
             int index = 0;
 
-            for (int i = 0; i < AllEnemyNoiseTowers.length; i++)
+            while (AllEnemyNoiseTowers[index] != 0 && index < AllEnemyNoiseTowers.length)
             {
-                index++;
-                if ((AllEnemyNoiseTowers[i] % IDOffset) == botID)
+                
+                if ((AllEnemyNoiseTowers[index] % IDOffset) == botID)
                 {
-                    rc.broadcast((i+StartEnemyNoiseTower), noiseTower);
+                    rc.broadcast((index+StartEnemyNoiseTower), noiseTower);
                     foundInList = true;
                 }
-                else if (AllEnemyNoiseTowers[i] == 0)
+                else if (AllEnemyNoiseTowers[index] == 0)
                 {
-                    i = AllEnemyNoiseTowers.length;
+                    index = AllEnemyNoiseTowers.length;
                 }
+                index++;
             }
 
             if (!foundInList)
@@ -198,11 +199,11 @@ public class FightMicro
     public static void recordEnemyBotKilled(RobotController rc, int[] enemyRobots, Robot bot)
     {
         int info = CreateBotInfo(rc, bot);
-        int id = info % IDOffset;
+        int id = info / IDOffset;
 
         for (int i = 0; i < enemyRobots.length; i++)
         {
-            if (id == enemyRobots[i]%IDOffset)
+            if (id == enemyRobots[i]/IDOffset)
             {
                 ShiftEnemyBotsArray(rc, enemyRobots, i);
             }
@@ -215,11 +216,11 @@ public class FightMicro
     public static void recordEnemyNoiseTowerKilled(RobotController rc, int[] enemyNoiseTowers, Robot bot)
     {
         int info = CreateBotInfo(rc, bot);
-        int id = info % IDOffset;
+        int id = info / IDOffset;
 
         for (int i = 0; i < enemyNoiseTowers.length; i++)
         {
-            if (id == enemyNoiseTowers[i]%IDOffset)
+            if (id == enemyNoiseTowers[i]/IDOffset)
             {
                 ShiftEnemyNoiseTowersArray(rc, enemyNoiseTowers, i);
             }
