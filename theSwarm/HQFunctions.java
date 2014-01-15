@@ -28,7 +28,7 @@ public class HQFunctions
                     {
                         toEnemy = toEnemy.rotateLeft();
 
-                        if (rc.senseObjectAtLocation(rc.getLocation().add(toEnemy)) == null)
+                        if (rc.canMove(toEnemy))
                         {
                             i = 47;
                         }
