@@ -39,10 +39,12 @@ public class Hatchery {
 				HQFunctions.moveTargetLocationRandomly(rc);
 				
                 int[] AllEnemies = FightMicro.AllEnemyBots(rc);
+                int[] AllAllies = FightMicro.AllAlliedBotsInfo(rc);
                 //long[] AllAllies = FightMicro.AllAlliedBotsInfo(rc);
 
                 rc.setIndicatorString(0, ""+AllEnemies.length);
                 rc.setIndicatorString(1, "Number of Enemies: " + FightMicro.NumbOfKnownEnemyBots(AllEnemies));
+                rc.setIndicatorString(2, "Number of Allies: " + FightMicro.NumbOfAllies(AllAllies));
                 
                 System.out.println("Enemy Bots info: ");
 				for (int i = 0; i < AllEnemies.length; i++)

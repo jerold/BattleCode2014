@@ -328,6 +328,38 @@ public class FightMicro
     	return data;
     }
 
+    public static int getBotHealth(int combo)
+    {
+        int data = 0;
+
+        data = (combo & 0x00070000) >> 16;
+        data = data * 100;
+        data = data / 7;
+
+        return data;
+    }
+
+    public static MapLocation getBotLocation(int combo)
+    {
+        MapLocation loc;
+
+        int x = (combo & 0x00003F80) >> 7;
+        int y = (combo & 0x0000007F) >> 0;
+
+        loc = new MapLocation(x, y);
+
+        return loc;
+    }
+
+    public static int getActionDelay(int combo)
+    {
+        int data;
+
+        data = (combo & 0x0000D000) >> 14;
+
+        return data;
+    }
+
     /**
      * This method takes an int of bits and converts it into a long of digits
      */
@@ -379,36 +411,32 @@ public class FightMicro
     /**
      * This method returns an array of all Allied Robots
      */
-    /*
-    public static long[] AllAlliedBotsInfo(RobotController rc)
+
+    public static int[] AllAlliedBotsInfo(RobotController rc)
     {
-        long[] allAllies = new long[25];
+        int[] allAllies = new int[25];
         try
         {
             int index = StartOurBotChannel;
             int currentInfo = rc.readBroadcast(index);
-            long valueSet;
-            valueSet = ConvertBitsToInts(currentInfo);
             int arrayIndex = 0;
 
             // basically we gather all of the information for the bots and put it into an array
             while (currentInfo != 0 && (index-StartOurBotChannel) < 26)
             {
-                allAllies[arrayIndex] = valueSet;
+                allAllies[arrayIndex] = currentInfo;
                 index++;
                 arrayIndex++;
                 currentInfo = rc.readBroadcast(index);
-                valueSet = ConvertBitsToInts(currentInfo);
             }
         } catch (Exception e) {}
 
         return allAllies;
-    }*/
+    }
 
     /**
      * This method is designed for a bot to call once and then use continually to update his personal information
      */
-    /*
     public static int ourSlotInMessaging(RobotController rc)
     {
         int index = 0;
@@ -423,43 +451,41 @@ public class FightMicro
         } catch (Exception e) {}
 
         return index;
-    }*/
+    }
 
     /**
      * This method looks through all allied bots and goes until it either sees us or it gets to the end of the list
      */
-    /*
-    public static int ourSlotInMessaging2(RobotController rc, long[] AllAlliedBots)
+    public static int ourSlotInMessaging2(RobotController rc, int[] AllAlliedBots)
     {
         int index = 0;
 
         try
         {
             int ourID = rc.getRobot().getID();
-            int alliedID = (int) (AllAlliedBots[0] / IDOffset);
+            int alliedID = (int) (getBotID(AllAlliedBots[0]));
 
             while (ourID != alliedID && alliedID != 0)
             {
                 index++;
-                alliedID = (int) (AllAlliedBots[index] / IDOffset);
+                alliedID = (int) (getBotID(AllAlliedBots[index]));
             }
 
         } catch (Exception e) {}
 
         return index;
-    }*/
+    }
 
     /**
      * This method takes us out of the channel and moves all of our allies up
      */
-    /*
-    public static void removeOurSelvesFromBoard(RobotController rc, long[] AllAlliedBots, int index)
+    public static void removeOurSelvesFromBoard(RobotController rc, int[] AllAlliedBots, int index)
     {
         try
         {
             for (int i = index; i < (AllAlliedBots.length + 1); i++)
             {
-                rc.broadcast(i+StartOurBotChannel, ConvertLongToBits(AllAlliedBots[i+1]));
+                rc.broadcast(i+StartOurBotChannel, AllAlliedBots[i+1]); //ConvertLongToBits(AllAlliedBots[i+1]));
 
                 if (AllAlliedBots[i+1] == 0)
                 {
@@ -468,7 +494,7 @@ public class FightMicro
             }
 
         } catch (Exception e) {}
-    }*/
+    }
 
     /**
      * This method posts our information to the wall
@@ -481,4 +507,73 @@ public class FightMicro
             rc.broadcast(index+StartOurBotChannel, ourBitInfo);
         } catch (Exception e) {}
     }
+
+    public static int NumbOfAllies(int[] AllAlliedBots)
+    {
+        int numb = 0;
+
+        while (numb < AllAlliedBots.length && AllAlliedBots[numb] != 0)
+        {
+            numb++;
+        }
+
+        return numb;
+    }
+
+
+
+    //==================================================================================================\\
+    //
+    /////////////// These methods manage our actual fighting based on the broadcasted information \\\\\\\\\
+    //
+    //==================================================================================================\\
+
+    public static boolean offensiveFightMicro(RobotController rc, Robot[] seenEnemies, boolean inTransit, int[] AllEnemyBots, int[] AllAlliedBots)
+    {
+        // we will move towards our target if there are no visible enemies
+        if (inTransit)
+        {
+            // if we are in transit then we will fight if we can see enemy soldiers
+            if (seenEnemies.length > 0)
+            {
+                // now we want to attack if we have more troops
+                if (numbOfNearByBots(rc, AllAlliedBots) > numbOfNearByBots(rc, AllEnemyBots))
+                {
+
+                }
+                // otherwise we will retreat hopefully getting the enemy to overextend his reach and get destroyed
+                else
+                {
+
+                }
+            }
+
+            return false;
+        }
+        else
+        {
+
+        }
+
+        return false;
+    }
+
+    /**
+     * This method returns the number of enemies with a squared distance of 50 that we know of
+     */
+    public static int numbOfNearByBots(RobotController rc, int[] AllBots)
+    {
+        int numb = 0;
+
+        for (int i = 0; i < AllBots.length; i++)
+        {
+            if (rc.getLocation().distanceSquaredTo(getBotLocation(AllBots[i])) <= 50)
+            {
+                numb++;
+            }
+        }
+
+        return numb;
+    }
+
 }

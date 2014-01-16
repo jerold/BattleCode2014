@@ -8,11 +8,11 @@ public class HQFunctions
 {
 	
 	// these are the channels that we will use to communicate to our bots
-		static final int enemyHQ = 1;
-		static final int ourHQ = 2;
-		static final int rallyPoint = 3;
-		static Random rand = new Random();
-		static Direction[] directions = Direction.values();
+    static final int enemyHQ = 1;
+    static final int ourHQ = 2;
+    static final int rallyPoint = 3;
+    static Random rand = new Random();
+    static Direction[] directions = Direction.values();
 	
 	public static void SpawnSoldiers(RobotController rc)
     {
@@ -142,4 +142,18 @@ public class HQFunctions
 			
 		} catch (Exception e) {}
 	}
+
+
+    //==================================================================================================\\
+    //
+    ///////////// These methods take the broadcasted information and determine strategy with them \\\\\\\\
+    //
+    //===================================================================================================\\
+
+    public static int maxNumbEnemySoldiers(RobotController rc)
+    {
+        int numb = 0;
+
+        return numb;
+    }
 }

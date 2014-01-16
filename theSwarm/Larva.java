@@ -16,7 +16,7 @@ public class Larva {
 			e.printStackTrace();
 		}
 		rc.setIndicatorString(0, "Larva");
-        //ourIndex = FightMicro.ourSlotInMessaging(rc);
+        ourIndex = FightMicro.ourSlotInMessaging(rc);
 	}
 	
 	public void run()
@@ -25,7 +25,7 @@ public class Larva {
 		{
 			try
 			{
-                //FightMicro.PostOurInfoToWall(rc, ourIndex);
+
                 Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                 if (nearByEnemies.length > 0)
@@ -34,11 +34,17 @@ public class Larva {
                     int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
                     FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
+
+                    if (rc.getHealth() < nearByEnemies.length * 5)
+                    {
+                        FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
+                    }
                 }
 
 				// we will only do stuff if we are active
 				if (rc.isActive())
 				{
+                    FightMicro.PostOurInfoToWall(rc, ourIndex);
 					rc.setIndicatorString(1, "Target:" + target);
 					if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
 					{
