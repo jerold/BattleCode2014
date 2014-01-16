@@ -25,7 +25,7 @@ public class FightMicro
 		{
 			int index = StartEnemyChannel;
 			int currentInfo = rc.readBroadcast(index);
-			long valueSet = 0;
+			long valueSet;
 			valueSet = ConvertBitsToInts(currentInfo);
 			int arrayIndex = 0;
 			
@@ -202,7 +202,7 @@ public class FightMicro
                     info = CreateBotInfo(rc, enemyRobots[i]);
                     if (rc.senseRobotInfo(enemyRobots[i]).type == RobotType.SOLDIER)
                     {
-                        //recordAEnemyBot(rc, AllEnemyBots, info);
+                        recordAEnemyBot(rc, AllEnemyBots, info);
                     }
                     else if (rc.senseRobotInfo(enemyRobots[i]).type == RobotType.NOISETOWER)
                     {
