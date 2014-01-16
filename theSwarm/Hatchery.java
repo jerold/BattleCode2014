@@ -37,23 +37,27 @@ public class Hatchery {
 			if (Clock.getRoundNum() % 50 == 0 && Clock.getRoundNum() > 100)
 			{
 				HQFunctions.moveTargetLocationRandomly(rc);
+				
                 long[] AllEnemies = FightMicro.AllEnemyBots(rc);
-                long[] AllAllies = FightMicro.AllAlliedBotsInfo(rc);
-
+                //long[] AllAllies = FightMicro.AllAlliedBotsInfo(rc);
+                	
                 System.out.println("Enemy Bots info: ");
-				for (int i = 0; i < 25; i++)
+				for (int i = 0; i < AllEnemies.length; i++)
 	            {
 	            	System.out.print(AllEnemies[i]);
 	            	System.out.print(", ");
-                    rc.setIndicatorString(1, ""+FightMicro.NumbOfKnownEnemyBots(rc, FightMicro.AllEnemyBots(rc)));
+                    //rc.setIndicatorString(1, ""+FightMicro.NumbOfKnownEnemyBots(rc, FightMicro.AllEnemyBots(rc)));
 	            }
-
+				System.out.println();
+				/*
+				System.out.println();
                 System.out.println("Our Bots Info: ");
                 for (int j = 0; j<25; j++)
                 {
-                    System.out.println(AllAllies[j]);
+                    //System.out.println(AllAllies[j]);
                 }
 				System.out.println();
+				*/
 			}
 			rc.yield();
 		}
