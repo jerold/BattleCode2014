@@ -11,6 +11,11 @@ public class FightMicro
 	static final int StartOurBotChannel = 21000;
 	static final int StartOurNoiseTower = 21025;
 
+    // These channels are for broadcasting information
+    static final int engagingEnemy = 10000;
+    static final int engagingEnemy2 = 10001;
+    static final int engagingEnemy3 = 10002;
+
     //static final long IDOffset = 100000;
     //static final long HealthOffset = 10000;
     //static final long ActionDelayOffset = 10000;
@@ -541,7 +546,7 @@ public class FightMicro
                 {
 
                 }
-                // otherwise we will retreat hopefully getting the enemy to overextend his reach and get destroyed
+                // otherwise we will retreat to strong position hopefully getting the enemy to overextend his reach and get destroyed
                 else
                 {
 
@@ -576,4 +581,383 @@ public class FightMicro
         return numb;
     }
 
+    /**
+     * This method finds the number of soldiers at a specific distance
+     */
+    public static Robot[] findSoldiersAtDistance(RobotController rc, Robot[] gameObjects, int distance)
+    {
+        try
+        {
+            int[] index = new int[gameObjects.length];
+            int numb = 0;
+
+            for (int i = 0; i < gameObjects.length; i++)
+            {
+                if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(gameObjects[i])) <= distance)
+                {
+                    index[i] = 1;
+                    numb++;
+                }
+                else
+                {
+                    index[i] = 0;
+                }
+            }
+            Robot[] soldiers = new Robot[numb];
+            int k = 0;
+
+            for (int j = 0; j < gameObjects.length; j++)
+            {
+                if (index[j] == 1)
+                {
+                    soldiers[k] = gameObjects[j];
+                    k++;
+                }
+            }
+
+            return soldiers;
+
+        } catch (Exception e)
+        {
+            // tell the console we through an exception in utility object for debug purposes
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * This method finds the number of soldiers in the array of objects we have seen
+     */
+    public static Robot[] findSoldiers(RobotController rc, Robot[] gameObjects)
+    {
+        Robot[] emptySet = null;
+        try
+        {
+            int numbOfSoldiers = 0;
+            int[] index = new int[gameObjects.length];
+            for (int i = 0; i < gameObjects.length; i++)
+            {
+                if (rc.senseRobotInfo(gameObjects[i]).type == RobotType.SOLDIER)
+                {
+                    numbOfSoldiers++;
+                    index[i] = 1;
+                }
+                else
+                {
+                    index[i] = 0;
+                }
+            }
+            Robot[] soldiers = new Robot[numbOfSoldiers];
+            int k = 0;
+            for (int j = 0; j < gameObjects.length; j++)
+            {
+                if (index[j] == 1)
+                {
+                    soldiers[k] = gameObjects[j];
+                    k++;
+                }
+            }
+            return soldiers;
+
+        }  catch (Exception e)
+        {
+            // tell the console we through an exception in utility object for debug purposes
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * This method finds the number of non soldiers in an array of objects we have seen
+     */
+    public static Robot[] findNonSoldiers(RobotController rc, Robot[] gameObjects)
+    {
+        Robot[] emptySet = null;
+        try
+        {
+            int numbOfSoldiers = 0;
+            int[] index = new int[gameObjects.length];
+            for (int i = 0; i < gameObjects.length; i++)
+            {
+                if (rc.senseRobotInfo(gameObjects[i]).type != RobotType.SOLDIER && rc.senseRobotInfo(gameObjects[i]).type != RobotType.HQ)
+                {
+                    numbOfSoldiers++;
+                    index[i] = 1;
+                }
+                else
+                {
+                    index[i] = 0;
+                }
+            }
+            Robot[] soldiers = new Robot[numbOfSoldiers];
+            int k = 0;
+            for (int j = 0; j < gameObjects.length; j++)
+            {
+                if (index[j] == 1)
+                {
+                    soldiers[k] = gameObjects[j];
+                    k++;
+                }
+            }
+            return soldiers;
+
+        }  catch (Exception e)
+        {
+            // tell the console we through an exception in utility object for debug purposes
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * This function finds the location that we can move to in range of an enemy that is in range
+     * of the fewest enemy soldiers
+     *
+     * Note this method is intended to be called by a soldier who is responding to a message that an ally is in combat
+     */
+    public static MapLocation bestSupportAdvanceSpot(RobotController rc, int[] enemySoldiers, MapLocation target, int[] allAllies)
+    {
+        MapLocation loc = rc.getLocation();
+        Direction direction = rc.getLocation().directionTo(target);
+        loc = loc.add(direction);
+
+        try
+        {
+            loc = loc.add(direction);
+            // in this case we are in range of enemy
+            if (rc.getLocation().distanceSquaredTo(target) < 11)
+            {
+                // if the only enemy soldier in range of the space is the one we are targeting
+                if (numbOfEnemiesInRange(rc, enemySoldiers, loc) == 1)
+                {
+                    // then we fire! and overwhelming the enemy with our superior numbers
+                    Movement.fire(rc);
+                }
+            }
+            // In this case we will need to move at least once to get to our target location
+            else if (rc.getLocation().distanceSquaredTo(target) < 24)
+            {
+                MapLocation[] options = mapLocationsWithinDistance(rc, target, 10);
+
+                int fewestNumbOfSoldiers = 25;
+                int numbOfSoldiers;
+                MapLocation moveSpot = null;
+                MapLocation tie = null;
+                MapLocation tie2 = null;
+
+                // we now find the location in range of the fewest enemies
+                // and if there are multiple locations with the same number of enemies then
+                for (int i = 0; i < options.length; i++)
+                {
+                    numbOfSoldiers = numbOfEnemiesInRange(rc, enemySoldiers, options[i]);
+                    if (numbOfSoldiers < fewestNumbOfSoldiers)
+                    {
+                        fewestNumbOfSoldiers = numbOfSoldiers;
+                        moveSpot = options[i];
+                        tie = tie2 = null;
+                    }
+                    else if (numbOfSoldiers == fewestNumbOfSoldiers && tie == null)
+                    {
+                        tie = options[i];
+                    }
+                    else if (numbOfSoldiers == fewestNumbOfSoldiers)
+                    {
+                        tie2 = options[i];
+                    }
+                }
+
+                // first we need to check if there was a tie
+                if (tie != null)
+                {
+                    boolean tieBlocking;
+                    boolean tie2Blocking;
+                    boolean firstBlocking;
+                    // if there is a tie then we should pick the location which doesn't block close allies
+                    // and if that isn't a problem then should move where it is furthest out of range
+                    // of upcomming bots
+                    if (tie2 != null)
+                    {
+
+                    }
+                    else
+                    {
+                         tieBlocking = positionBlockingAllies(rc, tie, allAllies);
+                         firstBlocking = positionBlockingAllies(rc, tie, allAllies);
+                        // if either position is blocking allies then we go to the other one
+                        if (tieBlocking && !firstBlocking)
+                        {
+                            // we leave moveSpot alone as that is where we want to go
+                        }
+                        else if (firstBlocking && !tieBlocking)
+                        {
+                            moveSpot = tie;
+                        }
+                        else if (numbOfEnemiesJustOutsideOfRange(rc, tie, enemySoldiers) < numbOfEnemiesJustOutsideOfRange(rc, moveSpot, enemySoldiers))
+                        {
+                            moveSpot = tie;
+                        }
+                    }
+                }
+
+                // now we move to target location assuming it is good
+                // if their is a spot we can move towards
+                if (moveSpot != null)
+                {
+                    
+                }
+
+            }
+            // In this case we will need to move at least twice to get to our target location
+            else if (rc.getLocation().distanceSquaredTo(target) < 37)
+            {
+
+            }
+            // In this case we will need to move multiple times to get to our target location
+            else
+            {
+
+            }
+
+        } catch (Exception e) {}
+
+        return loc;
+    }
+
+    /**
+     * This function returns the number of enemies who can shoot at a target space
+     */
+    public static int numbOfEnemiesInRange(RobotController rc, int[] enemySoldiers, MapLocation location)
+    {
+        int numb = 0;
+
+        if (enemySoldiers.length > 0)
+        {
+            for (int i = 0; i < enemySoldiers.length; i++)
+            {
+                if (getBotLocation(enemySoldiers[i]).distanceSquaredTo(location) <= 10)
+                {
+                    numb++;
+                }
+            }
+        }
+
+        return numb;
+    }
+
+    /**
+     * This function returns all MapLocations adjacent to us
+     * within a specified distance of another location
+     */
+    public static MapLocation[] mapLocationsWithinDistance(RobotController rc, MapLocation target, int distance)
+    {
+        MapLocation[] spots = null;
+
+        Direction dir = rc.getLocation().directionTo(target);
+        int[] dirs = new int[8];
+        int numbOfDirs = 0;
+
+        // here we find the number of directions that we can move and be within the target
+        for (int i = 0; i < 8; i++)
+        {
+            if (rc.getLocation().add(dir).distanceSquaredTo(target) <= distance)
+            {
+                dirs[i] = 1;
+                numbOfDirs++;
+            }
+            else
+            {
+                dirs[i] = 0;
+            }
+            dir = dir.rotateRight();
+        }
+
+        dir = rc.getLocation().directionTo(target);
+        spots = new MapLocation[numbOfDirs];
+        int index = 0;
+
+        for (int j = 0; j < 8; j++)
+        {
+            if (dirs[j] == 1)
+            {
+                spots[index] = rc.getLocation().add(dir);
+            }
+            dir = dir.rotateRight();
+        }
+
+        return spots;
+    }
+
+    /**
+     * This method looks to see if their are any allies adjacent to a location to see if moving there would
+     * prevent them from advancing
+     */
+    public static boolean positionBlockingAllies(RobotController rc, MapLocation target, int[] AllAllies)
+    {
+        for (int i = 0; i < AllAllies.length; i++)
+        {
+            if (getBotLocation(AllAllies[i]).distanceSquaredTo(target) < 4)
+            {
+                if (getBotID(AllAllies[i]) != rc.getRobot().getID())
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * This method returns the number of enemy soldiers that are within one turn of being in range
+     * of a target location
+     */
+    public static int numbOfEnemiesJustOutsideOfRange(RobotController rc, MapLocation target, int[] AllEnemies)
+    {
+        int numb = 0;
+
+        for (int i = 0; i < AllEnemies.length; i++)
+        {
+            if (getBotLocation(AllEnemies[i]).distanceSquaredTo(target) < 24)
+            {
+                numb++;
+            }
+        }
+
+        return numb;
+    }
+
+    /**
+     * This method returns the number of enemy soldiers that can only hit us
+     */
+    public static int numbOfEnemiesOnlyInRangeOfUs(RobotController rc, int[] enemySoldiers, int[] AllAllies)
+    {
+        int numb = 0;
+        int numb2;
+
+        for (int i = 0; i < enemySoldiers.length; i++)
+        {
+            MapLocation enemySpot = getBotLocation(enemySoldiers[i]);
+            numb2 = 0;
+
+            if (rc.getLocation().distanceSquaredTo(enemySpot) <= 10)
+            {
+                for (int j = 0; j < AllAllies.length; j++)
+                {
+                    if (getBotLocation(AllAllies[j]).distanceSquaredTo(enemySpot) <= 10)
+                    {
+                        j = AllAllies.length;
+                        numb2 = 1;
+                    }
+                }
+
+                // if we didn't see any allies in range of that enemy then we add him to our total
+                if (numb2 == 0)
+                {
+                    numb++;
+                }
+            }
+        }
+
+        return numb;
+    }
 }
