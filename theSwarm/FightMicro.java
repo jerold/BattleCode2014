@@ -11,9 +11,9 @@ public class FightMicro
 	static final int StartOurBotChannel = 21000;
 	static final int StartOurNoiseTower = 21025;
 
-    static final long IDOffset = 1000000;
-    static final long HealthOffset = 100000;
-    static final long ActionDelayOffset = 10000;
+    //static final long IDOffset = 100000;
+    //static final long HealthOffset = 10000;
+    //static final long ActionDelayOffset = 10000;
 
     //========================================================================================================================================================\\
     //
@@ -24,25 +24,24 @@ public class FightMicro
     /**
      * This function reads all of the enemy bots off the messaging board and returns them as an array of ints
      */
-	public static long[] AllEnemyBots(RobotController rc)
+	public static int[] AllEnemyBots(RobotController rc)
 	{
-		long[] allEnemies = new long[25];
+		int[] allEnemies = new int[25];
 		try
 		{
 			int index = StartEnemyChannel;
 			int currentInfo = rc.readBroadcast(index);
-			long valueSet;
-			valueSet = ConvertBitsToInts(currentInfo);
+			//valueSet = ConvertBitsToInts(currentInfo);
 			int arrayIndex = 0;
 			
 			// basically we gather all of the information for the bots and put it into an array
 			while (currentInfo != 0 && (index-StartEnemyChannel) < 26)
 			{
-				allEnemies[arrayIndex] = valueSet;
+				allEnemies[arrayIndex] = currentInfo;
 				index++;
 				arrayIndex++;
 				currentInfo = rc.readBroadcast(index);
-				valueSet = ConvertBitsToInts(currentInfo);	
+				//valueSet = ConvertBitsToInts(currentInfo);	
 			}
 		} catch (Exception e) {}
 		
@@ -52,25 +51,25 @@ public class FightMicro
     /**
      * This function reads all of the enemy Noise Towers off the messaging board and returns them as an array of ints
      */
-	public static long[] AllEnemyNoiseTowers(RobotController rc)
+	public static int[] AllEnemyNoiseTowers(RobotController rc)
 	{
-		long[] enemyNoiseTowers = new long[10];
+		int[] enemyNoiseTowers = new int[10];
 		
 		try
 		{
 			int index = StartEnemyNoiseTower;
 			int currentInfo = rc.readBroadcast(index);
 			int arrayIndex = 0;
-			long data = ConvertBitsToInts(currentInfo);
+			//long data = ConvertBitsToInts(currentInfo);
 			
 			// basically we gather all of the information for the bots and put it into an array
 			while (currentInfo != 0 && (index-StartEnemyNoiseTower) < 11)
 			{
-				enemyNoiseTowers[arrayIndex] = data;
+				enemyNoiseTowers[arrayIndex] = currentInfo;
 				index++;
 				arrayIndex++;
 				currentInfo = rc.readBroadcast(index);
-				data = ConvertBitsToInts(currentInfo);
+				//data = ConvertBitsToInts(currentInfo);
 			}
 			
 		} catch (Exception e) {
@@ -123,19 +122,20 @@ public class FightMicro
      * This function takes in the information for an enemy bot and checks it to what is on the messaging board and updates
      * It if necessary
      */
-    public static void recordAEnemyBot(RobotController rc, long[] AllEnemyBots, long outBot)
+    public static void recordAEnemyBot(RobotController rc, int[] AllEnemyBots, int outBot)
     {
         try
         {
-            long botID = outBot / IDOffset;
+            //long botID = outBot / IDOffset;
+        	int botID = getBotID(outBot);
             boolean foundInList = false;
             int index = 0;
 
             while (AllEnemyBots[index] != 0 && index < AllEnemyBots.length && !foundInList)
             {
-                    if ((AllEnemyBots[index] / IDOffset) == botID)
+                    if ((getBotID(AllEnemyBots[index])) == botID)
                     {
-                        rc.broadcast((index+StartEnemyChannel), ConvertLongToBits(outBot));
+                        rc.broadcast((index+StartEnemyChannel), outBot); //ConvertLongToBits(outBot));
                         foundInList = true;
                     }
                     index++;  
@@ -143,7 +143,7 @@ public class FightMicro
 
             if (!foundInList)
             {
-                rc.broadcast(index+StartEnemyChannel, ConvertLongToBits(outBot));
+                rc.broadcast(index+StartEnemyChannel, outBot);//ConvertLongToBits(outBot));
             }
 
 
@@ -154,20 +154,20 @@ public class FightMicro
      * This function takes in information about an enemy Noise Tower and records it to the messaging board if it is
      * new information
      */
-    public static void recordEnemyNoiseTower(RobotController rc, long[] AllEnemyNoiseTowers, long noiseTower)
+    public static void recordEnemyNoiseTower(RobotController rc, int[] AllEnemyNoiseTowers, int noiseTower)
     {
         try
         {
-            long botID =  noiseTower % IDOffset;
+            int botID =  getBotID(noiseTower); //noiseTower % IDOffset;
             boolean foundInList = false;
             int index = 0;
 
             while (AllEnemyNoiseTowers[index] != 0 && index < AllEnemyNoiseTowers.length)
             {
                 
-                if ((AllEnemyNoiseTowers[index] % IDOffset) == botID)
+                if (getBotID(AllEnemyNoiseTowers[index]) == botID)
                 {
-                    rc.broadcast((index+StartEnemyNoiseTower), ConvertLongToBits(noiseTower));
+                    rc.broadcast((index+StartEnemyNoiseTower), noiseTower);//ConvertLongToBits(noiseTower));
                     foundInList = true;
                 }
                 else if (AllEnemyNoiseTowers[index] == 0)
@@ -179,7 +179,7 @@ public class FightMicro
 
             if (!foundInList)
             {
-                rc.broadcast(index+StartEnemyNoiseTower, ConvertLongToBits(noiseTower));
+                rc.broadcast(index+StartEnemyNoiseTower, noiseTower);//ConvertLongToBits(noiseTower));
             }
 
         } catch (Exception e) {}
@@ -189,18 +189,18 @@ public class FightMicro
      * This function takes all of the game objects from the enemy that a robot can see
      * and posts information about them to the messaging board
      */
-    public static void FindAndRecordAllEnemies(RobotController rc, Robot[] enemyRobots, long[] AllEnemyBots, long[] AllEnemyTowers)
+    public static void FindAndRecordAllEnemies(RobotController rc, Robot[] enemyRobots, int[] AllEnemyBots, int[] AllEnemyTowers)
     {
         try
         {
-            long info;
+            int info;
             int bitInfo;
             for (int i = 0; i < enemyRobots.length; i++)
             {
                 if (rc.canSenseObject(enemyRobots[i]))
                 {
                     bitInfo = CreateBotInfo(rc, enemyRobots[i]);
-                    info = ConvertBitsToInts(bitInfo);
+                    info = bitInfo;//ConvertBitsToInts(bitInfo);
                     if (rc.senseRobotInfo(enemyRobots[i]).type == RobotType.SOLDIER)
                     {
                         recordAEnemyBot(rc, AllEnemyBots, info);
@@ -217,14 +217,14 @@ public class FightMicro
     /**
      * This function updates the board when we have killed an enemy bot as it will never appear again
      */
-    public static void recordEnemyBotKilled(RobotController rc, long[] enemyRobots, Robot bot)
+    public static void recordEnemyBotKilled(RobotController rc, int[] enemyRobots, Robot bot)
     {
         int info = CreateBotInfo(rc, bot);
-        long id = ConvertBitsToInts(info) / IDOffset;
+        int id = getBotID(info); //ConvertBitsToInts(info) / IDOffset;
 
         for (int i = 0; i < enemyRobots.length; i++)
         {
-            if (id == enemyRobots[i]/IDOffset)
+            if (id == getBotID(enemyRobots[i]))
             {
                 ShiftEnemyBotsArray(rc, enemyRobots, i);
             }
@@ -234,14 +234,14 @@ public class FightMicro
     /**
      * This function updates the message board when we kill a noise tower
      */
-    public static void recordEnemyNoiseTowerKilled(RobotController rc, long[] enemyNoiseTowers, Robot bot)
+    public static void recordEnemyNoiseTowerKilled(RobotController rc, int[] enemyNoiseTowers, Robot bot)
     {
-        long info = CreateBotInfo(rc, bot);
-        long  id = info / IDOffset;
+        int info = CreateBotInfo(rc, bot);
+        int  id = getBotID(info);
 
         for (int i = 0; i < enemyNoiseTowers.length; i++)
         {
-            if (id == enemyNoiseTowers[i]/IDOffset)
+            if (id == getBotID(enemyNoiseTowers[i]))
             {
                 ShiftEnemyNoiseTowersArray(rc, enemyNoiseTowers, i);
             }
@@ -251,13 +251,13 @@ public class FightMicro
     /**
      * This function takes a location to erase from the array of enemy robots and shifts everything over it
      */
-    public static void ShiftEnemyBotsArray(RobotController rc, long[] enemyRobots, int index)
+    public static void ShiftEnemyBotsArray(RobotController rc, int[] enemyRobots, int index)
     {
         try
         {
             for (int i = index; i < (enemyRobots.length+1); i++)
             {
-                rc.broadcast(i+StartEnemyChannel, ConvertLongToBits(enemyRobots[i+1]));
+                rc.broadcast(i+StartEnemyChannel, enemyRobots[i+1]); //ConvertLongToBits(enemyRobots[i+1]));
             }
 
             rc.broadcast(25+StartEnemyChannel, 0);
@@ -268,13 +268,13 @@ public class FightMicro
     /**
      * This function shifts the location of noise towers in the array when we kill an enemy noise tower
      */
-    public static void ShiftEnemyNoiseTowersArray(RobotController rc, long[] enemyRobots, int index)
+    public static void ShiftEnemyNoiseTowersArray(RobotController rc, int[] enemyRobots, int index)
     {
         try
         {
             for (int i = index; i < (enemyRobots.length+1); i++)
             {
-                rc.broadcast(i+StartEnemyNoiseTower, ConvertLongToBits(enemyRobots[i+1]));
+                rc.broadcast(i+StartEnemyNoiseTower, enemyRobots[i+1]); //ConvertLongToBits(enemyRobots[i+1]));
             }
 
             rc.broadcast(25+StartEnemyNoiseTower, 0);
@@ -285,12 +285,12 @@ public class FightMicro
     /**
      * This function returns the number of Enemies we can see on the board at any given time
      */
-    public static int NumbOfKnownEnemyBots(long[] enemyRobots)
+    public static int NumbOfKnownEnemyBots(int[] enemyRobots)
     {
         int index = 0;
         int i = 0;
 
-        while (( enemyRobots[index]  != 0) && (index < enemyRobots.length))
+        while ((index < enemyRobots.length) && ( enemyRobots[index]  != 0))
         {
             index++;
 
@@ -304,19 +304,34 @@ public class FightMicro
      */
     public static int ConvertBotInfoToBits(int id, int health, int x, int y, int actionDelay)
     {
-    	int combo;
+    	int combo = 0;
 
-        health = health / 100;
-        health = health * 8;
+    	combo |= ((id                                   << 19)  & 0xFFF80000);  // ID
+        combo |= (((health * 7 / 100)                   << 16)  & 0x00070000);  // Health
+        combo |= (((actionDelay > 3 ? 3 : actionDelay)  << 14)  & 0x0000D000);  // Action Delay
+        combo |= ((x                                    << 7)   & 0x00003F80);  // X
+        combo |= ((y                                    << 0)   & 0x0000007F);  // Y
     	
-    	combo = (id << 20) | (health << 17) | (actionDelay << 13) | (x << 7) | y;
     	
     	return combo;
+    }
+    
+    public static int getBotID(int combo)
+    {
+    	int data = 0;
+    	data = (combo & 0xfff80000) >> 19;
+        
+        if (data < 0)
+        {
+        	data += 4096;
+        }
+    	return data;
     }
 
     /**
      * This method takes an int of bits and converts it into a long of digits
      */
+    /*
     public static long ConvertBitsToInts(int combo)
     {
     	long[] values = new long[5];
@@ -332,18 +347,20 @@ public class FightMicro
     	
     	return data;
     }
+    */
 
     /**
      * This method takes a long packed with various information about bots and converts it into an integer of bits that can be broadcasted
      */
+    /*
     public static int ConvertLongToBits(long data)
     {
     	int id = (int) (data / IDOffset);
     	int health = (int) (data % IDOffset);
     	health /= health/HealthOffset;
     	int x = (int) (data % IDOffset);
-    	x = x% (int) HealthOffset;
-    	x = x% (int) ActionDelayOffset;
+    	x = x % (int) HealthOffset;
+    	x = x % (int) ActionDelayOffset;
     	x /= 100;
     	int y = (int) (data % IDOffset);
     	y = y % (int) HealthOffset;
@@ -355,12 +372,14 @@ public class FightMicro
     	
     	return ConvertBotInfoToBits(id, health, x, y, actionDelay);
     }
+    */
 
     //////// These methods deal with posting information about our bot
 
     /**
      * This method returns an array of all Allied Robots
      */
+    /*
     public static long[] AllAlliedBotsInfo(RobotController rc)
     {
         long[] allAllies = new long[25];
@@ -384,11 +403,12 @@ public class FightMicro
         } catch (Exception e) {}
 
         return allAllies;
-    }
+    }*/
 
     /**
      * This method is designed for a bot to call once and then use continually to update his personal information
      */
+    /*
     public static int ourSlotInMessaging(RobotController rc)
     {
         int index = 0;
@@ -403,11 +423,12 @@ public class FightMicro
         } catch (Exception e) {}
 
         return index;
-    }
+    }*/
 
     /**
      * This method looks through all allied bots and goes until it either sees us or it gets to the end of the list
      */
+    /*
     public static int ourSlotInMessaging2(RobotController rc, long[] AllAlliedBots)
     {
         int index = 0;
@@ -426,11 +447,12 @@ public class FightMicro
         } catch (Exception e) {}
 
         return index;
-    }
+    }*/
 
     /**
      * This method takes us out of the channel and moves all of our allies up
      */
+    /*
     public static void removeOurSelvesFromBoard(RobotController rc, long[] AllAlliedBots, int index)
     {
         try
@@ -446,7 +468,7 @@ public class FightMicro
             }
 
         } catch (Exception e) {}
-    }
+    }*/
 
     /**
      * This method posts our information to the wall

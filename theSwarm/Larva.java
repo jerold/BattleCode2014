@@ -30,8 +30,8 @@ public class Larva {
 
                 if (nearByEnemies.length > 0)
                 {
-                    long[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                    long[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                    int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                    int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
                     FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
                 }

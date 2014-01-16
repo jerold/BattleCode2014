@@ -253,8 +253,8 @@ public class Movement {
 
             if (nearByEnemies.length > 0)
             {
-                long[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                long[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
                 FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
             }
@@ -371,8 +371,8 @@ public class Movement {
 
                                 if (nearByEnemies.length > 0)
                                 {
-                                    long[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                                    long[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                                    int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                                    int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
                                     FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
                                 }
@@ -995,7 +995,7 @@ public class Movement {
                 {
                     if (rc.senseRobotInfo(target).health <= 50)
                     {
-                        long[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                        int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
 
                         FightMicro.recordEnemyBotKilled(rc, AllEnemyBots, target);
 
@@ -1093,13 +1093,13 @@ public class Movement {
                     {
                         if (rc.senseRobotInfo(target).type == RobotType.SOLDIER)
                         {
-                            long[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                            int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
                             FightMicro.recordEnemyBotKilled(rc, AllEnemyBots, target);
 
                         }
                         else if (rc.senseRobotInfo(target).type == RobotType.NOISETOWER)
                         {
-                            long[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                            int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
                             FightMicro.recordEnemyBotKilled(rc, AllEnemyNoiseTowers, target);
                         }
                     }
