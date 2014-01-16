@@ -75,8 +75,8 @@ public class HQFunctions
 				target = target.add(target.directionTo(enemyHQSpot));
 			}
 			
-			rc.setIndicatorString(1, "target: "+distanceInt);
-			rc.setIndicatorString(2, ""+enemyHQSpot);
+			//rc.setIndicatorString(1, "target: "+distanceInt);
+			//rc.setIndicatorString(2, ""+enemyHQSpot);
 			rc.broadcast(rallyPoint, Movement.convertMapLocationToInt(target));
 			
 		} catch (Exception e) {}
