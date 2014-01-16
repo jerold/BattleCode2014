@@ -240,6 +240,8 @@ public class Movement {
         Direction newDir;
         rand = new Random();
         boolean didNotShoot = false;
+        long[] AllAlliedBots = FightMicro.AllAlliedBotsInfo(rc);
+        int ourIndex = FightMicro.ourSlotInMessaging2(rc, AllAlliedBots);
         // we initialize pastLocations to hold our current location 5 times
         for (int i = 0; i < pastLocations.length; i++)
         {
@@ -249,6 +251,7 @@ public class Movement {
         // this method will run until we get to our target location
         while (!rc.getLocation().equals(target) || rc.getLocation().isAdjacentTo(target))
         {
+            FightMicro.PostOurInfoToWall(rc, ourIndex);
             Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
             if (nearByEnemies.length > 0)
@@ -367,6 +370,7 @@ public class Movement {
                             // we will go hugging one side of obstacle until we get back on our original line
                             while (!dir2.equals(dir) && !rc.getLocation().equals(target) && !rc.getLocation().isAdjacentTo(target))// && rc.canMove(dir2))
                             {
+                                FightMicro.PostOurInfoToWall(rc, ourIndex);
                                 nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                                 if (nearByEnemies.length > 0)

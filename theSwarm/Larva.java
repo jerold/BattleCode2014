@@ -5,6 +5,7 @@ import battlecode.common.*;
 public class Larva {
 	RobotController rc;
 	MapLocation target;
+    int ourIndex;
 	
 	public Larva(RobotController rc)
 	{
@@ -15,6 +16,7 @@ public class Larva {
 			e.printStackTrace();
 		}
 		rc.setIndicatorString(0, "Larva");
+        ourIndex = FightMicro.ourSlotInMessaging(rc);
 	}
 	
 	public void run()
@@ -23,6 +25,7 @@ public class Larva {
 		{
 			try
 			{
+                FightMicro.PostOurInfoToWall(rc, ourIndex);
                 Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                 if (nearByEnemies.length > 0)
