@@ -14,6 +14,8 @@ public class RoadMap {
     UnitCache cache;
 
     static int[][] neighborTileOffsets = new int[][]{ {0,-1}, {1,0}, {0,1}, {-1,0}, {-1,-1}, {1,-1}, {1,1}, {-1,1} };
+    static final double MAX_VOID_DENSITY = .6;
+    static final int MAX_GRADIENT = 5;
 
     static int MAX_WIDTH = 100; // Prevent heavy processing on larger maps
     int MAP_WIDTH;
@@ -33,6 +35,7 @@ public class RoadMap {
     }
 
     PathingStrategy pathingStrat;
+    double voidDensity;
     boolean mapUploaded;
     boolean flowUploaded;
     int flowprogress;
@@ -44,8 +47,9 @@ public class RoadMap {
 
         MAP_HEIGHT = rc.getMapHeight();
         MAP_WIDTH = rc.getMapWidth();
-        roadMap = new int[MAP_WIDTH][MAP_HEIGHT];
-        flowMap = new int[MAP_WIDTH][MAP_HEIGHT];
+        roadMap = new int[MAP_HEIGHT][MAP_WIDTH];
+        flowMap = new int[MAP_HEIGHT][MAP_WIDTH];
+        voidDensity = 0.0;
         mapUploaded = false;
         flowUploaded = false;
         pathingStrat = PathingStrategy.DefaultBug;
@@ -60,7 +64,9 @@ public class RoadMap {
 
     public int flowValueForLocation(MapLocation loc) throws GameActionException
     {
-        return flowMap[loc.x][loc.y];
+        if (loc.y < MAP_HEIGHT && loc.y > 0 && loc.x < MAP_WIDTH && loc.x > 0)
+            return flowMap[loc.y][loc.x];
+        return 999;
     }
 
     //================================================================================
@@ -92,8 +98,6 @@ public class RoadMap {
     {
         if (mapUploaded && flowUploaded) return;
 
-        int maxGradient = 5;
-
         // Map Details are read in from the game board
         if (!mapUploaded) {
             rc.setIndicatorString(1, "Working On Map");
@@ -104,19 +108,24 @@ public class RoadMap {
                     switch (ordValue)
                     {
                         case 0:
-                            flowValue = maxGradient;
+                            flowValue = MAX_GRADIENT;
                             break;
                         case 1:
                             flowValue = 0;
                             break;
                         default:
+                            voidDensity++;
                             flowValue = 999;
                             break;
                     }
                     roadMap[y][x] = ordValue;
-                    flowMap[y][x] = VectorFunctions.locToInt(new MapLocation(flowValue, flowValue == 999 ? maxGradient : 0)); // x:Road Gradient, y:Void Gradient
+                    flowMap[y][x] = VectorFunctions.locToInt(new MapLocation(flowValue, flowValue == 999 ? MAX_GRADIENT : 0)); // x:Road Gradient, y:Void Gradient
                 }
             }
+
+            voidDensity/=(MAP_HEIGHT*MAP_WIDTH);
+            if (voidDensity > MAX_VOID_DENSITY)
+                skipFlow();
 
             rc.setIndicatorString(1, "Done with Map");
             mapUploaded = true;
@@ -194,7 +203,7 @@ public class RoadMap {
 //                }
 //            }
 
-            for (int j=flowprogress; j<maxGradient;j++) {
+            for (int j=flowprogress; j<MAX_GRADIENT;j++) {
                 for (int y=0; y<MAP_HEIGHT-0;y++) {
                     for (int x=0; x<MAP_WIDTH-0;x++) {
                         MapLocation tileFlow = VectorFunctions.intToLoc(flowMap[y][x]);
@@ -210,7 +219,7 @@ public class RoadMap {
                                         flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = VectorFunctions.locToInt(new MapLocation(j+1, neighborTileFlow.y));
                                 }
                             }
-                        } else if (j%2 == 0 && tileFlow.y == maxGradient-j/2) { // update Void Gradient
+                        } else if (j%2 == 0 && tileFlow.y == MAX_GRADIENT-j/2) { // update Void Gradient
                             for (int i=0; i<neighborTileOffsets.length/2;i++) { // 1st half represents up/down/left/right
                                 if (y+neighborTileOffsets[i][0] > 0
                                         && y+neighborTileOffsets[i][0] < MAP_HEIGHT
@@ -218,8 +227,8 @@ public class RoadMap {
                                         && x+neighborTileOffsets[i][1] < MAP_WIDTH) {
 
                                     MapLocation neighborTileFlow = VectorFunctions.intToLoc(flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]]);
-                                    if (neighborTileFlow.y < maxGradient-j/2)
-                                        flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = VectorFunctions.locToInt(new MapLocation(neighborTileFlow.x, maxGradient-j/2-1));
+                                    if (neighborTileFlow.y < MAX_GRADIENT-j/2)
+                                        flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = VectorFunctions.locToInt(new MapLocation(neighborTileFlow.x, MAX_GRADIENT-j/2-1));
                                 }
                             }
                         }
@@ -248,6 +257,27 @@ public class RoadMap {
         }
     }
 
+    public void skipFlow()
+    {
+        for (int y=0; y<MAP_HEIGHT;y++) {
+            for (int x=0; x<MAP_WIDTH;x++) {
+                switch (roadMap[y][x])
+                {
+                    case 0:
+                        flowMap[y][x] = MAX_GRADIENT;
+                        break;
+                    case 1:
+                        flowMap[y][x] = 0;
+                        break;
+                    default:
+                        flowMap[y][x] = 999;
+                        break;
+                }
+            }
+        }
+        flowprogress = MAX_GRADIENT; // effectively prevents flow blurring
+    }
+
     public void readBroadcastForNewMapAndFlow() throws GameActionException
     {
         MapLocation loadStatus = VectorFunctions.intToLoc(rc.readBroadcast(Utilities.mapLoadedChannel));
@@ -272,10 +302,10 @@ public class RoadMap {
                     flowMap[y][x] = mapDetails.y;
                 }
             }
-            // printMap(PrintMapFilter.flowData);
+            printMap(PrintMapFilter.flowData);
         }
 
-        rc.setIndicatorString(1, "Finished With Reading In Map and Flow");
+//        rc.setIndicatorString(1, "Finished With Reading In Map and Flow");
     }
 
     public void broadcastMapAndFlow() throws GameActionException

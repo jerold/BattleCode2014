@@ -8,7 +8,7 @@ import battlecode.common.*;
  */
 public class Navigator {
 
-    static final int DIRECTION_WEIGHT_TRAIL = 3;
+    static final int DIRECTION_WEIGHT_TRAIL = -30;
 
     RobotController rc;
     UnitCache cache;
@@ -26,7 +26,7 @@ public class Navigator {
         map = inMap;
         destination = rc.getLocation();
         directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-        stayPut = 0.0;
+        stayPut = 999;
         pathStrat = RoadMap.PathingStrategy.DefaultBug;
     }
 
@@ -58,8 +58,10 @@ public class Navigator {
             defaultDirectionAssessment();
         else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
             smartDirectionAssessment();
-        else
+        else {
             flowDirectionAssessment();
+            tryMove();
+        }
     }
 
     /*
@@ -67,12 +69,19 @@ public class Navigator {
      */
     public void tryMove() throws GameActionException
     {
-        rc.setIndicatorString(0, "Strategy: " + (map.pathingStrat == RoadMap.PathingStrategy.FlowBug ? "Flow" : "Not Flow"));
-        rc.setIndicatorString(1, "North: " + directions[0] + ", NE: " + directions[1] + ", East: " + directions[2] + ", SE: " + directions[3]);
-        rc.setIndicatorString(2, "South: " + directions[4] + ", SW: " + directions[5] + ", West: " + directions[6] + ", NW: " + directions[7]);
+//        rc.setIndicatorString(0, "Strategy: " + (map.pathingStrat == RoadMap.PathingStrategy.FlowBug ? "Flow" : "Not Flow"));
+//        rc.setIndicatorString(1, "N: " + (int)directions[0] +
+//                ", NE: " + (int)directions[1] +
+//                ", E: " + (int)directions[2] +
+//                ", SE: " + (int)directions[3] +
+//                ", S: " + (int)directions[4] +
+//                ", SW: " + (int)directions[5] +
+//                ", W: " + (int)directions[6] +
+//                ", NW: " + (int)directions[7]);
 
         if (rc.isActive()) {
             Direction dir = bestDirection();
+//            rc.setIndicatorString(2, "Direction: " + dir);
             if (rc.canMove(dir))
                 rc.move(dir);
         }
@@ -103,6 +112,9 @@ public class Navigator {
     public void defaultDirectionAssessment() throws GameActionException
     {
         directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
+        // Weight for snail trail direction
+        directions[MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc).ordinal()] += DIRECTION_WEIGHT_TRAIL;
     }
 
     //================================================================================
@@ -112,6 +124,14 @@ public class Navigator {
     public void smartDirectionAssessment() throws GameActionException
     {
         directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
+        // Weight for snail trail direction
+        directions[MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc).ordinal()] += DIRECTION_WEIGHT_TRAIL;
+
+        for (int i=0; i<8; i++) {
+            // Distance weights
+            directions[i] += Utilities.distanceBetweenTwoPoints(destination, rc.getLocation().add(Utilities.directionByOrdinal[i]));
+        }
     }
 
     //================================================================================
@@ -121,10 +141,16 @@ public class Navigator {
     public void flowDirectionAssessment() throws GameActionException
     {
         directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-        directions[MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc).ordinal()] -= DIRECTION_WEIGHT_TRAIL;
+
+        // Weight for snail trail direction
+        directions[MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc).ordinal()] += DIRECTION_WEIGHT_TRAIL;
 
         for (int i=0; i<8; i++) {
+            // Flow weights
             directions[i] += map.flowValueForLocation(rc.getLocation().add(Utilities.directionByOrdinal[i]));
+
+            // Distance weights
+            directions[i] += Utilities.distanceBetweenTwoPoints(destination, rc.getLocation().add(Utilities.directionByOrdinal[i]));
         }
-    }
+   }
 }

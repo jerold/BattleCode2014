@@ -39,7 +39,6 @@ public class Soldiers {
                 nav.adjustFire(false); // Micro Movements based on enemy contact
             else
                 nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
-            nav.tryMove();
 
             rc.yield();
         }
