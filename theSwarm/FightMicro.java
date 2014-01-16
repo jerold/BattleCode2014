@@ -95,15 +95,8 @@ public class FightMicro
 				double health = rc.senseRobotInfo(bot).health;
 				MapLocation loc = rc.senseRobotInfo(bot).location;
 				int health2;
-				if (health > 70)
-				{
-					health = 0;
-				}
-				else if (health < 10)
-				{
-					health = 10;
-				}
-				health /= 10;
+				health /= 100;
+                health *= 8;
 				health2 = (int) health;
 				info = ConvertBotInfoToBits(bot.getID(), health2, loc.x, loc.y, ((int)rc.senseRobotInfo(bot).actionDelay));
 				/*info += bot.getID() * IDOffset;
@@ -201,11 +194,13 @@ public class FightMicro
         try
         {
             long info;
+            int bitInfo;
             for (int i = 0; i < enemyRobots.length; i++)
             {
                 if (rc.canSenseObject(enemyRobots[i]))
                 {
-                    info = CreateBotInfo(rc, enemyRobots[i]);
+                    bitInfo = CreateBotInfo(rc, enemyRobots[i]);
+                    info = ConvertBitsToInts(bitInfo);
                     if (rc.senseRobotInfo(enemyRobots[i]).type == RobotType.SOLDIER)
                     {
                         recordAEnemyBot(rc, AllEnemyBots, info);
@@ -290,14 +285,15 @@ public class FightMicro
     /**
      * This function returns the number of Enemies we can see on the board at any given time
      */
-    public static int NumbOfKnownEnemyBots(RobotController rc, long[] enemyRobots)
+    public static int NumbOfKnownEnemyBots(long[] enemyRobots)
     {
         int index = 0;
         int i = 0;
 
-        while ( enemyRobots[i] != 0 && i < enemyRobots.length)
+        while (( enemyRobots[index]  != 0) && (index < enemyRobots.length))
         {
             index++;
+
         }
 
         return index;
@@ -309,6 +305,9 @@ public class FightMicro
     public static int ConvertBotInfoToBits(int id, int health, int x, int y, int actionDelay)
     {
     	int combo;
+
+        health = health / 100;
+        health = health * 8;
     	
     	combo = (id << 20) | (health << 17) | (actionDelay << 13) | (x << 7) | y;
     	
@@ -339,7 +338,6 @@ public class FightMicro
      */
     public static int ConvertLongToBits(long data)
     {
-    	
     	int id = (int) (data / IDOffset);
     	int health = (int) (data % IDOffset);
     	health /= health/HealthOffset;
