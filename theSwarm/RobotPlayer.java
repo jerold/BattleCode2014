@@ -1,5 +1,6 @@
 package theSwarm;
 
+import UED.*;
 import battlecode.common.*;
 
 public class RobotPlayer
@@ -23,7 +24,8 @@ public class RobotPlayer
 				
 				else if (rc.getType() == RobotType.NOISETOWER)
 				{
-					
+                    GenericTower tower = new GenericTower(rc, false);
+                    tower.run();
 				}
 				else if (rc.getType() == RobotType.PASTR)
 				{

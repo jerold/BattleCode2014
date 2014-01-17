@@ -13,12 +13,8 @@ public class FightMicro
 
     // These channels are for broadcasting information
     static final int engagingEnemy = 10000;
-    static final int engagingEnemy2 = 10001;
-    static final int engagingEnemy3 = 10002;
-
-    //static final long IDOffset = 100000;
-    //static final long HealthOffset = 10000;
-    //static final long ActionDelayOffset = 10000;
+    // this is if we are defending
+    static final int holdingTheLine = 11000;
 
     //========================================================================================================================================================\\
     //
@@ -533,32 +529,121 @@ public class FightMicro
     //
     //==================================================================================================\\
 
+    /**
+     * The idea behind this micro is that the first soldier to the battle will pick which ever flank of the enemy it considers weakest
+     * and move towards it.  Then it will broadcast the location of the enemy it targets and all the other bots will head
+     * towards it
+     */
     public static boolean offensiveFightMicro(RobotController rc, Robot[] seenEnemies, boolean inTransit, int[] AllEnemyBots, int[] AllAlliedBots)
     {
-        // we will move towards our target if there are no visible enemies
-        if (inTransit)
+        try
         {
-            // if we are in transit then we will fight if we can see enemy soldiers
-            if (seenEnemies.length > 0)
+            // we will move towards our target if there are no visible enemies
+            if (inTransit)
             {
-                // now we want to attack if we have more troops
-                if (numbOfNearByBots(rc, AllAlliedBots) > numbOfNearByBots(rc, AllEnemyBots))
-                {
+                // this channel has the x y coordinates of the enemy we are attacking
+                int EnTaroTassadar = rc.readBroadcast(engagingEnemy);
 
+                // we must join our brethren in the field of battle
+                if (EnTaroTassadar != 0)
+                {
+                    int x = EnTaroTassadar / 100;
+                    int y = EnTaroTassadar % 100;
+                    MapLocation target = new MapLocation(x, y);
+
+                    if (rc.getLocation().distanceSquaredTo(target) < 50)
+                    {
+                        Robot[] enemySoldiers = findSoldiers(rc, seenEnemies);
+                        Robot[] inRangeSoldiers = findSoldiersAtDistance(rc, enemySoldiers, 10);
+                        MapLocation goToSpot = bestSupportAdvanceSpot(rc, AllEnemyBots, target, AllAlliedBots);
+
+                        // we must not tolerate the enemy breaking the bubble of our shooting range
+                        if (inRangeSoldiers.length > 0)
+                        {
+                            // if we can move towards the target location and get out of range of the enemy
+                            // then by all means do so
+                            if  (numbOfEnemiesOnlyInRangeOfTarget(rc, AllEnemyBots, AllAlliedBots, goToSpot) == 0)//(numbOfEnemiesInRange(rc, AllEnemyBots, goToSpot) == 0)
+                            {
+                                if (rc.canMove(rc.getLocation().directionTo(goToSpot)))
+                                {
+                                    rc.move(rc.getLocation().directionTo(goToSpot));
+                                }
+                                else
+                                {
+                                    Movement.fire(rc);
+                                }
+                            }
+                            // in this case if we retreat then we will take at least one enemy soldier out of the fight
+                            else if (numbOfEnemiesOnlyInRangeOfUs(rc, AllEnemyBots, AllAlliedBots) > 0)
+                            {
+                                Direction dir;
+                                dir = retreatFromBattle(rc, AllEnemyBots, AllAlliedBots);
+
+                                if (dir != null)
+                                {
+                                    if (rc.canMove(dir))
+                                    {
+                                        rc.move(dir);
+                                    }
+                                }
+                                // if there isn't a good location to fire then let us take our punishment as a man
+                                else
+                                {
+                                    Movement.fire(rc);
+                                }
+                            }
+                            else
+                            {
+                                Movement.fire(rc);
+                            }
+                            // other wise if we can move to a location where all the enemies that can shoot at us can
+                            // already shoot at an opponent then no worries
+                        }
+                        // if there are no enemies in shooting range then we will go ahead and move towards our ally in the field
+                        // of combat
+                        else
+                        {
+
+                            if (rc.canMove(rc.getLocation().directionTo(goToSpot)))
+                            {
+                                rc.move(rc.getLocation().directionTo(goToSpot));
+                            }
+                            else
+                            {
+                                Movement.fire(rc);
+                            }
+                            return true;
+                        }
+
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
-                // otherwise we will retreat to strong position hopefully getting the enemy to overextend his reach and get destroyed
+                // here we will see if there are any enemies in our sight range and if there are then we will react violently
                 else
                 {
-
+                    if (seenEnemies.length > 0)
+                    {
+                        // first we will check to see if there are more of us or more of the enemy
+                        
+                    }
+                    // if we haven't seen any enemies then we will just continue on our merry way
+                    else
+                    {
+                        return false;
+                    }
                 }
+
+                return false;
             }
+            // we have an end goal to reach and will slaughter any enemies on the way but will not pursue them
+            else
+            {
 
-            return false;
-        }
-        else
-        {
-
-        }
+            }
+        } catch (Exception e) {}
 
         return false;
     }
@@ -777,12 +862,56 @@ public class FightMicro
                     // of upcomming bots
                     if (tie2 != null)
                     {
+                        tieBlocking = positionBlockingAllies(rc, tie, allAllies);
+                        tie2Blocking = positionBlockingAllies(rc, tie2, allAllies);
+                        firstBlocking = positionBlockingAllies(rc, moveSpot, allAllies);
 
+                        if (tieBlocking && !firstBlocking && tie2Blocking)
+                        {
+                            // we leave moveSpot alone as that is where we want to go
+                        }
+                        else if (firstBlocking && !tieBlocking && tie2Blocking)
+                        {
+                            moveSpot = tie;
+                        }
+                        else if (firstBlocking && tieBlocking && !tie2Blocking)
+                        {
+
+                        }
+                        else
+                        {
+                            int tieEnemies = numbOfEnemiesJustOutsideOfRange(rc, tie, enemySoldiers);
+                            int tie2Enemies = numbOfEnemiesJustOutsideOfRange(rc, tie2, enemySoldiers);
+                            int firstEnemies = numbOfEnemiesJustOutsideOfRange(rc, moveSpot, enemySoldiers);
+
+                            if (tieEnemies > tie2Enemies)
+                            {
+                                if (tieEnemies > firstEnemies)
+                                {
+                                    moveSpot = tie;
+                                }
+                                else
+                                {
+                                    // don't need to do anything as moveSpot is correct
+                                }
+                            }
+                            else
+                            {
+                                if (tie2Enemies > firstEnemies)
+                                {
+                                    moveSpot = tie2;
+                                }
+                                else
+                                {
+                                    // don't need to do anything as we use moveSpot
+                                }
+                            }
+                        }
                     }
                     else
                     {
                          tieBlocking = positionBlockingAllies(rc, tie, allAllies);
-                         firstBlocking = positionBlockingAllies(rc, tie, allAllies);
+                         firstBlocking = positionBlockingAllies(rc, moveSpot, allAllies);
                         // if either position is blocking allies then we go to the other one
                         if (tieBlocking && !firstBlocking)
                         {
@@ -799,23 +928,54 @@ public class FightMicro
                     }
                 }
 
+                //int numbOfEnemySoldiers = numbOfEnemiesJustOutsideOfRange(rc, moveSpot, enemySoldiers);
+
                 // now we move to target location assuming it is good
                 // if their is a spot we can move towards
                 if (moveSpot != null)
                 {
-                    
+                    return moveSpot;
                 }
 
             }
             // In this case we will need to move at least twice to get to our target location
             else if (rc.getLocation().distanceSquaredTo(target) < 37)
             {
+                MapLocation moveSpot = rc.getLocation().add(rc.getLocation().directionTo(target));
 
+                int nearBybots = numbOfEnemiesJustOutsideOfRange(rc, moveSpot, enemySoldiers);
+
+                // if our target location isn't in range of any new enemies then we can go there
+                if (nearBybots < 1)
+                {
+                    return moveSpot;
+                }
+                else
+                {
+                    MapLocation[] options = mapLocationsWithinDistance(rc, target, 24);
+
+                    int fewestEnemies = 25;
+
+                    for (int i = 0; i < options.length; i++)
+                    {
+                        int numbOfEnemies = numbOfEnemiesJustOutsideOfRange(rc, options[i], enemySoldiers);
+
+                        if (numbOfEnemies < fewestEnemies)
+                        {
+                            fewestEnemies = numbOfEnemies;
+                            moveSpot = options[i];
+                        }
+                    }
+
+                }
+                return moveSpot;
             }
             // In this case we will need to move multiple times to get to our target location
+            // so to save bit codes we will assume we are far enough away that we will count on the first bot to have
+            // attacked in a smart way
             else
             {
-
+                return rc.getLocation().add(rc.getLocation().directionTo(target));
             }
 
         } catch (Exception e) {}
@@ -859,7 +1019,7 @@ public class FightMicro
         // here we find the number of directions that we can move and be within the target
         for (int i = 0; i < 8; i++)
         {
-            if (rc.getLocation().add(dir).distanceSquaredTo(target) <= distance)
+            if ((rc.getLocation().add(dir).distanceSquaredTo(target) <= distance) && !rc.senseTerrainTile(rc.getLocation().add(dir)).equals(TerrainTile.VOID))
             {
                 dirs[i] = 1;
                 numbOfDirs++;
@@ -959,5 +1119,254 @@ public class FightMicro
         }
 
         return numb;
+    }
+
+    public static int numbOfEnemiesOnlyInRangeOfTarget(RobotController rc, int[] enemySoldiers, int[] AllAllies, MapLocation target)
+    {
+        int numb = 0;
+
+        for (int i = 0; i < enemySoldiers.length; i++)
+        {
+            MapLocation enemySpot = getBotLocation(enemySoldiers[i]);
+            if (enemySpot.distanceSquaredTo(target) <= 10)
+            {
+                boolean AlliesInEnemyRange = false;
+                for (int j =0; j < AllAllies.length; j++)
+                {
+                    if (getBotLocation(AllAllies[j]).distanceSquaredTo(target) <= 10)
+                    {
+                        AlliesInEnemyRange = true;
+                        j = AllAllies.length;
+                    }
+                }
+
+                if (!AlliesInEnemyRange)
+                {
+                    numb++;
+                }
+            }
+        }
+
+        return numb;
+    }
+
+    /**
+     * In this method the bot will look around it to the location that can be hit by the fewest enemy soldiers
+     * that it can move to.  If multiple locations have the same number of enemies targeting them then it will move to the location
+     * where the closest enemy soldier is the furthest away
+     */
+    public static Direction retreatFromBattle(RobotController rc, int[] enemySoldiers, int[] alliedSoldiers)
+    {
+        Direction dir = Direction.NORTH;
+        MapLocation target;
+        int[] numbOfEnemies = new int[8];
+
+        for (int i = 0; i < 8; i++)
+        {
+            target = rc.getLocation().add(dir);
+            for (int j = 0; j < enemySoldiers.length; j++)
+            {
+                if (getBotLocation(enemySoldiers[j]).distanceSquaredTo(target) <= 10 && rc.canMove(rc.getLocation().directionTo(target)))
+                {
+                    numbOfEnemies[i]++;
+                }
+            }
+            dir = dir.rotateRight();
+        }
+
+        int lowest = 25;
+        int first = 0;
+        int tie = -1;
+        int tie2 = -1;
+
+        for (int i = 0; i < 8; i++)
+        {
+            if (lowest > numbOfEnemies[i])
+            {
+                lowest = numbOfEnemies[i];
+                first = i;
+                tie = -1;
+                tie2 = -1;
+            }
+            else if (lowest == numbOfEnemies[i] && tie == -1)
+            {
+                tie = i;
+            }
+            else if (lowest == numbOfEnemies[i] && tie2 == -1)
+            {
+                tie2 = i;
+            }
+        }
+
+        Direction retreat = Direction.NORTH;
+
+        for (int i = 0; i < first; i++)
+        {
+            retreat = retreat.rotateRight();
+        }
+
+        // if multiple locations were tied then we go to the spot that is closest to the nearest ally
+        if (tie != -1)
+        {
+            int tieAllyDist = 100;
+            int tieAllyDist2 = 0;
+            int firstAllyDist = 100;
+            int firstAllyDist2 = 0;
+
+            Direction tieDir = Direction.NORTH;
+
+
+            for (int i = 0; i < tie; i++)
+            {
+                tieDir = tieDir.rotateRight();
+            }
+
+
+            for (int i = 0; i < alliedSoldiers.length; i++)
+            {
+                tieAllyDist2 = (rc.getLocation().add(tieDir)).distanceSquaredTo(getBotLocation(alliedSoldiers[i]));
+                firstAllyDist2 = (rc.getLocation().add(retreat)).distanceSquaredTo(getBotLocation(alliedSoldiers[i]));
+                if (tieAllyDist2 < tieAllyDist)
+                {
+                    tieAllyDist = tieAllyDist2;
+                }
+
+                if (firstAllyDist2 < firstAllyDist)
+                {
+                    firstAllyDist = tieAllyDist;
+                }
+            }
+
+            if (tie2 != -1)
+            {
+                int tie2AllyDist = 100;
+                int tie2AllyDist2 = 0;
+
+                Direction tie2Dir = Direction.NORTH;
+                for (int k = 0; k < tie2; k++)
+                {
+                    tieDir = tieDir.rotateRight();
+                }
+
+                for (int i = 0; i < alliedSoldiers.length; i++)
+                {
+                    tie2AllyDist2 = (rc.getLocation().add(tie2Dir)).distanceSquaredTo(getBotLocation(alliedSoldiers[i]));
+
+                    if (tie2AllyDist2 < tie2AllyDist)
+                    {
+                        tie2AllyDist = tie2AllyDist2;
+                    }
+                }
+
+                if (tieAllyDist < tie2AllyDist)
+                {
+                    if (tieAllyDist < firstAllyDist)
+                    {
+                        retreat = tieDir;
+                    }
+                    else
+                    {
+                        // retreat already set correctly
+                    }
+                }
+                else
+                {
+                    if (tie2AllyDist < firstAllyDist)
+                    {
+                        retreat = tie2Dir;
+                    }
+                    else
+                    {
+                        // retreat already properly set
+                    }
+                }
+            }
+            else
+            {
+                if (tieAllyDist < firstAllyDist)
+                {
+                    retreat = tieDir;
+                }
+            }
+        }
+
+        dir = retreat;
+
+        return dir;
+    }
+
+    /**
+     * In this method we pick a direction to go in our battle against the enemy
+     */
+    public static Direction enemyWeakSide(RobotController rc, int[] enemySoldiers)
+    {
+        Direction dir = Direction.NORTH;
+
+        MapLocation centerOfEnemies = centerOfEnemyBots(rc, enemySoldiers);
+        dir = rc.getLocation().directionTo(centerOfEnemies);
+
+        MapLocation rightSide = centerOfEnemies.add(dir.rotateRight().rotateRight(), 5);
+        MapLocation leftSide = centerOfEnemies.add(dir.rotateLeft().rotateLeft(), 5);
+
+        int left = 0;
+        int right = 0;
+
+        // if a bot is closer to the rightSide location then it is on the right side
+        // otherwise it is on the left side
+        for (int i = 0; i < enemySoldiers.length; i++)
+        {
+            MapLocation enemySpot = getBotLocation(enemySoldiers[i]);
+
+            if (enemySpot.distanceSquaredTo(rightSide) < enemySpot.distanceSquaredTo(leftSide))
+            {
+                right++;
+            }
+            else
+            {
+                left++;
+            }
+        }
+
+        if (left > right)
+        {
+            dir = dir.rotateRight();
+        }
+        else
+        {
+            dir = dir.rotateLeft();
+        }
+
+        return dir;
+    }
+
+    /**
+     * this method returns the center of a group of enemy bots that are relatively close to us
+     */
+    public static MapLocation centerOfEnemyBots(RobotController rc, int[] enemySoldiers)
+    {
+        MapLocation center = null;
+
+        int totalX = 0;
+        int totalY = 0;
+        int numbOfEnemies = 0;
+
+        for (int i = 0; i < enemySoldiers.length; i++)
+        {
+            MapLocation enemySpot = getBotLocation(enemySoldiers[i]);
+
+            if (rc.getLocation().distanceSquaredTo(enemySpot) < 50)
+            {
+                totalX += enemySpot.x;
+                totalY += enemySpot.y;
+                numbOfEnemies++;
+            }
+        }
+
+        totalX /= numbOfEnemies;
+        totalY /= numbOfEnemies;
+
+        center = new MapLocation(totalX, totalY);
+
+        return center;
     }
 }

@@ -6,6 +6,13 @@ public class Larva {
 	RobotController rc;
 	MapLocation target;
     int ourIndex;
+
+    // these are the channels that we will use to communicate to our bots
+    static final int enemyHQ = 1;
+    static final int ourHQ = 2;
+    static final int rallyPoint = 3;
+    static final int needNoiseTower = 4;
+    static final int needPastr = 5;
 	
 	public Larva(RobotController rc)
 	{
@@ -25,26 +32,24 @@ public class Larva {
 		{
 			try
 			{
-
-                Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-
-                if (nearByEnemies.length > 0)
-                {
-                    int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                    int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
-
-                    FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
-
-                    if (rc.getHealth() < nearByEnemies.length * 5)
-                    {
-                        FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
-                    }
-                }
-
 				// we will only do stuff if we are active
 				if (rc.isActive())
 				{
-                    FightMicro.PostOurInfoToWall(rc, ourIndex);
+
+
+                    if (rc.readBroadcast(needNoiseTower) == 1)
+                    {
+                        rc.broadcast(needNoiseTower, 0);
+                        Extractor extractor = new Extractor(rc);
+                        extractor.run();
+                    }
+                    else if (rc.readBroadcast(needPastr) == 1)
+                    {
+                        rc.broadcast(needPastr, 0);
+                        Drone drone = new Drone(rc);
+                        drone.run();
+                    }
+
 					rc.setIndicatorString(1, "Target:" + target);
 					if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
 					{
@@ -54,8 +59,25 @@ public class Larva {
 					{
 						Movement.MoveMapLocation(rc, target, false);
 					}
-					
 				}
+                else
+                {
+                    FightMicro.PostOurInfoToWall(rc, ourIndex);
+                    Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+
+                    if (nearByEnemies.length > 0)
+                    {
+                        int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                        int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+
+                        FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
+
+                        if (rc.getHealth() < nearByEnemies.length * 5)
+                        {
+                            FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
+                        }
+                    }
+                }
 				
 			} catch (Exception e)
             {
