@@ -217,7 +217,7 @@ public class Utilities
             if (rc.isActive() && rc.getType() == RobotType.HQ && (rc.senseRobotCount() < 25))
             {
                 Direction toEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-                if (rc.senseObjectAtLocation(rc.getLocation().add(toEnemy)) == null) {}
+                if (rc.canMove(toEnemy)) {}
                 else
                 {
                     for (int i = 0; i < 7; i++)
