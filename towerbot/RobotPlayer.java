@@ -1,4 +1,4 @@
-package hqtowerbuild;
+package towerbot;
 
 import battlecode.common.*;
 
@@ -18,7 +18,7 @@ public class RobotPlayer
 				}
 				else if(rc.getType() == RobotType.NOISETOWER)
 				{
-					new GenericTower(rc, false).run();
+					new GenericTower(rc).run();
 				}
 				else
 				{
@@ -26,21 +26,33 @@ public class RobotPlayer
 					{
 						type = rc.readBroadcast(0);
 					}
-					if(type == SmartHQ.DURAN)
+					else if(type == SmartHQ.DURAN)
 					{
-						new Duran(rc).run();
+						//new Duran(rc).run();
 					}
 					else if(type == SmartHQ.GHOST)
 					{
-						new Ghost(rc).run();
+						//new Ghost(rc).run();
+					}
+					else if(type == SmartHQ.GOLIATH)
+					{
+						//new Goliath(rc).run();
+					}
+					else if(type == SmartHQ.MARINE)
+					{
+						//new Marines(rc).run();
 					}
 					else if(type == SmartHQ.MULE)
 					{
-						new SupplyDepot(rc).run();
+						new MULE(rc, true).run();
 					}
 					else if(type == SmartHQ.TOWER)
 					{
-						new HQTower(rc).run();
+						new SmartTower(rc).run();
+					}
+					else if(type == SmartHQ.TROLL)
+					{
+						//new Scout(rc).run();
 					}
 				}
 			}

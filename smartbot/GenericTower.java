@@ -66,7 +66,7 @@ public class GenericTower
 		            		if(pull)
 							{
 								Utilities.pullInto(rc, 15, target);
-								pull = false;
+								//pull = false;
 							}
 							else
 							{

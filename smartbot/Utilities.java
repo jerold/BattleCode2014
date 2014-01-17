@@ -942,18 +942,17 @@ public class Utilities
     {
     	for(int k = 0; k < directions.length; k++)
     	{
-    		while(!rc.isActive()){}
     		MapLocation toFire = center.add(directions[k], radius);
     		try
     		{
     			while(toFire.distanceSquaredTo(center) > 3)
     			{
+    				while(!rc.isActive()){}
 	    			if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight())
 	    			{
 	    				try
 	    				{
 	    					rc.attackSquare(toFire);
-	    					rc.yield();
 	    				}
 	    				catch(Exception e){}
 	    			}
@@ -973,18 +972,18 @@ public class Utilities
 
         switch(corner)
         {
-            case 1:
-                target = new MapLocation(0, 10);
-                break;
-            case 2:
-                target = new MapLocation(rc.getMapWidth() - 1, 10);
-                break;
-            case 3:
-                target = new MapLocation(0, rc.getMapHeight() - 11);
-                break;
-            default:
-                target = new MapLocation(rc.getMapWidth() - 1, rc.getMapHeight() - 11);
-                break;
+        case 1:
+            target = new MapLocation(1, 1);
+            break;
+        case 2:
+            target = new MapLocation(rc.getMapWidth() - 2, 1);
+            break;
+        case 3:
+            target = new MapLocation(1, rc.getMapHeight() - 2);
+            break;
+        default:
+            target = new MapLocation(rc.getMapWidth() - 2, rc.getMapHeight() - 2);
+            break;
         }
 
         Direction dir = directions[rand.nextInt(8)];
