@@ -7,6 +7,11 @@ public class Larva {
 	MapLocation target;
     int ourIndex;
 
+    Robot[] nearByEnemies;
+    int[] AllEnemyNoiseTowers;
+    int[] AllEnemyBots;
+    int[] AllAlliedBots;
+
     // these are the channels that we will use to communicate to our bots
     static final int enemyHQ = 1;
     static final int ourHQ = 2;
@@ -24,6 +29,12 @@ public class Larva {
 		}
 		rc.setIndicatorString(0, "Larva");
         ourIndex = FightMicro.ourSlotInMessaging(rc);
+
+        AllEnemyBots = FightMicro.AllEnemyBots(rc);
+        AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+        nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+        AllAlliedBots = FightMicro.AllAlliedBotsInfo(rc);
+
 	}
 	
 	public void run()
@@ -32,6 +43,7 @@ public class Larva {
 		{
 			try
 			{
+                //System.out.println("Hello world");
 				// we will only do stuff if we are active
 				if (rc.isActive())
 				{
@@ -51,7 +63,11 @@ public class Larva {
                     }
 
 					rc.setIndicatorString(1, "Target:" + target);
-					if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
+                    if (FightMicro.offensiveFightMicro(rc, nearByEnemies, true, AllEnemyBots, AllAlliedBots))
+                    {
+                        rc.setIndicatorString(2, "Running fight micro");
+                    }
+					else if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
 					{
 						target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
 					}
@@ -62,13 +78,14 @@ public class Larva {
 				}
                 else
                 {
+                    AllAlliedBots = FightMicro.AllAlliedBotsInfo(rc);
                     FightMicro.PostOurInfoToWall(rc, ourIndex);
-                    Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+                    nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                     if (nearByEnemies.length > 0)
                     {
-                        int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                        int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                        AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                        AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
                         FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
 

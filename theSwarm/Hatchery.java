@@ -22,7 +22,8 @@ public class Hatchery {
 	{
 		while (true)
 		{
-			Movement.fire(rc);
+            Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+			Movement.fire(rc, enemies);
 			if (rc.isActive())
 			{
 				HQFunctions.SpawnSoldiers(rc);

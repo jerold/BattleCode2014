@@ -123,6 +123,9 @@ public class Movement
         rand = new Random();
         boolean didNotShoot = false;
         int[] alliedBots = FightMicro.AllAlliedBotsInfo(rc);
+        int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
+        int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+        Robot[] nearByEnemies;
         int ourIndex = FightMicro.ourSlotInMessaging2(rc, alliedBots);
         // we initialize pastLocations to hold our current location 5 times
         for (int i = 0; i < pastLocations.length; i++)
@@ -148,14 +151,26 @@ public class Movement
 
                     dir = rc.getLocation().directionTo(target);
                     newDir = Direction.NONE;
+                    nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+
+                    if (alliedBots.length == 0)
+                    {
+                        alliedBots = FightMicro.AllAlliedBotsInfo(rc);
+                    }
+                    if (AllEnemyBots.length == 0 && nearByEnemies.length > 0)
+                    {
+                        FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
+                        AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                    }
 
                     /*if (fightMode(rc))
                     {
                     }
                     else*/
-                    if (rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent() ).length > 0)
+                    if (FightMicro.offensiveFightMicro(rc, nearByEnemies, true, AllEnemyBots, alliedBots))
                     {
-                    	fire(rc);
+                        rc.setIndicatorString(2, "Running fight micro");
+                    	//fire(rc);
                     }		
                     else if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
                     {
@@ -345,12 +360,12 @@ public class Movement
                                     else
                                     {
                                         FightMicro.PostOurInfoToWall(rc, ourIndex);
-                                        Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+                                        nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                                         if (nearByEnemies.length > 0)
                                         {
-                                            int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                                            int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                                            AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                                            AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
                                             FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
 
@@ -401,12 +416,12 @@ public class Movement
                 else
                 {
                     FightMicro.PostOurInfoToWall(rc, ourIndex);
-                    Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+                    nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                     if (nearByEnemies.length > 0)
                     {
-                        int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                        int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                        AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                        AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
                         FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
 
@@ -454,7 +469,7 @@ public class Movement
         return false;
     }
 
-    public static void fire(RobotController rc)
+    public static void fire(RobotController rc, Robot[] enemies)
     {
         int radius;
 
@@ -463,7 +478,7 @@ public class Movement
             if(rc.getType() == RobotType.HQ)
             {
                 radius = 15;
-                Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
+                //Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
                 Robot[] enemies2 = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
                 Direction[] dirs = Direction.values();
                 Robot target = null;
@@ -576,10 +591,11 @@ public class Movement
                     }
                 }
             }
+            // In this case we are a soldier
             else
             {
                 radius = 10;
-                Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
+                //Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
                 Robot target = null;
 
                 for(int k = 0; k < enemies.length; k++)
