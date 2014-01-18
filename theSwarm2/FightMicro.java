@@ -1061,6 +1061,40 @@ public class FightMicro
         return numb;
     }
 
+    public static int[] botsInBattle(RobotController rc, int[] bots)
+    {
+        int[] robots;
+        int[] index = new int[bots.length];
+        int numb = 0;
+
+        for (int i = 0; i < bots.length; i++)
+        {
+            if (rc.getLocation().distanceSquaredTo(getBotLocation(bots[i])) < 75)
+            {
+                numb++;
+                index[i] = 1;
+            }
+            else
+            {
+                index[i] = 0;
+            }
+        }
+
+        robots = new int[numb];
+        int index2 = 0;
+
+        for (int j = 0; j < index.length; j++)
+        {
+            if (index[j] == 1)
+            {
+                robots[index2] = bots[j];
+                index2++;
+            }
+        }
+
+        return robots;
+    }
+
     /**
      * This method returns the number of enemy soldiers that can only hit us
      */
@@ -1147,32 +1181,19 @@ public class FightMicro
                 if (getBotLocation(enemySoldiers[j]).distanceSquaredTo(target) <= 10 && rc.canMove(rc.getLocation().directionTo(target)))
                 {
                     numbOfEnemies[i]++;
+                    j = enemySoldiers.length;
                 }
             }
             dir = dir.rotateRight();
         }
-
-        int lowest = 25;
         int first = 0;
-        int tie = -1;
-        int tie2 = -1;
 
         for (int i = 0; i < 8; i++)
         {
-            if (lowest > numbOfEnemies[i])
+            if (numbOfEnemies[i] == 0)
             {
-                lowest = numbOfEnemies[i];
                 first = i;
-                tie = -1;
-                tie2 = -1;
-            }
-            else if (lowest == numbOfEnemies[i] && tie == -1)
-            {
-                tie = i;
-            }
-            else if (lowest == numbOfEnemies[i] && tie2 == -1)
-            {
-                tie2 = i;
+                i = 8;
             }
         }
 
@@ -1183,101 +1204,7 @@ public class FightMicro
             retreat = retreat.rotateRight();
         }
 
-        // if multiple locations were tied then we go to the spot that is closest to the nearest ally
-        if (tie != -1)
-        {
-            int tieAllyDist = 100;
-            int tieAllyDist2 = 0;
-            int firstAllyDist = 100;
-            int firstAllyDist2 = 0;
-
-            Direction tieDir = Direction.NORTH;
-
-
-            for (int i = 0; i < tie; i++)
-            {
-                tieDir = tieDir.rotateRight();
-            }
-
-
-            for (int i = 0; i < alliedSoldiers.length; i++)
-            {
-                tieAllyDist2 = (rc.getLocation().add(tieDir)).distanceSquaredTo(getBotLocation(alliedSoldiers[i]));
-                firstAllyDist2 = (rc.getLocation().add(retreat)).distanceSquaredTo(getBotLocation(alliedSoldiers[i]));
-                if (tieAllyDist2 < tieAllyDist)
-                {
-                    tieAllyDist = tieAllyDist2;
-                }
-
-                if (firstAllyDist2 < firstAllyDist)
-                {
-                    firstAllyDist = tieAllyDist;
-                }
-            }
-
-            if (tie2 != -1)
-            {
-                int tie2AllyDist = 100;
-                int tie2AllyDist2 = 0;
-
-                Direction tie2Dir = Direction.NORTH;
-                for (int k = 0; k < tie2; k++)
-                {
-                    tieDir = tieDir.rotateRight();
-                }
-
-                for (int i = 0; i < alliedSoldiers.length; i++)
-                {
-                    tie2AllyDist2 = (rc.getLocation().add(tie2Dir)).distanceSquaredTo(getBotLocation(alliedSoldiers[i]));
-
-                    if (tie2AllyDist2 < tie2AllyDist)
-                    {
-                        tie2AllyDist = tie2AllyDist2;
-                    }
-                }
-
-                if (tieAllyDist < tie2AllyDist)
-                {
-                    if (tieAllyDist < firstAllyDist)
-                    {
-                        retreat = tieDir;
-                    }
-                    else
-                    {
-                        // retreat already set correctly
-                    }
-                }
-                else
-                {
-                    if (tie2AllyDist < firstAllyDist)
-                    {
-                        retreat = tie2Dir;
-                    }
-                    else
-                    {
-                        // retreat already properly set
-                    }
-                }
-            }
-            else
-            {
-                if (tieAllyDist < firstAllyDist)
-                {
-                    retreat = tieDir;
-                }
-            }
-        }
-
-        if (numbOfEnemiesOnlyInRangeOfTarget(rc, enemySoldiers, alliedSoldiers, rc.getLocation().add(dir)) < 2)
-        {
-            dir = null;
-        }
-        else
-        {
-            dir = retreat;
-        }
-
-        return dir;
+        return retreat;
     }
 
     /**
@@ -1285,7 +1212,7 @@ public class FightMicro
      */
     public static MapLocation enemyWeakSide(RobotController rc, int[] enemySoldiers)
     {
-        Direction dir = Direction.NORTH;
+        Direction dir;
         MapLocation target;
 
         MapLocation centerOfEnemies = centerOfEnemyBots(rc, enemySoldiers);
@@ -1315,13 +1242,18 @@ public class FightMicro
 
         if (left > right)
         {
+            target = rightSide;
+            /*
             dir = dir.rotateRight();
             target = rc.getLocation().add(dir, 5);
+            */
         }
         else
         {
+            target = leftSide;
+            /*
             dir = dir.rotateLeft();
-            target = rc.getLocation().add(dir, 5);
+            target = rc.getLocation().add(dir, 5);*/
         }
 
         return target;
@@ -1342,12 +1274,9 @@ public class FightMicro
         {
             MapLocation enemySpot = getBotLocation(enemySoldiers[i]);
 
-            if (rc.getLocation().distanceSquaredTo(enemySpot) < 50)
-            {
-                totalX += enemySpot.x;
-                totalY += enemySpot.y;
-                numbOfEnemies++;
-            }
+            totalX += enemySpot.x;
+            totalY += enemySpot.y;
+            numbOfEnemies++;
         }
 
         if (numbOfEnemies > 0)
@@ -1378,15 +1307,12 @@ public class FightMicro
         {
             MapLocation alliedSpot = getBotLocation(AlliedSoldiers[i]);
             // if the allied soldier is relatively close to us
-            if (rc.getLocation().distanceSquaredTo(alliedSpot) < 75)
+            for (int j = 0; j < enemySoldiers.length; j++)
             {
-                for (int j = 0; j < enemySoldiers.length; j++)
+                if (alliedSpot.distanceSquaredTo(getBotLocation(enemySoldiers[j])) <= 10)
                 {
-                    if (alliedSpot.distanceSquaredTo(getBotLocation(enemySoldiers[j])) <= 10)
-                    {
-                        numb++;
-                        j = enemySoldiers.length;
-                    }
+                    numb++;
+                    j = enemySoldiers.length;
                 }
             }
         }
@@ -1404,16 +1330,12 @@ public class FightMicro
         for (int i = 0; i < enemySoldiers.length; i++)
         {
             MapLocation spot = getBotLocation(enemySoldiers[i]);
-
-            if (rc.getLocation().distanceSquaredTo(spot) < 75)
+            for (int j = 0; j < AlliedSoldiers.length; j++)
             {
-                for (int j = 0; j < AlliedSoldiers.length; j++)
+                if (spot.distanceSquaredTo(getBotLocation(AlliedSoldiers[j])) <= 10)
                 {
-                    if (spot.distanceSquaredTo(getBotLocation(AlliedSoldiers[j])) <= 10)
-                    {
-                        j = AlliedSoldiers.length;
-                        numb++;
-                    }
+                    j = AlliedSoldiers.length;
+                    numb++;
                 }
             }
         }
@@ -1457,10 +1379,7 @@ public class FightMicro
 
         for (int i = 0; i < bots.length; i++)
         {
-            if (rc.getLocation().distanceSquaredTo(getBotLocation(bots[i])) < 50)
-            {
-                totalHealth += getBotHealth(bots[i]);
-            }
+            totalHealth += getBotHealth(bots[i]);
         }
 
         return totalHealth;
@@ -1518,27 +1437,13 @@ public class FightMicro
         return numb;
     }
 
+    /**
+     * This is the old fight micro with all of the new functons added in
+     */
     public static boolean fightMode(RobotController rc, Robot[] nearByEnemies3, int[] AlliedSoldiers, int[] enemySoldiers)
     {
         try
         {
-            /*
-            System.out.println();
-            System.out.println("Allied Soldiers:");
-            for (int i = 0; i<AlliedSoldiers.length; i++)
-            {
-                System.out.print(getBotID(AlliedSoldiers[i]));
-            }
-            System.out.println();
-            System.out.println("Enemy Soldiers:");
-            for (int i = 0; i<enemySoldiers.length; i++)
-            {
-                System.out.print(getBotID(enemySoldiers[i]));
-            }
-            */
-
-            
-
             if (nearByEnemies3 != null && nearByEnemies3.length > 0)
             {
             	nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
@@ -1553,6 +1458,10 @@ public class FightMicro
                 nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
                 nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
                 nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
+
+                // here we shrink the array down to just the enemy soldiers who are relatively close
+                AlliedSoldiers = botsInBattle(rc, AlliedSoldiers);
+                enemySoldiers = botsInBattle(rc, enemySoldiers);
                 
                 
                 nearbyEnemies = findSoldiersAtDistance(rc, nearByEnemies3, 10);
@@ -1596,7 +1505,7 @@ public class FightMicro
                         Movement.fire(rc, nearByEnemies3);
                     }
                     // if are facing a single enemy and have higher health then we should kill him
-                    else if (nearbyEnemies.length == 1 && (getBotHealth(enemySoldiers[0]) < rc.getHealth()))
+                    else if (nearbyEnemies.length == 1 && (rc.senseRobotInfo(nearbyEnemies[0]).health < rc.getHealth()))
                     {
                         Movement.fire(rc, nearByEnemies3);
                     }
@@ -1630,31 +1539,17 @@ public class FightMicro
                     // to give them support
                     else if (numbOfAlliesAlmostArrived(rc, AlliedSoldiers, enemySoldiers) > numbOfEnemiesAlmostArrived(rc, AlliedSoldiers, enemySoldiers))
                     {
-                        MapLocation target = closetestSpotToAllies(rc, AlliedSoldiers);
-                        Direction dir = null;
-                        if (target != null)
-                        {
-                             dir = rc.getLocation().directionTo(target);
-                        }
+                        MapLocation target;
+                        target = enemyWeakSide(rc, enemySoldiers);
+                        MapLocation goTo = bestSupportAdvanceSpot(rc, enemySoldiers, target, AlliedSoldiers);
 
-                        if (dir != null && rc.canMove(dir))
+                        if (goTo != null)
                         {
-                        	if (rc.isActive())
-                        	{
-                        		rc.move(dir);
-                        	}
-                        }
-                        else
-                        {
-                            target = enemyWeakSide(rc, enemySoldiers);
-                            MapLocation goTo = bestSupportAdvanceSpot(rc, enemySoldiers, target, AlliedSoldiers);
-
                             Movement.MoveDirection(rc, rc.getLocation().directionTo(goTo), false);
                         }
-
                     }
                     // if we only sense one enemy soldier then we will attack if we have more health
-                    else if (nearByEnemies2.length == 1 && rc.getHealth() > (rc.senseRobotInfo(nearByEnemies2[0]).health + 20))
+                    else if (nearByEnemies2.length == 1 && (rc.getHealth() > (rc.senseRobotInfo(nearByEnemies2[0]).health + 20)))
                     {
                         Movement.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
                     }
