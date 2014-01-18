@@ -81,9 +81,12 @@ public class Utilities
             for (int i = SeenEnemies.length; --i >= 0; )
             {
                 MapLocation enemySpot = SeenEnemies[i];
-                if (enemySpot.distanceSquaredTo(location) < 11)
+                if (enemySpot != null)
                 {
-                    return false;
+                    if (enemySpot.distanceSquaredTo(location) < 11)
+                    {
+                        return false;
+                    }
                 }
             }
             return true;
@@ -158,12 +161,15 @@ public class Utilities
                 for (int i = enemies.length; --i >= 0; )
                 {
                     MapLocation enemySpot = enemies[i];
-                    for (int j = allies.length; --j >= 0; )
+                    if (enemySpot != null)
                     {
-
-                        if (enemySpot.distanceSquaredTo(allies[j]) <= 10)
+                        for (int j = allies.length; --j >= 0; )
                         {
-                            alliesEngaged = true;
+
+                            if (enemySpot.distanceSquaredTo(allies[j]) <= 10)
+                            {
+                                alliesEngaged = true;
+                            }
                         }
                     }
                 }
