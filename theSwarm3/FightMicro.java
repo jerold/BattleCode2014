@@ -634,6 +634,9 @@ public class FightMicro
         return null;
     }
 
+    /**
+     * This method returns the number of soldiers that can only attack a certain location
+     */
     public static int numbOfRobotsOnlyAttackingUs(RobotController rc, MapLocation[] enemyBots, MapLocation[] alliedBots)
     {
         int numb = 0;
@@ -674,6 +677,58 @@ public class FightMicro
         return numb;
     }
 
+    /**
+     * This method returns the number of enemy soldiers that are not attacking and would be able to attack us if we advanced
+     */
+    public static int numbOfRobotsAttackingTarget(MapLocation goal, MapLocation[] enemyBots, MapLocation[] alliedBots)
+    {
+        int numb = 0;
+        int inRangeOfAlly = 0;
+
+        if (goal != null)
+        {
+            if (enemyBots != null)
+            {
+                for (int i = enemyBots.length; --i >= 0; )
+                {
+                    inRangeOfAlly = 0;
+                    MapLocation enemy = enemyBots[i];
+                    if (enemy != null)
+                    {
+                        if (goal.distanceSquaredTo(enemy) <= 10)
+                        {
+                            if (alliedBots != null)
+                            {
+                                for (int j = alliedBots.length; --j >= 0;)
+                                {
+                                    MapLocation ally = alliedBots[j];
+
+                                    if (ally != null)
+                                    {
+                                        if (ally.distanceSquaredTo(enemy) <= 10)
+                                        {
+                                            inRangeOfAlly = 1;
+                                            j = alliedBots.length;
+                                        }
+                                    }
+                                }
+                            }
+                            if (inRangeOfAlly == 0)
+                            {
+                                numb++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return numb;
+    }
+
+    /**
+     * This method takes an array of robots and turns them into an array of MapLocations
+     */
     public static MapLocation[] locationOfBots(RobotController rc, Robot[] bots)
     {
         MapLocation[] botSpots = new MapLocation[bots.length];
@@ -693,9 +748,40 @@ public class FightMicro
         return botSpots;
     }
 
+    /**
+     * This method returns the difference in health between our army and the enemies
+     */
+    public static int ourHealthAdvantage(RobotController rc, Robot[] alliedBots, Robot[] enemyBots)
+    {
+        int numb = (int) rc.getHealth();
+        try
+        {
+            for (int i = alliedBots.length; --i >=0;)
+            {
+                if (alliedBots[i] != null)
+                {
+                    numb += (int) rc.senseRobotInfo(alliedBots[i]).health;
+                }
+            }
+
+            for (int i = enemyBots.length; --i >=0; )
+            {
+                if (enemyBots[i] != null)
+                {
+                    numb -= (int) rc.senseRobotInfo(enemyBots[i]).health;
+                }
+            }
+
+
+        } catch( Exception e) {
+            e.printStackTrace();
+        }
+        return numb;
+    }
+
 
     /**
-     * This is our old fight micro
+     * This is our old fight micro which is under modification
      */
     public static boolean fightMode(RobotController rc)
     {
@@ -864,19 +950,24 @@ public class FightMicro
                     alliesEngaged = Utilities.AlliesEngaged(rc, enemyBotLoc, alliedBots);
                     nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 9);
                     GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
+                    Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
+                    Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
                     // if our brethern are in the field of action we must join them!
-                    if (alliesEngaged && (nearByAllies3 != null) && (nearByAllies != null) && (nearByAllies3.length <= nearByAllies.length))
+                    if (alliesEngaged && numbOfRobotsAttackingTarget(rc.getLocation().add(dir), enemyBotLoc, alliedBots) < 2 && (enemyBotLoc.length <= (alliedBots.length + 1)))
                     {
-                        if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, enemySlot))
+                        if (rc.canMove(dir))
                         {
-                            Movement.MoveDirection(rc, rc.getLocation().directionTo(alliedBots[0]), false);
+                            if (rc.isActive())
+                            {
+                                rc.move(dir);
+                            }
                         }
                         else
                         {
                             Movement.fire(rc, nearByEnemies3);
                         }
                     }
-                    else if (nearByAllies4.length > (nearByEnemies2.length))
+                    else if (nearByAllies4.length > (nearByEnemies2.length) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
                     {
                         Movement.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
                     }
