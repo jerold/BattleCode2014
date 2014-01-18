@@ -349,6 +349,7 @@ public class Movement
                                     }
                                     else
                                     {
+                                        /*
                                         FightMicro.PostOurInfoToWall(rc, ourIndex);
                                         nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
@@ -363,7 +364,7 @@ public class Movement
                                             {
                                                 FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
                                             }
-                                        }
+                                        }*/
                                     }
                                 } catch (Exception e)
                                 {
@@ -405,6 +406,7 @@ public class Movement
                 }
                 else
                 {
+                    /*
                     FightMicro.PostOurInfoToWall(rc, ourIndex);
                     nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
@@ -419,7 +421,7 @@ public class Movement
                         {
                             FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
                         }
-                    }
+                    }*/
                 }
             }
             catch (Exception e)

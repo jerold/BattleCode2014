@@ -71,6 +71,7 @@ public class Larva {
 					{
 						target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
 
+                        /*
                         AllAlliedBots = FightMicro.AllAlliedBotsInfo(rc);
                         FightMicro.PostOurInfoToWall(rc, ourIndex);
                         nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
@@ -86,13 +87,14 @@ public class Larva {
                             {
                                 FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
                             }
-                        }
+                        }*/
 					}
 					else
 					{
 						Movement.MoveMapLocation(rc, target, false);
 					}
 				}
+                /*
                 if (!rc.isActive() || rc.senseTerrainTile(rc.getLocation()).equals(TerrainTile.ROAD) && Clock.getRoundNum() % 2 == 0)
                 {
                     AllAlliedBots = FightMicro.AllAlliedBotsInfo(rc);
@@ -111,7 +113,7 @@ public class Larva {
                             FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
                         }
                     }
-                }
+                }*/
 				
 			} catch (Exception e)
             {
