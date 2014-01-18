@@ -80,7 +80,8 @@ public class Utilities
             // we loop through all enemies and if any of them are close enough to shoot this spot then we don't move
             for (int i = SeenEnemies.length; --i >= 0; )
             {
-                if ((SeenEnemies[i]).distanceSquaredTo(location) < 11)
+                MapLocation enemySpot = SeenEnemies[i];
+                if (enemySpot.distanceSquaredTo(location) < 11)
                 {
                     return false;
                 }
@@ -156,13 +157,14 @@ public class Utilities
             {
                 for (int i = enemies.length; --i >= 0; )
                 {
+                    MapLocation enemySpot = enemies[i];
                     for (int j = allies.length; --j >= 0; )
                     {
-                        /*
-                        if ((enemies[i]).distanceSquaredTo(allies[j]) <= 10)
+
+                        if (enemySpot.distanceSquaredTo(allies[j]) <= 10)
                         {
                             alliesEngaged = true;
-                        }*/
+                        }
                     }
                 }
             }
