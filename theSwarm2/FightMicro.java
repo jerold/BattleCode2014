@@ -1454,10 +1454,10 @@ public class FightMicro
                 Robot[] nearByEnemies5;
 
                 nearByEnemies4 = nearByEnemies3;
-                nearByEnemies5 = nearByEnemies3;
+                //nearByEnemies5 = nearByEnemies3;
                 nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
-                nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
-                nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
+                //nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
+                //nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
 
                 // here we shrink the array down to just the enemy soldiers who are relatively close
                 //AlliedSoldiers = botsInBattle(rc, AlliedSoldiers);

@@ -482,13 +482,16 @@ public class Movement
                     {
                         try
                         {
-                            if(rc.senseObjectAtLocation(loc.add(dirs[a])).getTeam() == rc.getTeam().opponent())
+                            if (rc.canSenseSquare(loc.add(dirs[a])) && rc.senseObjectAtLocation(loc.add(dirs[a])) != null)
                             {
-                                value++;
-                            }
-                            else if(rc.senseObjectAtLocation(loc.add(dirs[a])).getTeam() == rc.getTeam())
-                            {
-                                value--;
+                                if(rc.senseObjectAtLocation(loc.add(dirs[a])).getTeam() == rc.getTeam().opponent())
+                                {
+                                    value++;
+                                }
+                                else if(rc.senseObjectAtLocation(loc.add(dirs[a])).getTeam() == rc.getTeam())
+                                {
+                                    value--;
+                                }
                             }
                         }
                         catch(Exception e){
