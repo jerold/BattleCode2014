@@ -23,7 +23,9 @@ public class Utilities
                     rc.yield();
                 }
             }
-            catch(Exception e){}
+            catch(Exception e){
+                e.printStackTrace();
+            }
             while(!rc.isActive()){rc.yield();}
             toFire = center;
             for(int a = 0; a < radius / 2; a++)
@@ -39,7 +41,9 @@ public class Utilities
                     rc.yield();
                 }
             }
-            catch(Exception e){}
+            catch(Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -65,7 +69,9 @@ public class Utilities
                     toFire = toFire.add(directions[k].opposite());
                 }
             }
-            catch(Exception e){}
+            catch(Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
