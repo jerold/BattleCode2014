@@ -158,10 +158,11 @@ public class Utilities
                 {
                     for (int j = allies.length; --j >= 0; )
                     {
+                        /*
                         if ((enemies[i]).distanceSquaredTo(allies[j]) <= 10)
                         {
                             alliesEngaged = true;
-                        }
+                        }*/
                     }
                 }
             }
