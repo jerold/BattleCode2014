@@ -616,22 +616,26 @@ public class FightMicro
         int engaged;
         MapLocation us = rc.getLocation();
 
-        for (int i = enemyBots.length; --i >=0 ; )
+        if (enemyBots != null && alliedBots != null)
         {
-            engaged = 1;
-            if (enemyBots[i].distanceSquaredTo(us) <= 10)
+            for (int i = enemyBots.length; --i >=0 ; )
             {
-                for (int j = alliedBots.length; --j >= 0;)
+                engaged = 1;
+                MapLocation enemySpot = enemyBots[i];
+                if (enemySpot.distanceSquaredTo(us) <= 10)
                 {
-                    if (alliedBots[j].distanceSquaredTo(enemyBots[i]) <= 10)
+                    for (int j = alliedBots.length; --j >= 0;)
                     {
-                        j = -1;
-                        engaged = 0;
+                        if (alliedBots[j].distanceSquaredTo(enemySpot) <= 10)
+                        {
+                            j = -1;
+                            engaged = 0;
+                        }
                     }
-                }
-                if (engaged == 1)
-                {
-                    numb++;
+                    if (engaged == 1)
+                    {
+                        numb++;
+                    }
                 }
             }
         }
