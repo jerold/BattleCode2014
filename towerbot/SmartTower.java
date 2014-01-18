@@ -20,8 +20,8 @@ public class SmartTower
             {
                     try
                     {
-                        target = TowerUtil.bestSpot(rc);
-                        Utilities.MoveMapLocation(rc, target, true);
+                        target = TowerUtil.bestSpot3(rc);
+                        Utilities.MoveMapLocation(rc, target, false);
 
                         if(rc.isActive())
                         {

@@ -47,7 +47,7 @@ public class MULE
         }
         */
 
-        target = TowerUtil.bestSpot(rc);
+        target = TowerUtil.bestSpot3(rc);
 
         rc.setIndicatorString(0, "MULE");
 
@@ -60,7 +60,7 @@ public class MULE
             if(rc.getType() == RobotType.SOLDIER)
             {
                 //Utilities.AvoidEnemiesMoveMapLocation(rc, target, true);
-                Utilities.MoveMapLocation(rc, target, true);
+                Utilities.MoveMapLocation(rc, target, false);
 
                 if(rc.isActive())
                 {
