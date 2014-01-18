@@ -580,16 +580,18 @@ public class Movement
                 //Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
                 enemies = FightMicro.findSoldiersAtDistance(rc, enemies, radius);
                 Robot target = null;
-
-                for(int k = 0; k < enemies.length; k++)
+                if (enemies != null)
                 {
-                    if(target == null)
+                    for(int k = 0; k < enemies.length; k++)
                     {
-                        target = enemies[k];
-                    }
-                    else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health)
-                    {
-                        target = enemies[k];
+                        if(target == null)
+                        {
+                            target = enemies[k];
+                        }
+                        else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health)
+                        {
+                            target = enemies[k];
+                        }
                     }
                 }
 

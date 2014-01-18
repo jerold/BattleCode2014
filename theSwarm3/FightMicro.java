@@ -518,14 +518,17 @@ public class FightMicro
 
             for (int i = 0; i < gameObjects.length; i++)
             {
-                if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(gameObjects[i])) <= distance)
+                if (rc.canSenseObject(gameObjects[i]))
                 {
-                    index[i] = 1;
-                    numb++;
-                }
-                else
-                {
-                    index[i] = 0;
+                    if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(gameObjects[i])) <= distance)
+                    {
+                        index[i] = 1;
+                        numb++;
+                    }
+                    else
+                    {
+                        index[i] = 0;
+                    }
                 }
             }
             Robot[] soldiers = new Robot[numb];
@@ -760,7 +763,10 @@ public class FightMicro
             {
                 if (alliedBots[i] != null)
                 {
-                    numb += (int) rc.senseRobotInfo(alliedBots[i]).health;
+                    if (rc.canSenseObject(alliedBots[i]))
+                    {
+                        numb += (int) rc.senseRobotInfo(alliedBots[i]).health;
+                    }
                 }
             }
 
@@ -768,7 +774,10 @@ public class FightMicro
             {
                 if (enemyBots[i] != null)
                 {
-                    numb -= (int) rc.senseRobotInfo(enemyBots[i]).health;
+                    if (rc.canSenseObject(enemyBots[i]))
+                    {
+                        numb -= (int) rc.senseRobotInfo(enemyBots[i]).health;
+                    }
                 }
             }
 
@@ -953,19 +962,9 @@ public class FightMicro
                     Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
                     Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
                     // if our brethern are in the field of action we must join them!
-                    if (alliesEngaged && numbOfRobotsAttackingTarget(rc.getLocation().add(dir), enemyBotLoc, alliedBots) < 2 && (enemyBotLoc.length <= (alliedBots.length + 1)))
+                    if (alliesEngaged && (enemyBotLoc.length <= (alliedBots.length + 1)) && numbOfRobotsAttackingTarget(rc.getLocation().add(dir), enemyBotLoc, alliedBots) < 2)
                     {
-                        if (rc.canMove(dir))
-                        {
-                            if (rc.isActive())
-                            {
-                                rc.move(dir);
-                            }
-                        }
-                        else
-                        {
-                            Movement.fire(rc, nearByEnemies3);
-                        }
+                        Movement.MoveDirection(rc, dir, false);
                     }
                     else if (nearByAllies4.length > (nearByEnemies2.length) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
                     {
