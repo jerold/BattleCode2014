@@ -1460,8 +1460,8 @@ public class FightMicro
                 nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
 
                 // here we shrink the array down to just the enemy soldiers who are relatively close
-                AlliedSoldiers = botsInBattle(rc, AlliedSoldiers);
-                enemySoldiers = botsInBattle(rc, enemySoldiers);
+                //AlliedSoldiers = botsInBattle(rc, AlliedSoldiers);
+                //enemySoldiers = botsInBattle(rc, enemySoldiers);
                 
                 
                 nearbyEnemies = findSoldiersAtDistance(rc, nearByEnemies3, 10);
