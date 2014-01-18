@@ -1535,6 +1535,7 @@ public class FightMicro
 
             if (nearByEnemies3.length > 0)
             {
+                nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                 nearbyEnemies = findSoldiersAtDistance(rc, nearByEnemies3, 10);
                 if (nearbyEnemies.length > 0)
                 {
