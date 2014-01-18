@@ -1479,6 +1479,8 @@ public class FightMicro
                  */
                 if (nearbyEnemies.length > 0)
                 {
+                    Movement.fire(rc, nearByEnemies3);
+                    /*
                     // if there are multiple enemies that can only shoot us then we should retreat
                     if (numbOfEnemiesOnlyInRangeOfUs(rc, enemySoldiers, AlliedSoldiers) > 1)
                     {
@@ -1522,11 +1524,14 @@ public class FightMicro
                         {
                             Movement.fire(rc, nearByEnemies3);
                         }
-                    }
+                    }*/
                 }
                 // if there is an enemy close to use to where if we move they can hit us but not far away for us to shoot then we stop
                 else if (nearByEnemies2.length > 0)
                 {
+                    Direction dir = rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0]));
+                    Movement.MoveDirection(rc, dir, false);
+                    /*
                     // if our brethern are in the field of action we must join them!
                     if (numbOfEngagedAllies(rc, AlliedSoldiers, enemySoldiers) > numbofEngagedEnemies(rc, AlliedSoldiers, enemySoldiers))
                     {
@@ -1569,12 +1574,17 @@ public class FightMicro
                             }
                         }
                     }
+                    */
                 }
                 /**
                  * We can see enemies in the distance
                  */
                 else if (nearByEnemies3.length > 0)
                 {
+                    Direction dir = rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0]));
+                    Movement.MoveDirection(rc, dir, false);
+
+                    /*
                     // if we have friends ahead then we must join them
                     if (numbOfEngagedAllies(rc, AlliedSoldiers, enemySoldiers) > 0)
                     {
@@ -1616,8 +1626,9 @@ public class FightMicro
                     else
                     {
                         return false;
-                    }
+                    }*/
                 }
+
                 return true;
             }
             /*
