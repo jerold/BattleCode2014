@@ -152,13 +152,16 @@ public class Utilities
         boolean alliesEngaged = false;
         try
         {
-            for (int i = 0; i < enemies.length; i++)
+            if (enemies != null && allies != null)
             {
-                for (int j = 0; j < allies.length; j++)
+                for (int i = 0; i < enemies.length; i++)
                 {
-                    if ((enemies[i]).distanceSquaredTo((allies[j])) <= 10)
+                    for (int j = 0; j < allies.length; j++)
                     {
-                        alliesEngaged = true;
+                        if ((enemies[i]).distanceSquaredTo((allies[j])) <= 10)
+                        {
+                            alliesEngaged = true;
+                        }
                     }
                 }
             }
