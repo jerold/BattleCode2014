@@ -628,10 +628,14 @@ public class FightMicro
                     {
                         for (int j = alliedBots.length; --j >= 0;)
                         {
-                            if (alliedBots[j].distanceSquaredTo(enemySpot) <= 10)
+                            MapLocation alliedSpot = alliedBots[j];
+                            if (alliedSpot != null)
                             {
-                                j = -1;
-                                engaged = 0;
+                                if (alliedSpot.distanceSquaredTo(enemySpot) <= 10)
+                                {
+                                    j = -1;
+                                    engaged = 0;
+                                }
                             }
                         }
                         if (engaged == 1)
