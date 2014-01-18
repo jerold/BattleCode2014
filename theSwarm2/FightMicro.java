@@ -133,12 +133,12 @@ public class FightMicro
 
             while (AllEnemyBots[index] != 0 && index < AllEnemyBots.length && !foundInList)
             {
-                    if ((getBotID(AllEnemyBots[index])) == botID)
-                    {
-                        rc.broadcast((index+StartEnemyChannel), outBot); //ConvertLongToBits(outBot));
-                        foundInList = true;
-                    }
-                    index++;  
+                if ((getBotID(AllEnemyBots[index])) == botID)
+                {
+                    rc.broadcast((index+StartEnemyChannel), outBot); //ConvertLongToBits(outBot));
+                    foundInList = true;
+                }
+                index++;
             }
 
             if (!foundInList)
@@ -205,10 +205,11 @@ public class FightMicro
                     {
                         recordAEnemyBot(rc, AllEnemyBots, info);
                     }
+                    /*
                     else if (rc.senseRobotInfo(enemyRobots[i]).type == RobotType.NOISETOWER)
                     {
                         recordEnemyNoiseTower(rc, AllEnemyTowers, info);
-                    }
+                    }*/
                 }
             }
         } catch (Exception e) {}
@@ -1440,7 +1441,7 @@ public class FightMicro
     /**
      * This is the old fight micro with all of the new functons added in
      */
-    public static boolean fightMode(RobotController rc, Robot[] nearByEnemies3, int[] AlliedSoldiers, int[] enemySoldiers)
+    public static boolean fightMode(RobotController rc, Robot[] nearByEnemies3)//, int[] AlliedSoldiers, int[] enemySoldiers)
     {
         try
         {
@@ -1460,8 +1461,10 @@ public class FightMicro
                 //nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
 
                 // here we shrink the array down to just the enemy soldiers who are relatively close
-                //AlliedSoldiers = botsInBattle(rc, AlliedSoldiers);
-                //enemySoldiers = botsInBattle(rc, enemySoldiers);
+                int[] AlliedSoldiers = AllAlliedBotsInfo(rc);
+                int[] enemySoldiers = AllEnemyBots(rc);
+                AlliedSoldiers = botsInBattle(rc, AlliedSoldiers);
+                enemySoldiers = botsInBattle(rc, enemySoldiers);
                 
                 
                 nearbyEnemies = findSoldiersAtDistance(rc, nearByEnemies3, 10);

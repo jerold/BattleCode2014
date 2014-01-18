@@ -63,7 +63,7 @@ public class Larva {
                     }
 
 					rc.setIndicatorString(1, "Target:" + target);
-                    if (FightMicro.fightMode(rc, nearByEnemies, AllAlliedBots, AllEnemyBots))
+                    if (FightMicro.fightMode(rc, nearByEnemies))//, AllAlliedBots, AllEnemyBots))
                     {
                         rc.setIndicatorString(2, "Running fight micro");
                     }
@@ -71,23 +71,21 @@ public class Larva {
 					{
 						target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
 
-                        /*
-                        AllAlliedBots = FightMicro.AllAlliedBotsInfo(rc);
                         FightMicro.PostOurInfoToWall(rc, ourIndex);
                         nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                         if (nearByEnemies.length > 0)
                         {
                             AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                            AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                            //AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
                             FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
 
-                            if (rc.getHealth() < nearByEnemies.length * 5)
+                            if (rc.getHealth() < (nearByEnemies.length * 5) + 15)
                             {
                                 FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
                             }
-                        }*/
+                        }
 					}
 					else
 					{

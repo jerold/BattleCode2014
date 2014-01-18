@@ -157,7 +157,7 @@ public class Movement
                         AllEnemyBots = FightMicro.AllEnemyBots(rc);
                     }
 
-                    if (FightMicro.fightMode(rc, nearByEnemies, alliedBots, AllEnemyBots))
+                    if (FightMicro.fightMode(rc, nearByEnemies)) //, alliedBots, AllEnemyBots))
                     {
                         rc.setIndicatorString(2, "Running fight micro 2");
                     	//fire(rc);
@@ -256,7 +256,7 @@ public class Movement
                                         dir2 = rc.getLocation().directionTo(target);
 
 
-                                        if (FightMicro.fightMode(rc, nearByEnemies, alliedBots, AllEnemyBots))
+                                        if (FightMicro.fightMode(rc, nearByEnemies))//, alliedBots, AllEnemyBots))
                                         {
                                             rc.setIndicatorString(2, "Running fight micro 3");
                                         }
@@ -349,14 +349,14 @@ public class Movement
                                     }
                                     else
                                     {
-                                        /*
+
                                         FightMicro.PostOurInfoToWall(rc, ourIndex);
                                         nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                                         if (nearByEnemies.length > 0)
                                         {
                                             AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                                            AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                                         //   AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
                                             FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
 
@@ -364,7 +364,7 @@ public class Movement
                                             {
                                                 FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
                                             }
-                                        }*/
+                                        }
                                     }
                                 } catch (Exception e)
                                 {
@@ -406,14 +406,14 @@ public class Movement
                 }
                 else
                 {
-                    /*
+
                     FightMicro.PostOurInfoToWall(rc, ourIndex);
                     nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                     if (nearByEnemies.length > 0)
                     {
                         AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                        AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
+                        //AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
                         FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
 
@@ -421,7 +421,7 @@ public class Movement
                         {
                             FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
                         }
-                    }*/
+                    }
                 }
             }
             catch (Exception e)
@@ -517,7 +517,10 @@ public class Movement
                         FightMicro.recordEnemyBotKilled(rc, AllEnemyBots, target);
 
                     }
-                    rc.attackSquare(rc.senseRobotInfo(target).location);
+                    if (rc.canAttackSquare((rc.senseRobotInfo(target).location)))
+                    {
+                        rc.attackSquare(rc.senseRobotInfo(target).location);
+                    }
                 }
                 else if (enemies2.length > 0)
                 {
