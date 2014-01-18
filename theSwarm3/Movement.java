@@ -498,7 +498,13 @@ public class Movement
 
                 if(target != null)
                 {
-                    rc.attackSquare(rc.senseRobotInfo(target).location);
+                    if (target != null)
+                    {
+                        if (rc.canAttackSquare(rc.senseRobotInfo(target).location))
+                        {
+                            rc.attackSquare(rc.senseRobotInfo(target).location);
+                        }
+                    }
                 }
                 else if (enemies2.length > 0)
                 {
