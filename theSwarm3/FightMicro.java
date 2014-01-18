@@ -680,8 +680,9 @@ public class FightMicro
 
         try
         {
-            for (int i = bots.length; --i <= 0;)
+            for (int i = bots.length; --i >= 0;)
             {
+
                 botSpots[i] = rc.senseLocationOf(bots[i]);
             }
         } catch (Exception e)
