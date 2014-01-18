@@ -20,7 +20,7 @@ public class SmartTower
             {
                     try
                     {
-                        target = Utilities.spotOfSensorTower(rc, true);
+                        target = TowerUtil.bestSpot(rc);
                         Utilities.MoveMapLocation(rc, target, true);
 
                         if(rc.isActive())

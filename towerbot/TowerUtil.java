@@ -91,55 +91,299 @@ public class TowerUtil
     	catch(Exception e){}
     }
     
-    public static MapLocation[] generateSpokeLines(RobotController rc, MapLocation center, int radius, int skim)
+    /*
+     * Corners are as follows with p being the center.
+     * 1   2
+     *   p
+     * 3   4
+     */
+    public static MapLocation[] generateSpokeLines(RobotController rc, MapLocation center, int corner)
     {
-    	MapLocation[] lines = new MapLocation[(radius / skim) * 4 + 1];
-    	MapLocation current = center;
+    	MapLocation[] lines = new MapLocation[50];
     	int index = 0;
-    	int dist = 7;
+    	MapLocation current = center;
+    	Direction mainDir;
+    	int edgeY, edgeX;
+    	MapLocation temp;
     	
-    	while(Math.sqrt(current.distanceSquaredTo(center)) < radius)
+    	switch(corner)
     	{
-    		MapLocation temp1 = current;
-    		while(temp1.y > -2)
+    		case 1:
+    			mainDir = Direction.NORTH_WEST;
+    			edgeX = center.x + 4;
+    			edgeY = center.y + 4;
+    			break;
+    		case 2:
+    			mainDir = Direction.NORTH_EAST;
+    			edgeX = center.x - 4;
+    			edgeY = center.y + 4;
+    			break;
+    		case 3:
+    			mainDir = Direction.SOUTH_WEST;
+    			edgeX = center.x + 4;
+    			edgeY = center.y - 4;
+    			break;
+    		default:
+    			mainDir = Direction.SOUTH_EAST;
+    			edgeX = center.x - 4;
+    			edgeY = center.y - 4;
+    			break;
+    	}
+    	
+    	while(!voidBehind(rc, center, current, mainDir) && rc.canAttackSquare(current) && current.x > -3 &&
+    		  current.x < rc.getMapWidth() + 3 && current.y > -3 && current.y < rc.getMapHeight() + 3)
+    	{
+    		temp = current;
+    		if(corner == 1)
     		{
-    			temp1 = temp1.add(Direction.NORTH_WEST);
+    			while(temp.x < edgeX && rc.canAttackSquare(temp) && rc.senseTerrainTile(temp) != TerrainTile.VOID)
+    			{
+    				temp = temp.add(mainDir.rotateRight().rotateRight());
+    			}
+    			if(!rc.canAttackSquare(temp))
+    			{
+    				temp = temp.add(temp.directionTo(current));
+    			}
+    			
+				lines[index] = temp;
+				index++;
+				while(Math.sqrt(temp.distanceSquaredTo(current)) > 7)
+				{
+					temp = temp.add(temp.directionTo(current));
+				}
+				lines[index] = temp;
+				index++;
+				
+    			temp = current;
+    			while(temp.y < edgeY && rc.canAttackSquare(temp) && rc.senseTerrainTile(temp) != TerrainTile.VOID)
+    			{
+    				temp = temp.add(mainDir.rotateLeft().rotateLeft());
+    			}
+    			if(!rc.canAttackSquare(temp))
+    			{
+    				temp = temp.add(temp.directionTo(current));
+    			}
+    			
+				lines[index] = temp;
+				index++;
+				while(Math.sqrt(temp.distanceSquaredTo(current)) > 7)
+				{
+					temp = temp.add(temp.directionTo(current));
+				}
+				lines[index] = temp;
+				index++;
+				
+    			current = current.add(mainDir, 3);
     		}
-    		lines[index] = temp1;
-    		index++;
-    		while(Math.sqrt(temp1.distanceSquaredTo(current)) > dist)
+    		else if(corner == 2)
     		{
-    			temp1 = temp1.add(Direction.SOUTH_EAST);
+    			while(temp.x > edgeX && rc.canAttackSquare(temp) && rc.senseTerrainTile(temp) != TerrainTile.VOID)
+    			{
+    				temp = temp.add(mainDir.rotateLeft().rotateLeft());
+    			}
+    			if(!rc.canAttackSquare(temp))
+    			{
+    				temp = temp.add(temp.directionTo(current));
+    			}
+    			
+				lines[index] = temp;
+				index++;
+				while(Math.sqrt(temp.distanceSquaredTo(current)) > 7)
+				{
+					temp = temp.add(temp.directionTo(current));
+				}
+				lines[index] = temp;
+				index++;
+				
+    			temp = current;
+    			while(temp.y < edgeY && rc.canAttackSquare(temp) && rc.senseTerrainTile(temp) != TerrainTile.VOID)
+    			{
+    				temp = temp.add(mainDir.rotateRight().rotateRight());
+    			}
+    			if(!rc.canAttackSquare(temp))
+    			{
+    				temp = temp.add(temp.directionTo(current));
+    			}
+    			
+				lines[index] = temp;
+				index++;
+				while(Math.sqrt(temp.distanceSquaredTo(current)) > 7)
+				{
+					temp = temp.add(temp.directionTo(current));
+				}
+				lines[index] = temp;
+				index++;
+				
+    			current = current.add(mainDir, 3);
     		}
-    		lines[index] = temp1;
-    		index++;
-    		temp1 = current;
-    		while(temp1.x < 62)
+    		else if(corner == 3)
     		{
-    			temp1 = temp1.add(Direction.SOUTH_EAST);
+    			while(temp.x < edgeX && rc.canAttackSquare(temp) && rc.senseTerrainTile(temp) != TerrainTile.VOID)
+    			{
+    				temp = temp.add(mainDir.rotateLeft().rotateLeft());
+    			}
+    			if(!rc.canAttackSquare(temp))
+    			{
+    				temp = temp.add(temp.directionTo(current));
+    			}
+    			
+				lines[index] = temp;
+				index++;
+				while(Math.sqrt(temp.distanceSquaredTo(current)) > 7)
+				{
+					temp = temp.add(temp.directionTo(current));
+				}
+				lines[index] = temp;
+				index++;
+				
+    			temp = current;
+    			while(temp.y > edgeY && rc.canAttackSquare(temp) && rc.senseTerrainTile(temp) != TerrainTile.VOID)
+    			{
+    				temp = temp.add(mainDir.rotateRight().rotateRight());
+    			}
+    			if(!rc.canAttackSquare(temp))
+    			{
+    				temp = temp.add(temp.directionTo(current));
+    			}
+    			
+				lines[index] = temp;
+				index++;
+				while(Math.sqrt(temp.distanceSquaredTo(current)) > 7)
+				{
+					temp = temp.add(temp.directionTo(current));
+				}
+				lines[index] = temp;
+				index++;
+				
+    			current = current.add(mainDir, 3);
     		}
-    		lines[index] = temp1;
-    		index++;
-    		while(Math.sqrt(temp1.distanceSquaredTo(current)) > dist)
+    		else if(corner == 4)
     		{
-    			temp1 = temp1.add(Direction.NORTH_WEST);
+    			while(temp.x > edgeX && rc.canAttackSquare(temp) && rc.senseTerrainTile(temp) != TerrainTile.VOID)
+    			{
+    				temp = temp.add(mainDir.rotateRight().rotateRight());
+    			}
+    			if(!rc.canAttackSquare(temp))
+    			{
+    				temp = temp.add(temp.directionTo(current));
+    			}
+    			
+				lines[index] = temp;
+				index++;
+				while(Math.sqrt(temp.distanceSquaredTo(current)) > 7)
+				{
+					temp = temp.add(temp.directionTo(current));
+				}
+				lines[index] = temp;
+				index++;
+				
+    			temp = current;
+    			while(temp.y > edgeY && rc.canAttackSquare(temp) && rc.senseTerrainTile(temp) != TerrainTile.VOID)
+    			{
+    				temp = temp.add(mainDir.rotateLeft().rotateLeft());
+    			}
+    			if(!rc.canAttackSquare(temp))
+    			{
+    				temp = temp.add(temp.directionTo(current));
+    			}
+    			
+				lines[index] = temp;
+				index++;
+				while(Math.sqrt(temp.distanceSquaredTo(current)) > 7)
+				{
+					temp = temp.add(temp.directionTo(current));
+				}
+				lines[index] = temp;
+				index++;
+				
+    			current = current.add(mainDir, 3);
     		}
-    		lines[index] = temp1;
-    		index++;
     		
-    		current = current.add(Direction.SOUTH_WEST, skim);
-    		rc.setIndicatorString(1, "(" + current.x + ", " + current.y + ")");
+    	}
+    	while(!rc.canAttackSquare(current))
+    	{
+    		current = current.subtract(mainDir);
     	}
     	lines[index] = current;
-    	index++;
-    	
-    	while(Math.sqrt(current.distanceSquaredTo(center)) > dist / 2)
-		{
-			current = current.add(Direction.NORTH_EAST);
-		}
-		lines[index] = current;
 		index++;
-    	
+    	while(Math.sqrt(current.distanceSquaredTo(center)) > 4)
+    	{
+    		current = current.add(current.directionTo(center));
+    	}
+    	lines[index] = current;
+		index++;
+		
     	return lines;
+    }
+    
+    private static boolean voidBehind(RobotController rc, MapLocation center, MapLocation current, Direction dir)
+    {
+    	for(int k = 0; k < 4; k++)
+    	{
+    		if(rc.senseTerrainTile(center) == TerrainTile.VOID)
+    		{
+    			return true;
+    		}
+    		if(rc.senseTerrainTile(center.add(dir.rotateRight())) == TerrainTile.VOID)
+    		{
+    			return true;
+    		}
+    		if(rc.senseTerrainTile(center.add(dir.rotateLeft())) == TerrainTile.VOID)
+    		{
+    			return true;
+    		}
+    		center = center.subtract(dir);
+    	}
+    	
+    	return false;
+    }
+    
+    public static MapLocation bestSpot(RobotController rc)
+    {
+    	double[][] cows = rc.senseCowGrowth();
+    	MapLocation target = new MapLocation(5, 5);
+    	int total = 0;
+    	int skip, start;
+    	int scope = 7;
+    	int width = rc.getMapWidth();
+    	int height = rc.getMapHeight();
+    	
+    	if(rc.getMapWidth() * rc.getMapHeight() < 2600)
+    	{
+    		skip = 2;
+    		start = 6;
+    	}
+    	else
+    	{
+    		skip = 4;
+    		start = 6;
+    	}
+    	
+    	for(int k = start; k < width - start; k += skip)
+    	{
+    		for(int a = start; a < height - start; a += skip)
+    		{
+    			int score = 0;
+    			for(int t = 0; t < scope; t += 1)
+    			{
+    				for(int i = 0; i < scope; i += 1)
+    				{
+    					score += (int)cows[k - scope / 2 + t][a - scope / 2 + i];
+    					if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
+    					{
+    						score -= 2;
+    					}
+    				}
+    			}
+    			
+    			if(score > total)
+    			{
+    				total = score;
+    				target = new MapLocation(k, a);
+    			}
+    		}
+    	}
+    	
+    	return target;
     }
 }
