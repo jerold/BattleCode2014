@@ -471,13 +471,16 @@ public class Movement
                         {
                             if (rc.canSenseSquare(loc.add(dirs[a])))
                             {
-                                if(rc.senseObjectAtLocation(loc.add(dirs[a])).getTeam() == rc.getTeam().opponent())
+                                if (rc.senseObjectAtLocation(loc.add(dirs[a])) != null)
                                 {
-                                    value++;
-                                }
-                                else if(rc.senseObjectAtLocation(loc.add(dirs[a])).getTeam() == rc.getTeam())
-                                {
-                                    value--;
+                                    if(rc.senseObjectAtLocation(loc.add(dirs[a])).getTeam() == rc.getTeam().opponent())
+                                    {
+                                        value++;
+                                    }
+                                    else if(rc.senseObjectAtLocation(loc.add(dirs[a])).getTeam() == rc.getTeam())
+                                    {
+                                        value--;
+                                    }
                                 }
                             }
                         }
@@ -495,13 +498,6 @@ public class Movement
 
                 if(target != null)
                 {
-                    if (rc.senseRobotInfo(target).health <= 50)
-                    {
-                        int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
-
-                        FightMicro.recordEnemyBotKilled(rc, AllEnemyBots, target);
-
-                    }
                     rc.attackSquare(rc.senseRobotInfo(target).location);
                 }
                 else if (enemies2.length > 0)
