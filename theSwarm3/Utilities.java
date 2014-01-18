@@ -154,11 +154,11 @@ public class Utilities
         {
             if (enemies != null && allies != null)
             {
-                for (int i = 0; i < enemies.length; i++)
+                for (int i = enemies.length; --i >= 0; )
                 {
-                    for (int j = 0; j < allies.length; j++)
+                    for (int j = allies.length; --j >= 0; )
                     {
-                        if ((enemies[i]).distanceSquaredTo((allies[j])) <= 10)
+                        if ((enemies[i]).distanceSquaredTo(allies[j]) <= 10)
                         {
                             alliesEngaged = true;
                         }
