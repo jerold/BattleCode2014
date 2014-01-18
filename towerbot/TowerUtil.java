@@ -5,6 +5,7 @@ import battlecode.common.*;
 public class TowerUtil
 {
 	public static Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
+	public static int bestLocChannel = 60000;
 	
 	public static void fireCircle(RobotController rc, int radius, MapLocation center)
     {
@@ -51,7 +52,7 @@ public class TowerUtil
                 while(toFire.distanceSquaredTo(center) > 10)
                 {
                 	while(!rc.isActive()){rc.yield();}
-                    if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
+                    if(toFire.x >= -2 && toFire.x < rc.getMapWidth() + 2 && toFire.y >= -2 && toFire.y < rc.getMapHeight() + 2 && rc.canAttackSquare(toFire))
                     {
                         try
                         {
@@ -318,17 +319,9 @@ public class TowerUtil
     
     private static boolean voidBehind(RobotController rc, MapLocation center, MapLocation current, Direction dir)
     {
-    	for(int k = 0; k < 4; k++)
+    	for(int k = 0; k < 6; k++)
     	{
     		if(rc.senseTerrainTile(center) == TerrainTile.VOID)
-    		{
-    			return true;
-    		}
-    		if(rc.senseTerrainTile(center.add(dir.rotateRight())) == TerrainTile.VOID)
-    		{
-    			return true;
-    		}
-    		if(rc.senseTerrainTile(center.add(dir.rotateLeft())) == TerrainTile.VOID)
     		{
     			return true;
     		}
@@ -342,7 +335,7 @@ public class TowerUtil
     {
     	double[][] cows = rc.senseCowGrowth();
     	MapLocation target = new MapLocation(5, 5);
-    	int total = 0;
+    	int total = 5;
     	int skip, start;
     	int scope = 7;
     	int width = rc.getMapWidth();
@@ -385,5 +378,214 @@ public class TowerUtil
     	}
     	
     	return target;
+    }
+    
+    public static MapLocation bestSpot2(RobotController rc)
+    {
+    	try
+    	{
+    	if(rc.readBroadcast(bestLocChannel) != 0)
+    	{
+    		return Utilities.convertIntToMapLocation(rc.readBroadcast(bestLocChannel));
+    	}
+    	}
+    	catch(Exception e){}
+    	
+    	double[][] cows = rc.senseCowGrowth();
+    	int width = rc.getMapWidth();
+    	int height = rc.getMapHeight();
+    	MapLocation start = new MapLocation(0, 0);
+    	MapLocation target = new MapLocation(0, 0);
+    	int total = 0;
+    	
+    	for(int k = 0; k < 3; k++)
+    	{
+    		for(int a = 0; a < 3; a++)
+    		{
+    			int temp = 0;
+    			for(int t = 0; t < width / 3; t++)
+    			{
+    				for(int i = 0; i < height / 3; i++)
+    				{
+    					temp += cows[(k * width / 3) + t][(a * width / 3) + i];
+    					if(rc.senseTerrainTile(new MapLocation((k * width / 3) + t, (a * width / 3) + i)) == TerrainTile.VOID)
+    					{
+    						temp--;
+    					}
+    				}
+    			}
+    			
+    			if(temp > total)
+    			{
+    				total = temp;
+    				start = new MapLocation(k * width / 3, a * width / 3);
+    			}
+    		}
+    	}
+    	
+    	total = 0;
+    	int scope = 8;
+    	int skip = 2;
+    	int begin = 4;
+    	for(int k = start.x + begin; k < start.x + width / 3 - begin; k += skip)
+    	{
+    		for(int a = start.y + begin; a < start.y + height / 3 - begin; a += skip)
+    		{
+    			int score = 0;
+    			for(int t = 0; t < scope; t += 1)
+    			{
+    				for(int i = 0; i < scope; i += 1)
+    				{
+    					score += (int)cows[k - scope / 2 + t][a - scope / 2 + i];
+    					if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
+    					{
+    						score -= 2;
+    					}
+    				}
+    			}
+    			
+    			if(score > total)
+    			{
+    				total = score;
+    				target = new MapLocation(k, a);
+    				rc.setIndicatorString(1, target.toString());
+    			}
+    		}
+    	}
+    	
+    	try
+    	{
+			rc.broadcast(bestLocChannel, Utilities.convertMapLocationToInt(target));
+		}
+    	catch (Exception e){}
+    	
+    	return target;
+    }
+    
+    public static MapLocation bestSpot3(RobotController rc)
+    {
+    	try
+    	{
+    	if(rc.readBroadcast(bestLocChannel) != 0)
+    	{
+    		return Utilities.convertIntToMapLocation(rc.readBroadcast(bestLocChannel));
+    	}
+    	}
+    	catch(Exception e){}
+    	
+    	double[][] cows = rc.senseCowGrowth();
+    	int width = rc.getMapWidth();
+    	int height = rc.getMapHeight();
+    	MapLocation start = new MapLocation(0, 0);
+    	MapLocation target = new MapLocation(0, 0);
+    	int total = 0;
+    	
+    	for(int k = 0; k < 3; k++)
+    	{
+    		for(int a = 0; a < 3; a++)
+    		{
+    			if(a < 3 - k)
+    			{
+	    			int temp = 0;
+	    			for(int t = 0; t < width / 3; t++)
+	    			{
+	    				for(int i = 0; i < height / 3; i++)
+	    				{
+	    					if(rc.senseTerrainTile(new MapLocation((k * width / 3) + t, (a * width / 3) + i)) == TerrainTile.VOID)
+	    					{
+	    						temp--;
+	    					}
+	    					else
+	    					{
+	    						temp += cows[(k * width / 3) + t][(a * width / 3) + i];
+	    					}
+	    				}
+	    			}
+	    			
+	    			if(temp > total)
+	    			{
+	    				total = temp;
+	    				start = new MapLocation(k * width / 3, a * width / 3);
+	    			}
+    			}
+    		}
+    	}
+    	
+    	total = 0;
+    	int scope = 8;
+    	int skip = 2;
+    	int begin = 4;
+    	for(int k = start.x + begin; k < start.x + width / 3 - begin && k < width; k += skip)
+    	{
+    		for(int a = start.y + begin; a < start.y + height / 3 - begin && a < height; a += skip)
+    		{
+    			int score = 0;
+    			for(int t = 0; t < scope; t += 1)
+    			{
+    				for(int i = 0; i < scope; i += 1)
+    				{
+    					if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
+    					{
+    						score -= 2;
+    					}
+    					else
+    					{
+    						score += (int)cows[k - scope / 2 + t][a - scope / 2 + i];
+    					}
+    				}
+    			}
+    			
+    			if(score > total)
+    			{
+    				total = score;
+    				target = new MapLocation(k, a);
+    				rc.setIndicatorString(1, target.toString());
+    			}
+    		}
+    	}
+    	
+    	if(rc.getLocation().distanceSquaredTo(target) > rc.getLocation().distanceSquaredTo(new MapLocation(width - target.x, height - target.y)))
+    	{
+    		target = new MapLocation(width - target.x, height - target.y);
+    	}
+    	
+    	try
+    	{
+			rc.broadcast(bestLocChannel, Utilities.convertMapLocationToInt(target));
+		}
+    	catch (Exception e){}
+    	
+    	return target;
+    }
+    
+    public static boolean[] goodSpokeDirs(RobotController rc, MapLocation target)
+    {
+    	boolean[] spokes = {true, true, true, true};
+    	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent());
+    	for(Robot bot : bots)
+    	{
+    		try
+    		{
+	    		if(target.directionTo(rc.senseRobotInfo(bot).location) == Direction.NORTH_WEST)
+	    		{
+	    			spokes[0] = false;
+	    		}
+	    		else if(target.directionTo(rc.senseRobotInfo(bot).location) == Direction.NORTH_EAST)
+	    		{
+	    			spokes[1] = false;
+	    		}
+	    		else if(target.directionTo(rc.senseRobotInfo(bot).location) == Direction.SOUTH_WEST)
+	    		{
+	    			spokes[2] = false;
+	    		}
+	    		else if(target.directionTo(rc.senseRobotInfo(bot).location) == Direction.SOUTH_EAST)
+	    		{
+	    			spokes[3] = false;
+	    		}
+    		}
+    		catch(Exception e){}
+    	}
+    	
+    	return spokes;
     }
 }
