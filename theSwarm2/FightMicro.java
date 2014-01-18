@@ -1585,7 +1585,7 @@ public class FightMicro
                  */
                 else if (nearByEnemies3.length > 0)
                 {
-                    Direction dir = rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0]));
+                    Direction dir = rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies3[0]));
                     Movement.MoveDirection(rc, dir, false);
 
                     /*
