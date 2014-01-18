@@ -1611,9 +1611,13 @@ public class FightMicro
                     else if (numbOfAlliesAlmostArrived(rc, AlliedSoldiers, enemySoldiers) > numbOfEnemiesAlmostArrived(rc, AlliedSoldiers, enemySoldiers))
                     {
                         MapLocation target = closetestSpotToAllies(rc, AlliedSoldiers);
-                        Direction dir = rc.getLocation().directionTo(target);
+                        Direction dir = null;
+                        if (target != null)
+                        {
+                             dir = rc.getLocation().directionTo(target);
+                        }
 
-                        if (rc.canMove(dir))
+                        if (dir != null && rc.canMove(dir))
                         {
                             rc.move(dir);
                         }

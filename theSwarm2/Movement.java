@@ -17,7 +17,6 @@ public class Movement
             // here we do some checks to make sure that we don't throw any exceptions
             if (rc.isActive())
             {
-
                 if (dir != Direction.NONE && dir != Direction.OMNI)
                 {
                     if (!rc.canMove(dir) || MapLocationInRangeOfEnemyHQ(rc, rc.getLocation().add(dir)))
@@ -66,7 +65,6 @@ public class Movement
 
                     if (newDir != Direction.NONE)
                     {
-
                         // now we decide if we are going to sneak or run
                         if (sneak)
                         {
@@ -76,7 +74,6 @@ public class Movement
                                 rc.sneak(newDir);
                             }
                         }
-
                         else
                         {
                             // another check to make sure we don't throw any exceptions
@@ -85,11 +82,8 @@ public class Movement
                                 rc.move(newDir);
                             }
                         }
-
                     }
-
                 }
-
             }
         } catch (Exception e)
         {
