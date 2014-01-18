@@ -43,7 +43,9 @@ public class FightMicro
 				currentInfo = rc.readBroadcast(index);
 				//valueSet = ConvertBitsToInts(currentInfo);	
 			}
-		} catch (Exception e) {}
+		} catch (Exception e) {
+            e.printStackTrace();
+        }
 		
 		return allEnemies;
 	}
@@ -73,7 +75,7 @@ public class FightMicro
 			}
 			
 		} catch (Exception e) {
-			
+            e.printStackTrace();
 		}
 		
 		return enemyNoiseTowers;
@@ -113,7 +115,9 @@ public class FightMicro
 				info += Movement.convertMapLocationToInt(rc.senseRobotInfo(bot).location);
 				*/
 			}
-		} catch (Exception e) {}
+		} catch (Exception e) {
+            e.printStackTrace();
+        }
 		
 		return info;
 	}
@@ -147,7 +151,9 @@ public class FightMicro
             }
 
 
-        } catch(Exception e) {}
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -182,7 +188,9 @@ public class FightMicro
                 rc.broadcast(index+StartEnemyNoiseTower, noiseTower);//ConvertLongToBits(noiseTower));
             }
 
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -211,7 +219,9 @@ public class FightMicro
                     }
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -262,7 +272,9 @@ public class FightMicro
 
             rc.broadcast(25+StartEnemyChannel, 0);
 
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -279,7 +291,9 @@ public class FightMicro
 
             rc.broadcast(25+StartEnemyNoiseTower, 0);
 
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -381,7 +395,9 @@ public class FightMicro
                 arrayIndex++;
                 currentInfo = rc.readBroadcast(index);
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return allAllies;
     }
@@ -400,7 +416,9 @@ public class FightMicro
                 index++;
             }
 
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return index;
     }
@@ -423,7 +441,9 @@ public class FightMicro
                 alliedID = (int) (getBotID(AllAlliedBots[index]));
             }
 
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return index;
     }
@@ -445,7 +465,9 @@ public class FightMicro
                 }
             }
 
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -457,7 +479,9 @@ public class FightMicro
         try
         {
             rc.broadcast(index+StartOurBotChannel, ourBitInfo);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static int NumbOfAllies(int[] AllAlliedBots)
@@ -660,7 +684,10 @@ public class FightMicro
             {
                 botSpots[i] = rc.senseLocationOf(bots[i]);
             }
-        } catch (Exception e) {}
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         return botSpots;
     }
@@ -748,7 +775,16 @@ public class FightMicro
                     // assuming we can move to a location our enemy can't hit
                     else if ((nearByAllies.length > 0  && (rc.senseRobotInfo(nearbyEnemies[0]).health > 30)))
                     {
-                        MapLocation ally = rc.getLocation().add(rc.getLocation().directionTo(alliedBots[0]));
+                        MapLocation ally;
+                        if (alliedBots[0] != null)
+                        {
+                            ally = rc.getLocation().add(rc.getLocation().directionTo(alliedBots[0]));
+                        }
+                        else
+                        {
+                            ally = rc.getLocation().add(rc.getLocation().directionTo(rc.senseLocationOf(nearByAllies[0])));
+                        }
+
                         if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, ally))
                         {
                             if (Utilities.MapLocationInRangeOfEnemyHQ(rc, ally))
