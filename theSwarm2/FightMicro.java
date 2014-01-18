@@ -211,6 +211,7 @@ public class FightMicro
                         recordEnemyNoiseTower(rc, AllEnemyTowers, info);
                     }*/
                 }
+
             }
         } catch (Exception e) {}
     }

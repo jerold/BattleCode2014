@@ -79,7 +79,7 @@ public class Larva {
                             AllEnemyBots = FightMicro.AllEnemyBots(rc);
                             //AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
 
-                            FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
+                            //FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
 
                             if (rc.getHealth() < (nearByEnemies.length * 5) + 15)
                             {
