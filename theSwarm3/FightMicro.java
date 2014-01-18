@@ -865,7 +865,7 @@ public class FightMicro
                     nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 9);
                     GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
                     // if our brethern are in the field of action we must join them!
-                    if (alliesEngaged && nearByAllies3.length <= nearByAllies.length)
+                    if (alliesEngaged && (nearByAllies3 != null) && (nearByAllies != null) && (nearByAllies3.length <= nearByAllies.length))
                     {
                         if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, enemySlot))
                         {
