@@ -596,11 +596,11 @@ public class Movement
 
                 for(int k = 0; k < enemies.length; k++)
                 {
-                    if(target == null)
+                    if(target == null && rc.canSenseObject(enemies[k]))
                     {
                         target = enemies[k];
                     }
-                    else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health)
+                    else if(rc.canSenseObject(enemies[k]) && rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health)
                     {
                         target = enemies[k];
                     }

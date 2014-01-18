@@ -642,34 +642,37 @@ public class FightMicro
     {
         try
         {
-            int[] index = new int[gameObjects.length];
-            int numb = 0;
-
-            for (int i = 0; i < gameObjects.length; i++)
-            {
-                if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(gameObjects[i])) <= distance)
-                {
-                    index[i] = 1;
-                    numb++;
-                }
-                else
-                {
-                    index[i] = 0;
-                }
-            }
-            Robot[] soldiers = new Robot[numb];
-            int k = 0;
-
-            for (int j = 0; j < gameObjects.length; j++)
-            {
-                if (index[j] == 1)
-                {
-                    soldiers[k] = gameObjects[j];
-                    k++;
-                }
-            }
-
-            return soldiers;
+        	if (gameObjects != null)
+        	{
+	            int[] index = new int[gameObjects.length];
+	            int numb = 0;
+	
+	            for (int i = 0; i < gameObjects.length; i++)
+	            {
+	                if (rc.getLocation().distanceSquaredTo(rc.senseLocationOf(gameObjects[i])) <= distance)
+	                {
+	                    index[i] = 1;
+	                    numb++;
+	                }
+	                else
+	                {
+	                    index[i] = 0;
+	                }
+	            }
+	            Robot[] soldiers = new Robot[numb];
+	            int k = 0;
+	
+	            for (int j = 0; j < gameObjects.length; j++)
+	            {
+	                if (index[j] == 1)
+	                {
+	                    soldiers[k] = gameObjects[j];
+	                    k++;
+	                }
+	            }
+	            return soldiers;
+        	}
+            
 
         } catch (Exception e)
         {
@@ -729,31 +732,34 @@ public class FightMicro
         Robot[] emptySet = null;
         try
         {
-            int numbOfSoldiers = 0;
-            int[] index = new int[gameObjects.length];
-            for (int i = 0; i < gameObjects.length; i++)
-            {
-                if (rc.senseRobotInfo(gameObjects[i]).type != RobotType.SOLDIER && rc.senseRobotInfo(gameObjects[i]).type != RobotType.HQ)
-                {
-                    numbOfSoldiers++;
-                    index[i] = 1;
-                }
-                else
-                {
-                    index[i] = 0;
-                }
-            }
-            Robot[] soldiers = new Robot[numbOfSoldiers];
-            int k = 0;
-            for (int j = 0; j < gameObjects.length; j++)
-            {
-                if (index[j] == 1)
-                {
-                    soldiers[k] = gameObjects[j];
-                    k++;
-                }
-            }
-            return soldiers;
+        	if (gameObjects != null)
+        	{
+	            int numbOfSoldiers = 0;
+	            int[] index = new int[gameObjects.length];
+	            for (int i = 0; i < gameObjects.length; i++)
+	            {
+	                if (rc.senseRobotInfo(gameObjects[i]).type != RobotType.SOLDIER && rc.senseRobotInfo(gameObjects[i]).type != RobotType.HQ)
+	                {
+	                    numbOfSoldiers++;
+	                    index[i] = 1;
+	                }
+	                else
+	                {
+	                    index[i] = 0;
+	                }
+	            }
+	            Robot[] soldiers = new Robot[numbOfSoldiers];
+	            int k = 0;
+	            for (int j = 0; j < gameObjects.length; j++)
+	            {
+	                if (index[j] == 1)
+	                {
+	                    soldiers[k] = gameObjects[j];
+	                    k++;
+	                }
+	            }
+	            return soldiers;
+        	}
 
         }  catch (Exception e)
         {
@@ -1344,8 +1350,17 @@ public class FightMicro
             }
         }
 
-        totalX /= numbOfEnemies;
-        totalY /= numbOfEnemies;
+        if (numbOfEnemies > 0)
+        {
+        	totalX /= numbOfEnemies;
+        	totalY /= numbOfEnemies;
+        }
+        else
+        {
+        	totalX = rc.getLocation().x;
+        	totalY = rc.getLocation().y;
+        }
+        
 
         center = new MapLocation(totalX, totalY);
 
@@ -1522,20 +1537,24 @@ public class FightMicro
             }
             */
 
-            Robot[] nearbyEnemies = null;
-            Robot[] nearByEnemies2 = null;
-            Robot[] nearByEnemies4 = null;
-            Robot[] nearByEnemies5;
+            
 
-            nearByEnemies4 = nearByEnemies3;
-            nearByEnemies5 = nearByEnemies3;
-            nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
-            nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
-            nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
-
-            if (nearByEnemies3.length > 0)
+            if (nearByEnemies3 != null && nearByEnemies3.length > 0)
             {
-                nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+            	nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+            	
+            	Robot[] nearbyEnemies = null;
+                Robot[] nearByEnemies2 = null;
+                Robot[] nearByEnemies4 = null;
+                Robot[] nearByEnemies5;
+
+                nearByEnemies4 = nearByEnemies3;
+                nearByEnemies5 = nearByEnemies3;
+                nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
+                nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
+                nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
+                
+                
                 nearbyEnemies = findSoldiersAtDistance(rc, nearByEnemies3, 10);
                 if (nearbyEnemies.length > 0)
                 {
@@ -1556,7 +1575,7 @@ public class FightMicro
                     {
                         Direction direction = retreatFromBattle(rc, enemySoldiers, AlliedSoldiers);
 
-                        if (rc.canMove(direction))
+                        if ( direction != null && rc.canMove(direction))
                         {
                             rc.move(direction);
                         }
@@ -1620,7 +1639,10 @@ public class FightMicro
 
                         if (dir != null && rc.canMove(dir))
                         {
-                            rc.move(dir);
+                        	if (rc.isActive())
+                        	{
+                        		rc.move(dir);
+                        	}
                         }
                         else
                         {
@@ -1703,6 +1725,7 @@ public class FightMicro
                 }
                 return true;
             }
+            /*
             // here we deal with none soldier enemies like pastrs and noise towers
             else if (nearByEnemies4.length > 0)
             {
@@ -1717,6 +1740,7 @@ public class FightMicro
                 }
                 return true;
             }
+            */
             else
             {
                 return false;

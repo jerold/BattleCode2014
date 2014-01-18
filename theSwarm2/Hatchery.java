@@ -54,14 +54,6 @@ public class Hatchery {
                 rc.setIndicatorString(1, "Number of Enemies: " + FightMicro.NumbOfKnownEnemyBots(AllEnemies));
                 rc.setIndicatorString(2, "Number of Allies: " + FightMicro.NumbOfAllies(AllAllies));
                 
-                System.out.println("Enemy Bots info: ");
-				for (int i = 0; i < AllEnemies.length; i++)
-	            {
-	            	System.out.print(FightMicro.getBotID(AllEnemies[i]));
-	            	System.out.print(", ");
-                    //rc.setIndicatorString(1, ""+FightMicro.NumbOfKnownEnemyBots(rc, FightMicro.AllEnemyBots(rc)));
-	            }
-				System.out.println();
 			}
 			rc.yield();
 		}
