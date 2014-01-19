@@ -873,6 +873,7 @@ public class FightMicro
                     {
                         spotsOpen[i] = null;
                     }
+                    dir = dir.rotateLeft();
                 }
 
                 if (numbOfSpots > 1)
