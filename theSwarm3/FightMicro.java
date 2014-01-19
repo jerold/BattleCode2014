@@ -853,8 +853,11 @@ public class FightMicro
                 }
             }
 
-            System.out.println();
-            System.out.println("Targeted Enemy Location: " + target);
+            if (Clock.getRoundNum() < 250)
+            {
+                System.out.println();
+                System.out.println("Targeted Enemy Location: " + target);
+            }
             if (target != null)
             {
                 dir = rc.getLocation().directionTo(target);
@@ -916,8 +919,11 @@ public class FightMicro
                     MapLocation[] leftLocs = new MapLocation[numbOfSpots];
                     int index = 0;
 
-                    System.out.println();
-                    System.out.println("Locations available");
+                    if (Clock.getRoundNum() < 250)
+                    {
+                        System.out.println();
+                        System.out.println("Locations available");
+                    }
                     for (int i = 8; --i >= 0;)
                     {
                         if (spotsOpen[i] != null)
