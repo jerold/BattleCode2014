@@ -815,7 +815,7 @@ public class FightMicro
                     for (int j = enemyBots.length; --j >= 0;)
                     {
                         MapLocation enemySpot = enemyBots[j];
-                        if (alliedSpot.distanceSquaredTo(enemySpot) <= 20 && rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(alliedBots[j])).actionDelay < 2)
+                        if (alliedSpot.distanceSquaredTo(enemySpot) <= 20 (&& rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(alliedBots[j])).actionDelay < 2))
                         {
                             numb++;
                             j = -1;
@@ -1353,7 +1353,7 @@ public class FightMicro
                         moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
                         //Movement.MoveDirection(rc, dir, false);
                     }
-                    else if (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) >= (nearByEnemies2.length) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
+                    else if (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > (nearByEnemies2.length) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
                     {
                         rc.setIndicatorString(1, "2");
                         moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
