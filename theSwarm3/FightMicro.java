@@ -1071,7 +1071,7 @@ public class FightMicro
     {
         try
         {
-            if (rc.getHealth() <= (double) (closeEnemySoldiers.length * 10) || (((int)rc.getHealth()) % 10 != 0))
+            if ((rc.getHealth() <= 50 && rc.getHealth() <= (double) (closeEnemySoldiers.length * 10)) || (((int)rc.getHealth()) % 10 != 0))
             {
                 Direction move = null;
                 Direction dir;
@@ -1299,7 +1299,7 @@ public class FightMicro
                     GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
                     Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
                     Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
-                    if (retreat(rc, nearbyEnemies, enemyBotLoc, alliedBots))
+                    if (retreat(rc, nearByEnemies2, enemyBotLoc, alliedBots))
                     {
 
                     }
