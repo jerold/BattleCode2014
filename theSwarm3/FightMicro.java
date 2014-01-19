@@ -917,6 +917,7 @@ public class FightMicro
                         {
                             leftLocs[index] = spotsOpen[i];
                             System.out.print("Index: " + index +" (" + leftLocs[index] + "), ");
+                            index++;
                         }
                     }
 
