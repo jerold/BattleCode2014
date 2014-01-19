@@ -1319,23 +1319,27 @@ public class FightMicro
                     else if (nearByAllies2 != null && nearByAllies2.length > 0)
                     {
                         rc.setIndicatorString(1, "3");
-                        MapLocation target = rc.senseLocationOf(nearByAllies2[0]);
-                        Direction dir2 = rc.getLocation().directionTo(target);
-
-                        if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, rc.getLocation().add(dir2)))
+                        // if a nearby ally has high health we will join him
+                        if (rc.senseRobotInfo(nearByAllies2[0]).health > 75)
                         {
-                            if (rc.canMove(dir2))
-                            {
-                                if (rc.isActive())
-                                {
-                                    rc.move(dir2);
-                                }
-                            }
-                            else
-                            {
-                                Movement.fire(rc, nearByEnemies10);
-                            }
+                            MapLocation target = rc.senseLocationOf(nearByAllies2[0]);
+                            Direction dir2 = rc.getLocation().directionTo(target);
 
+                            if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, rc.getLocation().add(dir2)))
+                            {
+                                if (rc.canMove(dir2))
+                                {
+                                    if (rc.isActive())
+                                    {
+                                        rc.move(dir2);
+                                    }
+                                }
+                                else
+                                {
+                                    Movement.fire(rc, nearByEnemies10);
+                                }
+
+                            }
                         }
                     }
                     else if (nearByEnemies2.length == 1 && rc.getHealth() > (rc.senseRobotInfo(nearByEnemies2[0]).health + 10) && nearByEnemies3.length == 1)
