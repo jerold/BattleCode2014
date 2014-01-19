@@ -908,11 +908,13 @@ public class FightMicro
                     MapLocation[] leftLocs = new MapLocation[numbOfSpots];
                     int index= 0;
 
+                    System.out.println("Locations available");
                     for (int i = 8; --i >= 0;)
                     {
                         if (spotsOpen[i] != null)
                         {
                             leftLocs[index] = spotsOpen[i];
+                            System.out.println("" + leftLocs[index] + ", ");
                         }
                     }
 
