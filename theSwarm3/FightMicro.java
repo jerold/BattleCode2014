@@ -1564,8 +1564,9 @@ public class FightMicro
                         moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
                         //Movement.MoveDirection(rc, dir, false);
                     }
-                    else if (nearByEnemies2.length >= 4)
+                    else if (nearByEnemies3.length >= 4)
                     {
+                        rc.setIndicatorString(1, "Flanking");
                         AttackFlank(rc, enemyBotLoc, alliedBots);
                     }
                     else if (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > (nearByEnemies2.length) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
