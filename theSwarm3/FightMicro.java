@@ -1299,8 +1299,12 @@ public class FightMicro
                     GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
                     Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
                     Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
+                    if (retreat(rc, nearbyEnemies, enemyBotLoc, alliedBots))
+                    {
+
+                    }
                     // if our brethern are in the field of action we must join them!
-                    if (alliesEngaged && (enemyBotLoc.length <= (alliedBots.length + 1)) && numbOfRobotsAttackingTarget(rc, rc.getLocation().add(dir), enemyBotLoc, alliedBots) < 2)
+                    else if (alliesEngaged && (enemyBotLoc.length <= (alliedBots.length + 1)) && numbOfRobotsAttackingTarget(rc, rc.getLocation().add(dir), enemyBotLoc, alliedBots) < 2)
                     {
                         rc.setIndicatorString(1, "1");
                         moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
