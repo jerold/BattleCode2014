@@ -803,24 +803,27 @@ public class FightMicro
     public static int numbOfAlliesOneSpaceAwayFromAttacking(RobotController rc, MapLocation[] enemyBots, MapLocation[] alliedBots)
     {
         int numb = 0;
-
-        for (int i = alliedBots.length; --i >= 0; )
+        try
         {
-            MapLocation alliedSpot = alliedBots[i];
 
-            if (alliedSpot != null)
+            for (int i = alliedBots.length; --i >= 0; )
             {
-                for (int j = enemyBots.length; --j >= 0;)
+                MapLocation alliedSpot = alliedBots[i];
+
+                if (alliedSpot != null)
                 {
-                    MapLocation enemySpot = enemyBots[j];
-                    if (alliedSpot.distanceSquaredTo(enemySpot) <= 20)
+                    for (int j = enemyBots.length; --j >= 0;)
                     {
-                        numb++;
-                        j = -1;
+                        MapLocation enemySpot = enemyBots[j];
+                        if (alliedSpot.distanceSquaredTo(enemySpot) <= 20 && rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(alliedBots[j])).actionDelay < 2)
+                        {
+                            numb++;
+                            j = -1;
+                        }
                     }
                 }
             }
-        }
+        } catch (Exception e) {}
 
         return numb;
     }
