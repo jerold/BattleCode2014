@@ -1078,7 +1078,7 @@ public class FightMicro
      */
     public static boolean retreat(RobotController rc, Robot[] closeEnemySoldiers, MapLocation[] enemyBots, MapLocation[] alliedBots)
     {
-        /*
+
         try
         {
             if ((rc.getHealth() <= 50 && rc.getHealth() <= (double) ((closeEnemySoldiers.length * 10) + 10)) || (((rc.getHealth()) % 10 != 0) && rc.getHealth() < 50))
@@ -1125,7 +1125,7 @@ public class FightMicro
                 return true;
             }
         } catch (Exception e) {}
-        */
+
         return false;
     }
 
@@ -1233,9 +1233,11 @@ public class FightMicro
             Direction dirToCenter = rc.getLocation().directionTo(center);
             Direction dirToTarget = rc.getLocation().directionTo(target);
             Direction dirToMove = dirToTarget;
+            boolean left = false;
 
             if (dirToCenter.rotateLeft().equals(dirToTarget) || dirToCenter.rotateLeft().rotateLeft().equals(dirToTarget))
             {
+                left = true;
                 dirToMove = dirToTarget.rotateLeft();
 
                 while (rc.getLocation().add(dirToMove).distanceSquaredTo(target) <= 10)
@@ -1250,6 +1252,21 @@ public class FightMicro
                 while (rc.getLocation().add(dirToMove).distanceSquaredTo(target) <= 10)
                 {
                     dirToMove = dirToMove.rotateRight();
+                }
+            }
+
+            for (int i = enemyBots.length; --i>=0; )
+            {
+                if (rc.getLocation().add(dirToMove).distanceSquaredTo(enemyBots[i]) <= 10)
+                {
+                    if (left)
+                    {
+                        dirToTarget = dirToTarget.rotateLeft();
+                    }
+                    else
+                    {
+                        dirToTarget = dirToTarget.rotateRight();
+                    }
                 }
             }
 
@@ -1296,8 +1313,9 @@ public class FightMicro
                 {
                     moveToBestAdvanceLoc(rc, enemyBots, alliedBots);
                 }
-                else if (alliesInRange >= 2)
+                else if (alliesInRange >= 3)
                 {
+                    rc.setIndicatorString(0, "Allies comming in");
                     rc.yield();
                     Movement.MoveDirection(rc, rc.getLocation().directionTo(target), false);
                 }
