@@ -858,7 +858,7 @@ public class FightMicro
             if (dir != null)
             {
                 //rc.setIndicatorString(0, "Hello World");
-                System.out.println("Locations to check: ");
+                //System.out.println("Locations to check: ");
                 for (int i = 8; --i >= 0;)
                 {
                     MapLocation next = rc.getLocation().add(dir);
