@@ -20,6 +20,10 @@ public class RobotPlayer
 				{
 					new GenericTower(rc, false).run();
 				}
+				else if(rc.getType() == RobotType.PASTR)
+				{
+					rc.yield();
+				}
 				else
 				{
 					if(type == 0)
@@ -48,11 +52,19 @@ public class RobotPlayer
 					}
 					else if(type == SmartHQ.TOWER)
 					{
-						new SmartTower(rc).run();
+						new SmartTower(rc, true).run();
 					}
 					else if(type == SmartHQ.TROLL)
 					{
 						//new Scout(rc).run();
+					}
+					else if(type == SmartHQ.OPTOWER)
+					{
+						new SmartTower(rc, false).run();
+					}
+					else if(type == SmartHQ.OPMULE)
+					{
+						new MULE(rc, false).run();
 					}
 				}
 			}

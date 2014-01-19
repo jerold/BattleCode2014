@@ -2,7 +2,7 @@ package towerbot;
 
 import battlecode.common.*;
 
-//type is what pattern to fire. 1: pull, 2: advanced pull, 3: circle
+//type is what pattern to fire. 1: pull, 2: spoke pull, 3: circle
 public class GenericTower
 {
 
@@ -10,11 +10,12 @@ public class GenericTower
     MapLocation target;
     MapLocation[] lines1, lines2, lines3, lines4;
     int type;
-    boolean troll;
+    boolean troll, first;
 
     public GenericTower(RobotController rc, boolean troll)
     {
     	this.troll = troll;
+    	first = true;
     	int width = rc.getMapWidth();
     	int height = rc.getMapHeight();
     	double[][] cows = rc.senseCowGrowth();
@@ -27,12 +28,12 @@ public class GenericTower
         
         while(!foundPastr)
         {
-        	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam());
+        	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 1, rc.getTeam());
         	for(Robot bot : bots)
         	{
         		try
         		{
-	        		if(rc.senseRobotInfo(bot).type == RobotType.PASTR)
+	        		if(rc.senseRobotInfo(bot).type == RobotType.PASTR || rc.senseRobotInfo(bot).type == RobotType.SOLDIER)
 	        		{
 	        			target = rc.senseRobotInfo(bot).location;
 	        			foundPastr = true;
@@ -112,10 +113,7 @@ public class GenericTower
 	            lines4 = TowerUtil.generateSpokeLines(rc, target, 4);
         	}
         }
-        lines1 = TowerUtil.generateSpokeLines(rc, target, 1);
-        lines2 = TowerUtil.generateSpokeLines(rc, target, 2);
-        lines3 = TowerUtil.generateSpokeLines(rc, target, 3);
-        lines4 = TowerUtil.generateSpokeLines(rc, target, 4);
+        rc.setIndicatorString(1, "" + type);
         rc.setIndicatorString(0, "Tower");
     }
 
@@ -162,7 +160,7 @@ public class GenericTower
 		            			allyPastr = true;
 		            		}
 		            	}
-		            	if(allyPastr)
+		            	if(allyPastr || first)
 		            	{
 		            		if(type == 1)
 		                	{
@@ -213,6 +211,8 @@ public class GenericTower
 		    		            	}
 		                		}
 		                	}
+		            		
+		            		first = false;
 		            	}
 		            	else if(enemyPastr && !allyPastr)
 		            	{
