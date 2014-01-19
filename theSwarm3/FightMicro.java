@@ -980,7 +980,12 @@ public class FightMicro
                     {
                         if (rc.isActive())
                         {
-                            if (rc.canMove(rc.getLocation().directionTo(leftLocs[0])))
+                            if (leftLocs.length < 1)
+                            {
+                                target2 = rc.getLocation().add(rc.getLocation().directionTo((target)));
+                                rc.move(rc.getLocation().directionTo(target2));
+                            }
+                            else if (rc.canMove(rc.getLocation().directionTo(leftLocs[0])))
                             {
                                 target2 = leftLocs[0];
                                 rc.move(rc.getLocation().directionTo(leftLocs[0]));
