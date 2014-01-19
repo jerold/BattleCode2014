@@ -985,7 +985,7 @@ public class FightMicro
                                 target2 = leftLocs[0];
                                 rc.move(rc.getLocation().directionTo(leftLocs[0]));
                             }
-                            else if (rc.canMove(rc.getLocation().directionTo(leftLocs[1])))
+                            else if (leftLocs.length > 1 && rc.canMove(rc.getLocation().directionTo(leftLocs[1])))
                             {
                                 target2 = leftLocs[1];
                                 rc.move(rc.getLocation().directionTo(leftLocs[1]));
