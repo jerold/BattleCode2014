@@ -815,7 +815,7 @@ public class FightMicro
                     for (int j = enemyBots.length; --j >= 0;)
                     {
                         MapLocation enemySpot = enemyBots[j];
-                        if (alliedSpot.distanceSquaredTo(enemySpot) <= 20 (&& rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(alliedBots[j])).actionDelay < 2))
+                        if (alliedSpot.distanceSquaredTo(enemySpot) <= 20 && (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(alliedBots[j])).actionDelay < 2))
                         {
                             numb++;
                             j = -1;
@@ -853,6 +853,8 @@ public class FightMicro
                 }
             }
 
+            System.out.println();
+            System.out.println("Targeted Enemy Location: " + target);
             if (target != null)
             {
                 dir = rc.getLocation().directionTo(target);
@@ -912,8 +914,9 @@ public class FightMicro
 
 
                     MapLocation[] leftLocs = new MapLocation[numbOfSpots];
-                    int index= 0;
+                    int index = 0;
 
+                    System.out.println();
                     System.out.println("Locations available");
                     for (int i = 8; --i >= 0;)
                     {
@@ -924,6 +927,7 @@ public class FightMicro
                             index++;
                         }
                     }
+                    System.out.println();
 
                     for (int i = numbOfSpots; --i>=0;)
                     {
