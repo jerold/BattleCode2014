@@ -177,10 +177,12 @@ public class HQFunctions
                     target = target.add(target.directionTo(closestPastr));
                 }
             }
-            else if (Clock.getRoundNum() > 500)
+            else
             {
-                //target = rc.senseEnemyHQLocation();
+                findInitialRally(rc);
+                initialRally = true;
             }
+            /*
             else
             {
                 if (Clock.getRoundNum() > 500 && rc.senseRobotCount() > 10 && rc.sensePastrLocations(rc.getTeam()).length == 0 && !wentForPastr)
@@ -196,7 +198,7 @@ public class HQFunctions
                     findInitialRally(rc);
                     initialRally = true;
                 }
-            }
+            }*/
 
             if (!initialRally)
             {

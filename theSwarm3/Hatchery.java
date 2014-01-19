@@ -45,8 +45,8 @@ public class Hatchery {
                     goneForPastr = HQFunctions.setTargetLocation(rc, goneForPastr);
                     roundNum = Clock.getRoundNum();
                 }*/
-                //HQFunctions.setTargetLocation(rc, true);
-                HQFunctions.findInitialRally(rc);
+                HQFunctions.setTargetLocation(rc, true);
+                //HQFunctions.findInitialRally(rc);
 
 			}
 			rc.yield();
