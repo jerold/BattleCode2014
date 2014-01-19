@@ -1721,7 +1721,7 @@ public class FightMicro
                 }
                 else
                 {
-                    Movement.fire(rc, nearByEnemies3);
+                    Movement.fire(rc, nearByEnemies4);
                 }
                 return true;
             }
