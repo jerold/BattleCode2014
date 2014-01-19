@@ -1078,9 +1078,10 @@ public class FightMicro
      */
     public static boolean retreat(RobotController rc, Robot[] closeEnemySoldiers, MapLocation[] enemyBots, MapLocation[] alliedBots)
     {
+        /*
         try
         {
-            if ((rc.getHealth() <= 50 && rc.getHealth() <= (double) ((closeEnemySoldiers.length * 10) + 10)) || ((((int)rc.getHealth()) % 10 != 0) && rc.getHealth() < 60))
+            if ((rc.getHealth() <= 50 && rc.getHealth() <= (double) ((closeEnemySoldiers.length * 10) + 10)) || (((rc.getHealth()) % 10 != 0) && rc.getHealth() < 50))
             {
                 Direction move = null;
                 Direction dir;
@@ -1123,7 +1124,8 @@ public class FightMicro
                 }
                 return true;
             }
-        } catch (Exception e) {} 
+        } catch (Exception e) {}
+        */
         return false;
     }
 
@@ -1554,6 +1556,10 @@ public class FightMicro
                     Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
                     Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
                     if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
+                    {
+
+                    }
+                    else if (nearByEnemies2.length == 1 && (nearByAllies2.length > 0 || rc.getHealth() > rc.senseRobotInfo(nearByEnemies2[0]).health + 20))
                     {
 
                     }
