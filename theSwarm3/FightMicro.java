@@ -917,7 +917,7 @@ public class FightMicro
                         if (spotsOpen[i] != null)
                         {
                             leftLocs[index] = spotsOpen[i];
-                            System.out.print("Index: " + index +" (" + leftLocs[index] + "), ");
+                            System.out.print("Index: " + index + " (" + leftLocs[index] + "), ");
                             index++;
                         }
                     }
@@ -1065,6 +1065,60 @@ public class FightMicro
     }
 
     /**
+     * This function returns a true if the bot should retreat and a false otherwise
+     */
+    public static boolean retreat(RobotController rc, Robot[] closeEnemySoldiers, MapLocation[] enemyBots, MapLocation[] alliedBots)
+    {
+        try
+        {
+            if (rc.getHealth() <= (double) (closeEnemySoldiers.length * 10) || (((int)rc.getHealth()) % 10 != 0))
+            {
+                Direction move = null;
+                Direction dir;
+                for (int i = enemyBots.length; --i>=0;)
+                {
+                    int adjacentEnemies = 0;
+                    dir = rc.getLocation().directionTo(enemyBots[i]).opposite();
+                    MapLocation next = rc.getLocation().add(dir);
+                    for (int j = enemyBots.length; --j >=0; )
+                    {
+                        if (enemyBots[j].distanceSquaredTo(next) <= 10)
+                        {
+                            adjacentEnemies = 1;
+                            j = -1;
+                        }
+
+                    }
+                    // then we have our location!!!!!!
+                    if (adjacentEnemies == 0 && rc.canMove(dir))
+                    {
+                        i = -1;
+                        move = dir;
+                    }
+                }
+
+                if (move != null)
+                {
+                    if (rc.isActive())
+                    {
+                        if (rc.canMove(move))
+                        {
+
+                            rc.move(move);
+                        }
+                    }
+                }
+                else
+                {
+                    Movement.fire(rc, closeEnemySoldiers);
+                }
+                return true;
+            }
+        } catch (Exception e) {} 
+        return false;
+    }
+
+    /**
      * This is our old fight micro which is under modification
      */
     public static boolean fightMode(RobotController rc)
@@ -1116,8 +1170,13 @@ public class FightMicro
                 if (nearbyEnemies.length > 0)
                 {
                     alliesEngaged = Utilities.AlliesEngaged(rc, enemyBotLoc, alliedBots);
+                    // based on our health it may be advantageous to retreat so we can fight another day
+                    if (retreat(rc, nearbyEnemies, enemyBotLoc, alliedBots))
+                    {
+
+                    }
                     // if there are other bots in range then we should fire
-                    if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1)
+                    else if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1)
                     {
                         Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]).opposite();
 
