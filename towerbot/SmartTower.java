@@ -6,10 +6,12 @@ public class SmartTower
 {
     RobotController rc;
     MapLocation target;
+    boolean first;
     
-    public SmartTower(RobotController rc)
+    public SmartTower(RobotController rc, boolean first)
     {
         this.rc = rc;
+        this.first = first;
     }
 
     public void run()
@@ -21,6 +23,10 @@ public class SmartTower
                     try
                     {
                         target = TowerUtil.bestSpot3(rc);
+                        if(!first)
+                        {
+                        	target = TowerUtil.getOppositeSpot(rc, target);
+                        }
                         Utilities.MoveMapLocation(rc, target, false);
 
                         if(rc.isActive())
