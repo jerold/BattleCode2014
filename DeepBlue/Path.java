@@ -18,7 +18,7 @@ public class Path {
         roughPath.add(stepLocation);
         int stepNumber = 1;
         boolean blocked = false;
-        while (!blocked && stepLocation.x != destination.x && stepLocation.y != destination.y) {
+        while (!blocked && !(stepLocation.x == destination.x && stepLocation.y == destination.y)) {
             // MapLocation nextStepLocation = stepLocation.add(stepLocation.directionTo(destination));
             MapLocation nextStepLocation = stepLocation.add(map.directionTo(stepLocation, destination));
 

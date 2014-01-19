@@ -24,9 +24,10 @@ public class RoadMap {
     int[][] cowGrowthMap;
 
     static final int NO_PATH_EXISTS = -1;
-    static final int MAX_NODE_SPACING = 10;
+    static final int MAX_NODE_SPACING = 6;
     int nodesInLine;
     int nodeSpacing;
+    int nodePadding;
     int[][] macroNextNode;
     boolean[][] macroPathChecked;
     int[][] macroPathDistance;
@@ -117,12 +118,14 @@ public class RoadMap {
     {
         nodesInLine = 1;
         int divVal = 2;
-        while (MAP_WIDTH/divVal > MAX_NODE_SPACING) {
+        while ((MAP_WIDTH-4)/divVal > MAX_NODE_SPACING) {
             nodesInLine = divVal;
             divVal++;
         }
+        nodesInLine++;
         nodeSpacing = MAP_WIDTH/nodesInLine;
-        neighborIdOffeset = new int[]{-nodesInLine-1, -nodesInLine, -nodesInLine+1, -1, +2, nodesInLine-1, nodesInLine, nodesInLine+1};
+        nodePadding = (MAP_WIDTH - nodeSpacing*(nodesInLine-1))/2;
+        neighborIdOffeset = new int[]{(-nodesInLine)-1, -nodesInLine, (-nodesInLine)+1, -1, +1, nodesInLine-1, nodesInLine, nodesInLine+1};
 
         int nodeCount = nodesInLine * nodesInLine;
         System.out.println("Map Size: " + MAP_WIDTH + ", " + MAP_HEIGHT);
@@ -159,61 +162,70 @@ public class RoadMap {
             int oppOrigNodeId = nodeCount - origNodeId - 1;
             MapLocation originNodeLocation = locationForNode(origNodeId);
 
-            // Update Distance to neighbors this is typically as close as we're going to get
-            System.out.print("Node[" + origNodeId + "] ");
-            for (int nOffset:neighborIdOffeset) {
-                int neighborNodeId = origNodeId+nOffset;
-                int oppNeighborNodeId = nodeCount - neighborNodeId - 1;
+            if (roadMap[originNodeLocation.x][originNodeLocation.y] != TILE_VOID) {
+                if (origNodeId%nodesInLine == 0) // First Rows need not check spaces to the left
+                    neighborIdOffeset = new int[]{-nodesInLine, (-nodesInLine)+1, +1, nodesInLine, nodesInLine+1};
+                else if ((origNodeId+1)%nodesInLine == 0) // Last Rows need not check to the right
+                    neighborIdOffeset = new int[]{(-nodesInLine)-1, -nodesInLine, -1, nodesInLine-1, nodesInLine};
+                else
+                    neighborIdOffeset = new int[]{(-nodesInLine)-1, -nodesInLine, (-nodesInLine)+1, -1, +1, nodesInLine-1, nodesInLine, nodesInLine+1};
 
+                // Update Distance to neighbors this is typically as close as we're going to get
+//                System.out.print("Node[" + origNodeId + "] ");
+                for (int nOffset:neighborIdOffeset) {
+                    int neighborNodeId = origNodeId+nOffset;
+                    int oppNeighborNodeId = nodeCount - neighborNodeId - 1;
 
-                if (neighborNodeId >= 0 && neighborNodeId < nodeCount) {
-                    System.out.print(" (" + neighborNodeId + ")");
-                    MapLocation neighborNodeLocation = locationForNode(neighborNodeId);
+//                    System.out.print(" (" + neighborNodeId + ")");
+                    if (neighborNodeId >= 0 && neighborNodeId < nodeCount) {
+                        MapLocation neighborNodeLocation = locationForNode(neighborNodeId);
+                        MapLocation[] path = Path.simplePath(rc, this, originNodeLocation, neighborNodeLocation);
+                        if (path != null && path.length > 0 && roadMap[neighborNodeLocation.x][neighborNodeLocation.y] != TILE_VOID) {
+                            macroNextNode[origNodeId][neighborNodeId] = neighborNodeId;
+                            macroPathDistance[origNodeId][neighborNodeId] = path.length;
+                            macroPathChecked[origNodeId][neighborNodeId] = true;
 
-                    MapLocation[] path = Path.simplePath(rc, this, originNodeLocation, neighborNodeLocation);
-                    if (path != null && path.length > 0) {
-                        macroNextNode[origNodeId][neighborNodeId] = neighborNodeId;
-                        macroPathDistance[origNodeId][neighborNodeId] = path.length;
-                        macroPathChecked[origNodeId][neighborNodeId] = true;
+                            macroNextNode[neighborNodeId][origNodeId] = origNodeId;
+                            macroPathDistance[neighborNodeId][origNodeId] = path.length;
+                            macroPathChecked[neighborNodeId][origNodeId] = true;
 
-                        macroNextNode[neighborNodeId][origNodeId] = origNodeId;
-                        macroPathDistance[neighborNodeId][origNodeId] = path.length;
-                        macroPathChecked[neighborNodeId][origNodeId] = true;
+                            macroNextNode[oppOrigNodeId][oppNeighborNodeId] = oppNeighborNodeId;
+                            macroPathDistance[oppOrigNodeId][oppNeighborNodeId] = path.length;
+                            macroPathChecked[oppOrigNodeId][oppNeighborNodeId] = true;
 
-                        macroNextNode[oppOrigNodeId][oppNeighborNodeId] = oppNeighborNodeId;
-                        macroPathDistance[oppOrigNodeId][oppNeighborNodeId] = path.length;
-                        macroPathChecked[oppOrigNodeId][oppNeighborNodeId] = true;
+                            macroNextNode[oppNeighborNodeId][oppOrigNodeId] = oppOrigNodeId;
+                            macroPathDistance[oppNeighborNodeId][oppOrigNodeId] = path.length;
+                            macroPathChecked[oppNeighborNodeId][oppOrigNodeId] = true;
 
-                        macroNextNode[oppNeighborNodeId][oppOrigNodeId] = oppOrigNodeId;
-                        macroPathDistance[oppNeighborNodeId][oppOrigNodeId] = path.length;
-                        macroPathChecked[oppNeighborNodeId][oppOrigNodeId] = true;
+                            for (MapLocation step:path) {
+                                cowGrowthMap[step.x][step.y] = 1;
+//                            cowGrowthMap[MAP_WIDTH - step.x - 1][MAP_HEIGHT - step.y - 1] = 3;
+                            }
+//                            System.out.print(path.length + " ");
+                        } else {
+                            macroNextNode[origNodeId][neighborNodeId] = NO_PATH_EXISTS;
+                            macroPathDistance[origNodeId][neighborNodeId] = TILE_VOID;
+                            macroPathChecked[origNodeId][neighborNodeId] = true;
 
-                        for (MapLocation step:path) {
-                            cowGrowthMap[step.x][step.y] = 3;
-                            cowGrowthMap[MAP_WIDTH - step.x - 1][MAP_HEIGHT - step.y - 1] = 3;
+                            macroNextNode[neighborNodeId][origNodeId] = NO_PATH_EXISTS;
+                            macroPathDistance[neighborNodeId][origNodeId] = TILE_VOID;
+                            macroPathChecked[neighborNodeId][origNodeId] = true;
+
+                            macroNextNode[oppOrigNodeId][oppNeighborNodeId] = NO_PATH_EXISTS;
+                            macroPathDistance[oppOrigNodeId][oppNeighborNodeId] = TILE_VOID;
+                            macroPathChecked[oppOrigNodeId][oppNeighborNodeId] = true;
+
+                            macroNextNode[oppNeighborNodeId][oppOrigNodeId] = NO_PATH_EXISTS;
+                            macroPathDistance[oppNeighborNodeId][oppOrigNodeId] = TILE_VOID;
+                            macroPathChecked[oppNeighborNodeId][oppOrigNodeId] = true;
+//                            System.out.print(". ");
                         }
-                        System.out.print(". ");
-                    } else {
-                        macroNextNode[origNodeId][neighborNodeId] = NO_PATH_EXISTS;
-                        macroPathDistance[origNodeId][neighborNodeId] = TILE_VOID;
-                        macroPathChecked[origNodeId][neighborNodeId] = true;
-
-                        macroNextNode[neighborNodeId][origNodeId] = NO_PATH_EXISTS;
-                        macroPathDistance[neighborNodeId][origNodeId] = TILE_VOID;
-                        macroPathChecked[neighborNodeId][origNodeId] = true;
-
-                        macroNextNode[oppOrigNodeId][oppNeighborNodeId] = NO_PATH_EXISTS;
-                        macroPathDistance[oppOrigNodeId][oppNeighborNodeId] = TILE_VOID;
-                        macroPathChecked[oppOrigNodeId][oppNeighborNodeId] = true;
-
-                        macroNextNode[oppNeighborNodeId][oppOrigNodeId] = NO_PATH_EXISTS;
-                        macroPathDistance[oppNeighborNodeId][oppOrigNodeId] = TILE_VOID;
-                        macroPathChecked[oppNeighborNodeId][oppOrigNodeId] = true;
-                        System.out.print("  ");
                     }
                 }
+//                System.out.println("");
             }
-            System.out.println("");
+
+
         }
 
         for (int origNodeId = 0; origNodeId<nodeCount; origNodeId++) {
@@ -227,7 +239,7 @@ public class RoadMap {
     }
 
     private MapLocation locationForNode(int nodeId) {
-        return new MapLocation((nodeId/nodesInLine) * nodeSpacing, (nodeId%nodesInLine) * nodeSpacing);
+        return new MapLocation((nodeId/nodesInLine) * nodeSpacing + nodePadding, (nodeId%nodesInLine) * nodeSpacing + nodePadding);
     }
 
     //================================================================================
@@ -375,7 +387,7 @@ public class RoadMap {
                 if (roadMap[x][y] != TILE_VOID)
                     System.out.print(asciiValue(cowGrowthMap[x][y]) + "" + asciiValue(cowGrowthMap[x][y])); // System.out.print(asciiValue(roadMap[x][y]+cowGrowthMap[x][y]) + "" + asciiValue(roadMap[x][y]+cowGrowthMap[x][y]));
                 else
-                    System.out.print("  ");
+                    System.out.print("[]");
             }
             System.out.println("");
         }
