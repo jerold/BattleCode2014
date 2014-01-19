@@ -915,35 +915,22 @@ public class FightMicro
                             leftLocs[index] = spotsOpen[i];
                         }
                     }
+
+                    for (int i = numbOfSpots; --i>=0;)
+                    {
+                        if (leftLocs[i] == null)
+                        {
+                            leftLocs[i] = rc.getLocation();
+                        }
+                    }
                     boolean done = false;
                     MapLocation target2 = null;
 
                     for (int k = leftLocs.length; --k >= 0; )
                     {
-                        if (rc.senseTerrainTile(leftLocs[k]).equals(TerrainTile.ROAD))
+                        if (leftLocs != null)
                         {
-                            if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
-                            {
-                                if (rc.isActive())
-                                {
-                                    if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
-                                    {
-                                        target2 = leftLocs[k];
-                                        rc.move(rc.getLocation().directionTo(leftLocs[k]));
-                                    }
-                                    done = true;
-                                    k = -1;
-                                }
-                            }
-                        }
-                    }
-
-                    if (!done)
-                    {
-                        for (int k = leftLocs.length; --k >= 0; )
-                        {
-                            MapLocation ourSpot = rc.getLocation();
-                            if (ourSpot.add(Direction.NORTH).equals(leftLocs[k]) || ourSpot.add(Direction.EAST).equals(leftLocs[k]) || ourSpot.add(Direction.SOUTH).equals(leftLocs[k]) || ourSpot.add(Direction.WEST).equals(leftLocs[k]))
+                            if (rc.senseTerrainTile(leftLocs[k]).equals(TerrainTile.ROAD))
                             {
                                 if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
                                 {
@@ -956,6 +943,33 @@ public class FightMicro
                                         }
                                         done = true;
                                         k = -1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (!done)
+                    {
+                        for (int k = leftLocs.length; --k >= 0; )
+                        {
+                            if (leftLocs != null)
+                            {
+                                MapLocation ourSpot = rc.getLocation();
+                                if (ourSpot.add(Direction.NORTH).equals(leftLocs[k]) || ourSpot.add(Direction.EAST).equals(leftLocs[k]) || ourSpot.add(Direction.SOUTH).equals(leftLocs[k]) || ourSpot.add(Direction.WEST).equals(leftLocs[k]))
+                                {
+                                    if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
+                                    {
+                                        if (rc.isActive())
+                                        {
+                                            if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
+                                            {
+                                                target2 = leftLocs[k];
+                                                rc.move(rc.getLocation().directionTo(leftLocs[k]));
+                                            }
+                                            done = true;
+                                            k = -1;
+                                        }
                                     }
                                 }
                             }
