@@ -910,9 +910,6 @@ public class FightMicro
                             }
                         }
                         // otherwise our bot has multiple paths in so we won't worry about it for now
-                        else
-                        {
-                        }
                     }
 
 
@@ -955,11 +952,8 @@ public class FightMicro
                                 {
                                     if (rc.isActive())
                                     {
-                                        if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
-                                        {
-                                            target2 = leftLocs[k];
-                                            rc.move(rc.getLocation().directionTo(leftLocs[k]));
-                                        }
+                                        target2 = leftLocs[k];
+                                        rc.move(rc.getLocation().directionTo(leftLocs[k]));
                                         done = true;
                                         k = -1;
                                     }
@@ -985,11 +979,10 @@ public class FightMicro
                                         {
                                             target2 = leftLocs[k];
                                             rc.move(direction);
+                                            done = true;
+                                            k = -1;
                                         }
-                                        done = true;
-                                        k = -1;
                                     }
-
                                 }
                             }
                         }
