@@ -1390,7 +1390,7 @@ public class FightMicro
             nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
             nearByEnemies4 = nearByEnemies3;
             nearByEnemies10 = nearByEnemies3;
-            //nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
+            nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
             nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
             nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
 
