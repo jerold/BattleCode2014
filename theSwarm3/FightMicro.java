@@ -858,12 +858,14 @@ public class FightMicro
             if (dir != null)
             {
                 //rc.setIndicatorString(0, "Hello World");
+                System.out.println("Locations to check: ");
                 for (int i = 8; --i >= 0;)
                 {
                     MapLocation next = rc.getLocation().add(dir);
 
                     if (next.distanceSquaredTo(target) <= 10)
                     {
+                        System.out.print("" + next + ", ");
                         spotsOpen[i] = next;
                         numbOfSpots++;
                     }
@@ -914,7 +916,7 @@ public class FightMicro
                         if (spotsOpen[i] != null)
                         {
                             leftLocs[index] = spotsOpen[i];
-                            System.out.println("" + leftLocs[index] + ", ");
+                            System.out.print("Index: " + index +" (" + leftLocs[index] + "), ");
                         }
                     }
 
@@ -985,7 +987,11 @@ public class FightMicro
                             if (leftLocs.length < 1)
                             {
                                 target2 = rc.getLocation().add(rc.getLocation().directionTo((target)));
-                                rc.move(rc.getLocation().directionTo(target2));
+                                Direction direction = rc.getLocation().directionTo(target2);
+                                if (rc.canMove(direction))
+                                {
+                                    rc.move(direction);
+                                }
                             }
                             else if (rc.canMove(rc.getLocation().directionTo(leftLocs[0])))
                             {
