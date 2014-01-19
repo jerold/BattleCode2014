@@ -58,10 +58,7 @@ public class Navigator {
             defaultDirectionAssessment();
         else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
             smartDirectionAssessment();
-        else {
-            flowDirectionAssessment();
-            tryMove();
-        }
+        tryMove();
     }
 
     /*
@@ -133,24 +130,4 @@ public class Navigator {
             directions[i] += Utilities.distanceBetweenTwoPoints(destination, rc.getLocation().add(Utilities.directionByOrdinal[i]));
         }
     }
-
-    //================================================================================
-    // Flow Methods
-    //================================================================================
-
-    public void flowDirectionAssessment() throws GameActionException
-    {
-        directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-
-        // Weight for snail trail direction
-        directions[MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc).ordinal()] += DIRECTION_WEIGHT_TRAIL;
-
-        for (int i=0; i<8; i++) {
-            // Flow weights
-            directions[i] += map.flowValueForLocation(rc.getLocation().add(Utilities.directionByOrdinal[i]));
-
-            // Distance weights
-            directions[i] += Utilities.distanceBetweenTwoPoints(destination, rc.getLocation().add(Utilities.directionByOrdinal[i]));
-        }
-   }
 }

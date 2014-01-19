@@ -13,32 +13,34 @@ public class RoadMap {
     RobotController rc;
     UnitCache cache;
 
-    static int[][] neighborTileOffsets = new int[][]{ {0,-1}, {1,0}, {0,1}, {-1,0}, {-1,-1}, {1,-1}, {1,1}, {-1,1} };
-    static final double MAX_VOID_DENSITY = .6;
-    static final int MAX_GRADIENT = 5;
-
     static int MAX_WIDTH = 100; // Prevent heavy processing on larger maps
+    static final double MAX_VOID_DENSITY = .6;
+
+    static final int TILE_VOID = 999;
+
     int MAP_WIDTH;
     int MAP_HEIGHT;
     int[][] roadMap;
-    int[][] flowMap;
+    int[][] cowGrowthMap;
+
+    static final int NO_PATH_EXISTS = -1;
+    static final int MAX_NODE_SPACING = 10;
+    int nodesInLine;
+    int nodeSpacing;
+    int[][] macroNextNode;
+    boolean[][] macroPathChecked;
+    int[][] macroPathDistance;
+    int[] neighborIdOffeset;
+
 
     public enum PathingStrategy {
         DefaultBug,
-        SmartBug,
-        FlowBug
-    }
-
-    public enum PrintMapFilter {
-        mapData,
-        flowData
+        SmartBug
     }
 
     PathingStrategy pathingStrat;
     double voidDensity;
     boolean mapUploaded;
-    boolean flowUploaded;
-    int flowprogress;
 
     RoadMap(RobotController inRc, UnitCache inCache) throws GameActionException
     {
@@ -47,26 +49,185 @@ public class RoadMap {
 
         MAP_HEIGHT = rc.getMapHeight();
         MAP_WIDTH = rc.getMapWidth();
-        roadMap = new int[MAP_HEIGHT][MAP_WIDTH];
-        flowMap = new int[MAP_HEIGHT][MAP_WIDTH];
+        roadMap = new int[MAP_WIDTH][MAP_HEIGHT];
         voidDensity = 0.0;
         mapUploaded = false;
-        flowUploaded = false;
         pathingStrat = PathingStrategy.DefaultBug;
 
         if (rc.getType() == RobotType.HQ)
-            resetMapLoadedFlags();
+            resetMapUploadedFlag();
     }
 
     //================================================================================
     // Facilitator Methods
     //================================================================================
 
-    public int flowValueForLocation(MapLocation loc) throws GameActionException
+    public int valueForLocation(MapLocation loc) throws GameActionException
     {
         if (loc.y < MAP_HEIGHT && loc.y > 0 && loc.x < MAP_WIDTH && loc.x > 0)
-            return flowMap[loc.y][loc.x];
-        return 999;
+            return roadMap[loc.x][loc.y];
+        return TILE_VOID;
+    }
+
+    public Direction directionTo(MapLocation origin, MapLocation destination) throws GameActionException
+    {
+//        System.out.print("\nDirection To: ");
+        int ordinalDir = origin.directionTo(destination).ordinal();
+//        System.out.println(". ");
+        if (valueForLocation(origin.add(Utilities.directionByOrdinal[ordinalDir])) != TILE_VOID) return Utilities.directionByOrdinal[ordinalDir];
+
+        Direction[] dirs = Utilities.directionByOrdinal;
+
+        // Rotate 1 Left and Right, 3 Checked
+//        System.out.println("... ");
+        Direction dirLeft = dirs[ordinalDir].rotateLeft();
+        Direction dirRight = dirs[ordinalDir].rotateRight();
+        if (valueForLocation(origin.add(dirLeft)) != TILE_VOID) {
+            if (valueForLocation(origin.add(dirRight)) != TILE_VOID && valueForLocation(origin.add(dirRight)) < valueForLocation(origin.add(dirLeft))) return dirRight;
+            else return dirLeft;
+        } else if (valueForLocation(origin.add(dirRight)) != TILE_VOID) return dirRight;
+
+        // Rotate 1 Left and Right, 5 Checked
+//        System.out.println("..... ");
+        dirLeft = dirLeft.rotateLeft();
+        dirRight = dirRight.rotateRight();
+        if (valueForLocation(origin.add(dirLeft)) != TILE_VOID) {
+            if (valueForLocation(origin.add(dirRight)) != TILE_VOID && valueForLocation(origin.add(dirRight)) < valueForLocation(origin.add(dirLeft))) return dirRight;
+            else return dirLeft;
+        } else if (valueForLocation(origin.add(dirRight)) != TILE_VOID) return dirRight;
+
+        // Rotate 1 Left and Right, 7 Checked
+//        System.out.println("....... ");
+        dirLeft = dirLeft.rotateLeft();
+        dirRight = dirRight.rotateRight();
+        if (valueForLocation(origin.add(dirLeft)) != TILE_VOID) {
+            if (valueForLocation(origin.add(dirRight)) < TILE_VOID && valueForLocation(origin.add(dirRight)) < valueForLocation(origin.add(dirLeft))) return dirRight;
+            else return dirLeft;
+        } else if (valueForLocation(origin.add(dirRight)) != TILE_VOID) return dirRight;
+
+//        System.out.println("........ ");
+        return dirs[ordinalDir].opposite();
+    }
+
+    //================================================================================
+    // Macro Path Assessments Methods
+    //================================================================================
+
+    private void assessMacroPathing() throws GameActionException
+    {
+        nodesInLine = 1;
+        int divVal = 2;
+        while (MAP_WIDTH/divVal > MAX_NODE_SPACING) {
+            nodesInLine = divVal;
+            divVal++;
+        }
+        nodeSpacing = MAP_WIDTH/nodesInLine;
+        neighborIdOffeset = new int[]{-nodesInLine-1, -nodesInLine, -nodesInLine+1, -1, +2, nodesInLine-1, nodesInLine, nodesInLine+1};
+
+        int nodeCount = nodesInLine * nodesInLine;
+        System.out.println("Map Size: " + MAP_WIDTH + ", " + MAP_HEIGHT);
+        System.out.println("Macro Matrix Even Split Size: " + nodesInLine + "x" + nodesInLine + " (" + nodeCount + " nodes spaced by " + nodeSpacing + ")");
+        System.out.println("START MACRO ASSESSMENT:  " + Clock.getRoundNum());
+
+        // Initialize Direction Arrays
+        macroNextNode = new int[nodeCount][nodeCount];
+        macroPathChecked = new boolean[nodeCount][nodeCount];
+        macroPathDistance = new int[nodeCount][nodeCount];
+        for (int origNodeId = 0; origNodeId<nodeCount; origNodeId++) {
+            for (int destNodeId = 0; destNodeId<nodeCount; destNodeId++) {
+                if (origNodeId != destNodeId) {
+                    int oppOrigNodeId = nodeCount - origNodeId - 1;
+                    int oppDestNodeId = nodeCount - destNodeId - 1;
+
+                    macroNextNode[origNodeId][destNodeId] = destNodeId;
+                    macroPathChecked[origNodeId][destNodeId] = false;
+                    macroPathDistance[origNodeId][destNodeId] = TILE_VOID;
+
+                    macroNextNode[destNodeId][origNodeId] = origNodeId;
+                    macroPathChecked[destNodeId][origNodeId] = false;
+                    macroPathDistance[destNodeId][origNodeId] = TILE_VOID;
+                } else {
+                    macroNextNode[origNodeId][destNodeId] = NO_PATH_EXISTS;
+                    macroPathDistance[origNodeId][destNodeId] = 0;
+                    macroPathChecked[origNodeId][destNodeId] = true;
+                }
+            }
+        }
+
+        // Initialize Neighbor Distances
+        for (int origNodeId = 0; origNodeId<nodeCount; origNodeId++) {
+            int oppOrigNodeId = nodeCount - origNodeId - 1;
+            MapLocation originNodeLocation = locationForNode(origNodeId);
+
+            // Update Distance to neighbors this is typically as close as we're going to get
+            System.out.print("Node[" + origNodeId + "] ");
+            for (int nOffset:neighborIdOffeset) {
+                int neighborNodeId = origNodeId+nOffset;
+                int oppNeighborNodeId = nodeCount - neighborNodeId - 1;
+
+
+                if (neighborNodeId >= 0 && neighborNodeId < nodeCount) {
+                    System.out.print(" (" + neighborNodeId + ")");
+                    MapLocation neighborNodeLocation = locationForNode(neighborNodeId);
+
+                    MapLocation[] path = Path.simplePath(rc, this, originNodeLocation, neighborNodeLocation);
+                    if (path != null && path.length > 0) {
+                        macroNextNode[origNodeId][neighborNodeId] = neighborNodeId;
+                        macroPathDistance[origNodeId][neighborNodeId] = path.length;
+                        macroPathChecked[origNodeId][neighborNodeId] = true;
+
+                        macroNextNode[neighborNodeId][origNodeId] = origNodeId;
+                        macroPathDistance[neighborNodeId][origNodeId] = path.length;
+                        macroPathChecked[neighborNodeId][origNodeId] = true;
+
+                        macroNextNode[oppOrigNodeId][oppNeighborNodeId] = oppNeighborNodeId;
+                        macroPathDistance[oppOrigNodeId][oppNeighborNodeId] = path.length;
+                        macroPathChecked[oppOrigNodeId][oppNeighborNodeId] = true;
+
+                        macroNextNode[oppNeighborNodeId][oppOrigNodeId] = oppOrigNodeId;
+                        macroPathDistance[oppNeighborNodeId][oppOrigNodeId] = path.length;
+                        macroPathChecked[oppNeighborNodeId][oppOrigNodeId] = true;
+
+                        for (MapLocation step:path) {
+                            cowGrowthMap[step.x][step.y] = 3;
+                            cowGrowthMap[MAP_WIDTH - step.x - 1][MAP_HEIGHT - step.y - 1] = 3;
+                        }
+                        System.out.print(". ");
+                    } else {
+                        macroNextNode[origNodeId][neighborNodeId] = NO_PATH_EXISTS;
+                        macroPathDistance[origNodeId][neighborNodeId] = TILE_VOID;
+                        macroPathChecked[origNodeId][neighborNodeId] = true;
+
+                        macroNextNode[neighborNodeId][origNodeId] = NO_PATH_EXISTS;
+                        macroPathDistance[neighborNodeId][origNodeId] = TILE_VOID;
+                        macroPathChecked[neighborNodeId][origNodeId] = true;
+
+                        macroNextNode[oppOrigNodeId][oppNeighborNodeId] = NO_PATH_EXISTS;
+                        macroPathDistance[oppOrigNodeId][oppNeighborNodeId] = TILE_VOID;
+                        macroPathChecked[oppOrigNodeId][oppNeighborNodeId] = true;
+
+                        macroNextNode[oppNeighborNodeId][oppOrigNodeId] = NO_PATH_EXISTS;
+                        macroPathDistance[oppNeighborNodeId][oppOrigNodeId] = TILE_VOID;
+                        macroPathChecked[oppNeighborNodeId][oppOrigNodeId] = true;
+                        System.out.print("  ");
+                    }
+                }
+            }
+            System.out.println("");
+        }
+
+        for (int origNodeId = 0; origNodeId<nodeCount; origNodeId++) {
+            MapLocation nodeLoc = locationForNode(origNodeId);
+            cowGrowthMap[nodeLoc.x][nodeLoc.y] = 9;
+        }
+
+        System.out.println("FINISH MACRO ASSESSMENT: " + Clock.getRoundNum());
+
+        printMap();
+    }
+
+    private MapLocation locationForNode(int nodeId) {
+        return new MapLocation((nodeId/nodesInLine) * nodeSpacing, (nodeId%nodesInLine) * nodeSpacing);
     }
 
     //================================================================================
@@ -78,207 +239,67 @@ public class RoadMap {
         if (rc.getType() == RobotType.HQ)
             assessMap();
         else if (shouldCheckBroadCasts())
-            readBroadcastForNewMapAndFlow();
+            readBroadcastForNewMap();
     }
 
     public boolean shouldCheckBroadCasts() throws GameActionException
     {
-        return !mapUploaded || !flowUploaded;
+        return !mapUploaded;
     }
 
-    public void resetMapLoadedFlags() throws GameActionException
+    public void resetMapUploadedFlag() throws GameActionException
     {
         mapUploaded = false;
-        flowUploaded = false;
-        flowprogress = 0;
-        broadcastLoadedFlags();
+        broadcastUploadedFlag();
     }
 
     private void assessMap() throws GameActionException
     {
-        if (mapUploaded && flowUploaded) return;
+        if (mapUploaded) return;
 
         // Map Details are read in from the game board
+        double[][] cgMap = rc.senseCowGrowth();
+        cowGrowthMap = new int[MAP_WIDTH][MAP_HEIGHT];
+
         if (!mapUploaded) {
             rc.setIndicatorString(1, "Working On Map");
-            for (int y=0; y<MAP_HEIGHT;y++) {
-                for (int x=0; x<MAP_WIDTH;x++) {
+            for (int x=0; x<=MAP_WIDTH/2;x++) {
+                for (int y=0; y<MAP_HEIGHT;y++) {
                     int ordValue = rc.senseTerrainTile(new MapLocation(x,y)).ordinal();//0 NORMAL, 1 ROAD, 2 VOID, 3 OFF_MAP
-                    int flowValue = 0;
-                    switch (ordValue)
-                    {
-                        case 0:
-                            flowValue = MAX_GRADIENT;
-                            break;
-                        case 1:
-                            flowValue = 0;
-                            break;
-                        default:
-                            voidDensity++;
-                            flowValue = 999;
-                            break;
+                    roadMap[x][y] = ordValue;
+                    // cowGrowthMap[x][y] = (int)cgMap[x][y];
+                    cowGrowthMap[x][y] = 0;
+
+                    roadMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = ordValue;
+                    // cowGrowthMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = (int)cgMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1];
+                    cowGrowthMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = 0;
+
+                    if (ordValue > 1) {
+                        voidDensity++;
+                        roadMap[x][y] = TILE_VOID;
+                        cowGrowthMap[x][y] = 0;
+
+                        roadMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = TILE_VOID;
+                        cowGrowthMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = 0;
                     }
-                    roadMap[y][x] = ordValue;
-                    flowMap[y][x] = VectorFunctions.locToInt(new MapLocation(flowValue, flowValue == 999 ? MAX_GRADIENT : 0)); // x:Road Gradient, y:Void Gradient
                 }
             }
-
             voidDensity/=(MAP_HEIGHT*MAP_WIDTH);
-            if (voidDensity > MAX_VOID_DENSITY)
-                skipFlow();
 
+            MapLocation[] path =  Path.simplePath(rc, this, cache.MY_HQ, cache.ENEMY_HQ);
+            Path.printPath(path, this);
+
+            assessMacroPathing();
+
+            System.out.println("Finished Map: " + Clock.getRoundNum());
             rc.setIndicatorString(1, "Done with Map");
             mapUploaded = true;
-            broadcastMapAndFlow();
+            broadcastMap();
             return;
         }
-
-        // Flow Gradient leads to roads and somewhat away from void space
-        if (!flowUploaded) {
-            rc.setIndicatorString(1, "Working On Flow");
-
-//            ArrayList<int[]> roads = new ArrayList<int[]>();
-//            ArrayList<int[]> voids = new ArrayList<int[]>();
-//            ArrayList<int[]> toCheck;
-//
-//            for (int y=0; y<MAP_HEIGHT-0;y++) {
-//                for (int x=0; x<MAP_WIDTH-0;x++) {
-//                    if (flowMap[y][x] == 0) {
-//                        roads.add(new int[]{y, x});
-//                    } else if (flowMap[y][x] == 999)
-//                        voids.add(new int[]{y, x});
-//                }
-//            }
-//
-//            toCheck = roads;
-//            int[] tile, tileN;
-//            int x, xN, y, yN, tileValue, tileNvalue;
-//            while (!toCheck.isEmpty()) {
-//                tile = toCheck.remove(0);
-//                y = tile[0];
-//                x = tile[1];
-//                tileValue = flowMap[y][x];
-//                System.out.println("ROADS To Check: " + toCheck.size() + ", Tile Value: " + tileValue);
-//
-//                for (int i=0; i<neighborTileOffsets.length;i++) {
-//                    if (y+neighborTileOffsets[i][0] > 0
-//                            && y+neighborTileOffsets[i][0] < MAP_HEIGHT
-//                            && x+neighborTileOffsets[i][1] > 0
-//                            && x+neighborTileOffsets[i][1] < MAP_WIDTH) {
-//
-//                        tileN = new int[]{y+neighborTileOffsets[i][0], x+neighborTileOffsets[i][1]};
-//                        yN = tileN[0];
-//                        xN = tileN[1];
-//                        tileNvalue = flowMap[yN][xN];
-//                        if (tileNvalue == maxGradient) {
-//                            flowMap[yN][xN] = tileValue+1;
-//                            if (tileValue+1 < maxGradient)
-//                                toCheck.add(tileN);
-//                        }
-//                    }
-//                }
-//            }
-//
-//            toCheck = voids;
-//            while (!toCheck.isEmpty()) {
-//                tile = toCheck.remove(0);
-//                y = tile[0];
-//                x = tile[1];
-//                tileValue = flowMap[y][x];
-//                System.out.println("VOIDS To Check: " + toCheck.size() + ", Tile Value: " + tileValue);
-//
-//                for (int i=0; i<neighborTileOffsets.length/2;i++) {
-//                    if (y+neighborTileOffsets[i][0] > 0
-//                            && y+neighborTileOffsets[i][0] < MAP_HEIGHT
-//                            && x+neighborTileOffsets[i][1] > 0
-//                            && x+neighborTileOffsets[i][1] < MAP_WIDTH) {
-//
-//                        tileN = new int[]{y+neighborTileOffsets[i][0], x+neighborTileOffsets[i][1]};
-//                        yN = tileN[0];
-//                        xN = tileN[1];
-//                        tileNvalue = flowMap[yN][xN];
-//                        if (tileNvalue != 0 && tileNvalue != 999)
-//                            flowMap[yN][xN] = maxGradient;
-//                    }
-//                }
-//            }
-
-            for (int j=flowprogress; j<MAX_GRADIENT;j++) {
-                for (int y=0; y<MAP_HEIGHT-0;y++) {
-                    for (int x=0; x<MAP_WIDTH-0;x++) {
-                        MapLocation tileFlow = VectorFunctions.intToLoc(flowMap[y][x]);
-                        if (tileFlow.x == j) { // update Road Gradient
-                            for (int i=0; i<neighborTileOffsets.length;i++) {
-                                if (y+neighborTileOffsets[i][0] > 0
-                                        && y+neighborTileOffsets[i][0] < MAP_HEIGHT
-                                        && x+neighborTileOffsets[i][1] > 0
-                                        && x+neighborTileOffsets[i][1] < MAP_WIDTH) {
-
-                                    MapLocation neighborTileFlow = VectorFunctions.intToLoc(flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]]);
-                                    if (neighborTileFlow.x > j && neighborTileFlow.x != 999)
-                                        flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = VectorFunctions.locToInt(new MapLocation(j+1, neighborTileFlow.y));
-                                }
-                            }
-                        } else if (j%2 == 0 && tileFlow.y == MAX_GRADIENT-j/2) { // update Void Gradient
-                            for (int i=0; i<neighborTileOffsets.length/2;i++) { // 1st half represents up/down/left/right
-                                if (y+neighborTileOffsets[i][0] > 0
-                                        && y+neighborTileOffsets[i][0] < MAP_HEIGHT
-                                        && x+neighborTileOffsets[i][1] > 0
-                                        && x+neighborTileOffsets[i][1] < MAP_WIDTH) {
-
-                                    MapLocation neighborTileFlow = VectorFunctions.intToLoc(flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]]);
-                                    if (neighborTileFlow.y < MAX_GRADIENT-j/2)
-                                        flowMap[y+neighborTileOffsets[i][0]][x+neighborTileOffsets[i][1]] = VectorFunctions.locToInt(new MapLocation(neighborTileFlow.x, MAX_GRADIENT-j/2-1));
-                                }
-                            }
-                        }
-                    }
-                }
-
-                flowprogress++;
-                return;
-            }
-
-            // Clean Up
-            for (int y=0; y<MAP_HEIGHT-0;y++) {
-                for (int x=0; x<MAP_WIDTH-0;x++) {
-                    MapLocation tileFlow = VectorFunctions.intToLoc(flowMap[y][x]);
-                    if (roadMap[y][x] == 2)
-                        flowMap[y][x] = 999;
-                    else
-                        flowMap[y][x] = tileFlow.x+tileFlow.y;
-                }
-            }
-
-            rc.setIndicatorString(1, "Done with Flow");
-            flowUploaded = true;
-            System.out.println("Finished Flow: " + Clock.getRoundNum());
-            broadcastMapAndFlow();
-        }
     }
 
-    public void skipFlow()
-    {
-        for (int y=0; y<MAP_HEIGHT;y++) {
-            for (int x=0; x<MAP_WIDTH;x++) {
-                switch (roadMap[y][x])
-                {
-                    case 0:
-                        flowMap[y][x] = MAX_GRADIENT;
-                        break;
-                    case 1:
-                        flowMap[y][x] = 0;
-                        break;
-                    default:
-                        flowMap[y][x] = 999;
-                        break;
-                }
-            }
-        }
-        flowprogress = MAX_GRADIENT; // effectively prevents flow blurring
-    }
-
-    public void readBroadcastForNewMapAndFlow() throws GameActionException
+    public void readBroadcastForNewMap() throws GameActionException
     {
         MapLocation loadStatus = VectorFunctions.intToLoc(rc.readBroadcast(Utilities.mapLoadedChannel));
 
@@ -288,50 +309,39 @@ public class RoadMap {
             pullMapDetails = true;
         }
 
-        if (flowUploaded = loadStatus.y == 1 && pathingStrat == PathingStrategy.SmartBug) {
-            pathingStrat = PathingStrategy.FlowBug;
-            pullMapDetails = true;
-        }
-
+        roadMap = new int[MAP_WIDTH][MAP_HEIGHT];
+        cowGrowthMap = new int[MAP_WIDTH][MAP_HEIGHT];
         if(pullMapDetails) {
             System.out.println("Soldier Pulling Map");
-            for (int y=0; y<MAP_HEIGHT;y++) {
-                for (int x=0; x<MAP_WIDTH;x++) {
+            for (int x=0; x<MAP_WIDTH;x++) {
+                for (int y=0; y<MAP_HEIGHT;y++) {
                     MapLocation mapDetails = VectorFunctions.intToLoc(rc.readBroadcast(y*MAP_HEIGHT+x));
-                    roadMap[y][x] = mapDetails.x;
-                    flowMap[y][x] = mapDetails.y;
+                    roadMap[x][y] = mapDetails.x;
+                    cowGrowthMap[x][y] = mapDetails.y;
                 }
             }
-            printMap(PrintMapFilter.flowData);
+            // printMap();
         }
-
-//        rc.setIndicatorString(1, "Finished With Reading In Map and Flow");
     }
 
-    public void broadcastMapAndFlow() throws GameActionException
+    public void broadcastMap() throws GameActionException
     {
-//        if (flowUploaded) {
-//            System.out.println("Write");
-//            printMap(PrintMapFilter.mapData);
-//            printMap(PrintMapFilter.flowData);
-//        }
-
         for (int y=0; y<MAP_HEIGHT;y++) {
             for (int x=0; x<MAP_WIDTH;x++) {
-                rc.broadcast(y*MAP_HEIGHT+x, VectorFunctions.locToInt(new MapLocation(roadMap[y][x], flowMap[y][x])));
+                rc.broadcast(y*MAP_HEIGHT+x, VectorFunctions.locToInt(new MapLocation(roadMap[y][x], cowGrowthMap[y][x])));
             }
         }
         rc.setIndicatorString(1, "Finished With Broadcasting Map and Flow");
-        broadcastLoadedFlags();
+        broadcastUploadedFlag();
     }
 
     // x:(Map Loaded) y:(Flow Loaded)
-    public void broadcastLoadedFlags() throws GameActionException
+    public void broadcastUploadedFlag() throws GameActionException
     {
-        rc.broadcast(Utilities.mapLoadedChannel, VectorFunctions.locToInt(new MapLocation(mapUploaded ? 1 : 0, flowUploaded ? 1 : 0)));
+        rc.broadcast(Utilities.mapLoadedChannel, VectorFunctions.locToInt(new MapLocation(mapUploaded ? 1 : 0, (int)(voidDensity*100))));
     }
 
-    public char asciiTranslatorForFlowValue(int fVal)
+    public char asciiValue(int fVal)
     {
         switch (fVal) {
             case 0:
@@ -357,25 +367,15 @@ public class RoadMap {
         }
     }
 
-    public void printMap(PrintMapFilter filter)
+    public void printMap()
     {
-        for (int i=0; i<MAP_WIDTH;i++) {
-            for (int j=0; j<MAP_HEIGHT;j++) {
-                MapLocation tileFlow = VectorFunctions.intToLoc(flowMap[i][j]);
-                int pVal = 0;
-                switch (filter) {
-                    case mapData:
-                        pVal = roadMap[i][j];
-                        break;
-                    case flowData:
-                        pVal = flowMap[i][j];
-                        break;
-                }
-
-                if (pVal != 999)
-                    System.out.print(asciiTranslatorForFlowValue(pVal) + "" + asciiTranslatorForFlowValue(pVal));
+        for (int y=0; y<MAP_WIDTH;y++) {
+            for (int x=0; x<MAP_HEIGHT;x++) {
+                MapLocation tileValue = VectorFunctions.intToLoc(roadMap[x][y]);
+                if (roadMap[x][y] != TILE_VOID)
+                    System.out.print(asciiValue(cowGrowthMap[x][y]) + "" + asciiValue(cowGrowthMap[x][y])); // System.out.print(asciiValue(roadMap[x][y]+cowGrowthMap[x][y]) + "" + asciiValue(roadMap[x][y]+cowGrowthMap[x][y]));
                 else
-                    System.out.print("##");
+                    System.out.print("  ");
             }
             System.out.println("");
         }
