@@ -77,7 +77,7 @@ public class HQFunctions
 				target = target.add(target.directionTo(enemyHQSpot));
 			}
 
-            target = rc.senseEnemyHQLocation();
+            //target = rc.senseEnemyHQLocation();
 
 			rc.broadcast(rallyPoint, Movement.convertMapLocationToInt(target));
 			
