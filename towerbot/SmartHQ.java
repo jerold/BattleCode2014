@@ -12,6 +12,8 @@ public class SmartHQ
 	public static final int MARINE = 5;
 	public static final int GOLIATH = 6;
 	public static final int TROLL = 7;
+	public static final int OPTOWER = 8;
+	public static final int OPMULE = 9;
 	private final int NUMGHOST = 2;
 	private final int NUMGOLIATH = 5;
 	
@@ -46,23 +48,20 @@ public class SmartHQ
 				{
 					if(bots == currentStrat.length)
 					{
-						//bots = 0;
+						bots = 0;
 						currentStrat = a.getStrat();
 					}
-					else
+					rc.broadcast(0, currentStrat[bots]);
+					Utilities.SpawnSoldiers(rc);
+					bots++;
+					if(currentStrat[bots] == GOLIATH)
 					{
-						rc.broadcast(0, currentStrat[bots]);
-						Utilities.SpawnSoldiers(rc);
-						bots++;
-						if(currentStrat[bots] == GOLIATH)
-						{
-							goliaths++;
-						}
-						if(goliaths >= NUMGOLIATH)
-						{
-							rc.broadcast(3, 5);
-							goliaths = 0;
-						}
+						goliaths++;
+					}
+					if(goliaths >= NUMGOLIATH)
+					{
+						rc.broadcast(3, 5);
+						goliaths = 0;
 					}
 				}
                 rc.yield();

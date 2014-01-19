@@ -131,7 +131,7 @@ public class TowerUtil
     			break;
     	}
     	
-    	while(!voidBehind(rc, center, current, mainDir) && rc.canAttackSquare(current) && current.x > -3 &&
+    	while(!voidBehind(rc, center, current) && rc.canAttackSquare(current) && current.x > -3 &&
     		  current.x < rc.getMapWidth() + 3 && current.y > -3 && current.y < rc.getMapHeight() + 3)
     	{
     		temp = current;
@@ -317,15 +317,15 @@ public class TowerUtil
     	return lines;
     }
     
-    private static boolean voidBehind(RobotController rc, MapLocation center, MapLocation current, Direction dir)
+    private static boolean voidBehind(RobotController rc, MapLocation center, MapLocation current)
     {
     	for(int k = 0; k < 6; k++)
     	{
-    		if(rc.senseTerrainTile(center) == TerrainTile.VOID)
+    		if(rc.senseTerrainTile(current) == TerrainTile.VOID)
     		{
     			return true;
     		}
-    		center = center.subtract(dir);
+    		current = current.add(current.directionTo(center));
     	}
     	
     	return false;
@@ -544,7 +544,7 @@ public class TowerUtil
     		}
     	}
     	
-    	if(rc.getLocation().distanceSquaredTo(target) > rc.getLocation().distanceSquaredTo(new MapLocation(width - target.x, height - target.y)))
+    	if(rc.getLocation().distanceSquaredTo(target) > rc.getLocation().distanceSquaredTo(getOppositeSpot(rc, target)))
     	{
     		target = new MapLocation(width - target.x, height - target.y);
     	}
@@ -558,10 +558,41 @@ public class TowerUtil
     	return target;
     }
     
+    public static int getSpotScore(RobotController rc, MapLocation target)
+    {
+    	double[][] cows = rc.senseCowGrowth();
+    	int total = 0;
+    	int scope = 8;
+    	int k = target.x;
+    	int a = target.y;
+		for(int t = 0; t < scope; t += 1)
+		{
+			for(int i = 0; i < scope; i += 1)
+			{
+				if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
+				{
+					total -= 2;
+				}
+				else
+				{
+					total += (int)cows[k - scope / 2 + t][a - scope / 2 + i];
+				}
+			}
+    	}
+    	
+    	return total;
+    }
+    
+    public static MapLocation getOppositeSpot(RobotController rc, MapLocation loc)
+    {
+    	return new MapLocation(rc.getMapWidth() - loc.x - 1, rc.getMapHeight() - loc.y - 1);
+    }
+    
     public static boolean[] goodSpokeDirs(RobotController rc, MapLocation target)
     {
     	boolean[] spokes = {true, true, true, true};
     	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent());
+    	MapLocation[] pastrs = rc.sensePastrLocations(rc.getTeam().opponent());
     	for(Robot bot : bots)
     	{
     		try
@@ -581,6 +612,46 @@ public class TowerUtil
 	    		else if(target.directionTo(rc.senseRobotInfo(bot).location) == Direction.SOUTH_EAST)
 	    		{
 	    			spokes[3] = false;
+	    		}
+    		}
+    		catch(Exception e){}
+    	}
+    	
+    	for(MapLocation pastr : pastrs)
+    	{
+    		try
+    		{
+    			if((target.directionTo(pastr) == Direction.NORTH_WEST ||
+    				target.directionTo(pastr) == Direction.NORTH ||
+    				target.directionTo(pastr) == Direction.WEST) && 
+    			    rc.canAttackSquare(pastr))
+	    		{
+	    			spokes[0] = false;
+	    			rc.setIndicatorString(1, "1");
+	    		}
+    			else if((target.directionTo(pastr) == Direction.NORTH_EAST ||
+    					target.directionTo(pastr) == Direction.NORTH ||
+    					target.directionTo(pastr) == Direction.EAST) && 
+    					rc.canAttackSquare(pastr))
+	    		{
+	    			spokes[1] = false;
+	    			rc.setIndicatorString(1, "2");
+	    		}
+    			else if((target.directionTo(pastr) == Direction.SOUTH_WEST ||
+    					target.directionTo(pastr) == Direction.SOUTH ||
+    					target.directionTo(pastr) == Direction.WEST) && 
+    					rc.canAttackSquare(pastr))
+	    		{
+	    			spokes[2] = false;
+	    			rc.setIndicatorString(1, "3");
+	    		}
+    			else if((target.directionTo(pastr) == Direction.SOUTH_EAST ||
+    					target.directionTo(pastr) == Direction.SOUTH ||
+    					target.directionTo(pastr) == Direction.EAST) && 
+    					rc.canAttackSquare(pastr))
+	    		{
+	    			spokes[3] = false;
+	    			rc.setIndicatorString(1, "4");
 	    		}
     		}
     		catch(Exception e){}
