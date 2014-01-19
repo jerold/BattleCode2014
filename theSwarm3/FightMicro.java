@@ -857,6 +857,7 @@ public class FightMicro
 
             if (dir != null)
             {
+                //rc.setIndicatorString(0, "Hello World");
                 for (int i = 8; --i >= 0;)
                 {
                     MapLocation next = rc.getLocation().add(dir);
@@ -874,6 +875,7 @@ public class FightMicro
 
                 if (numbOfSpots > 1)
                 {
+                    rc.setIndicatorString(0, "Hello World");
                     // first we will check to see if any allies can only approach the enemy from a certain angle
                     for (int j = alliedBots.length; --j >= 0; )
                     {
@@ -881,9 +883,10 @@ public class FightMicro
                         int alliedDist = alliedBots[j].distanceSquaredTo(target);
                         if (alliedDist > 17 && alliedDist <= 25)
                         {
+
                             MapLocation onlyAllySpot = alliedBots[j].add(alliedBots[j].directionTo(target));
 
-                            for (int i = 8; --i >=0;)
+                            for (int i = 8; --i >= 0;)
                             {
                                 if (spotsOpen[i] != null)
                                 {
@@ -898,73 +901,84 @@ public class FightMicro
                         // otherwise our bot has multiple paths in so we won't worry about it for now
                         else
                         {
-                            MapLocation[] leftLocs = new MapLocation[numbOfSpots];
-                            int index= 0;
+                        }
+                    }
 
-                            for (int i = 8; --i >= 0;)
-                            {
-                                if (spotsOpen[i] != null)
-                                {
-                                    leftLocs[index] = spotsOpen[i];
-                                }
-                            }
-                            boolean done = false;
 
-                            for (int k = leftLocs.length; --k >= 0; )
-                            {
-                                if (rc.senseTerrainTile(leftLocs[k]).equals(TerrainTile.ROAD))
-                                {
-                                    if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
-                                    {
-                                        if (rc.isActive())
-                                        {
-                                            rc.canMove(rc.getLocation().directionTo(leftLocs[k]));
-                                            done = true;
-                                            k = -1;
-                                        }
-                                    }
-                                }
-                            }
+                    MapLocation[] leftLocs = new MapLocation[numbOfSpots];
+                    int index= 0;
 
-                            if (!done)
-                            {
-                                for (int k = leftLocs.length; --k >= 0; )
-                                {
-                                    MapLocation ourSpot = rc.getLocation();
-                                    if (ourSpot.add(Direction.NORTH).equals(leftLocs[k]) || ourSpot.add(Direction.EAST).equals(leftLocs[k]) || ourSpot.add(Direction.SOUTH).equals(leftLocs[k]) || ourSpot.add(Direction.WEST).equals(leftLocs[k]))
-                                    {
-                                        if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
-                                        {
-                                            if (rc.isActive())
-                                            {
-                                                rc.canMove(rc.getLocation().directionTo(leftLocs[k]));
-                                                done = true;
-                                                k = -1;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    for (int i = 8; --i >= 0;)
+                    {
+                        if (spotsOpen[i] != null)
+                        {
+                            leftLocs[index] = spotsOpen[i];
+                        }
+                    }
+                    boolean done = false;
+                    MapLocation target2 = null;
 
-                            if (!done)
+                    for (int k = leftLocs.length; --k >= 0; )
+                    {
+                        if (rc.senseTerrainTile(leftLocs[k]).equals(TerrainTile.ROAD))
+                        {
+                            if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
                             {
                                 if (rc.isActive())
                                 {
-                                    if (rc.canMove(rc.getLocation().directionTo(leftLocs[0])))
+                                    if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
                                     {
-                                        rc.move(rc.getLocation().directionTo(leftLocs[0]));
+                                        target2 = leftLocs[k];
+                                        rc.move(rc.getLocation().directionTo(leftLocs[k]));
                                     }
-                                    else if (rc.canMove(rc.getLocation().directionTo(leftLocs[1])))
+                                    done = true;
+                                    k = -1;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!done)
+                    {
+                        for (int k = leftLocs.length; --k >= 0; )
+                        {
+                            MapLocation ourSpot = rc.getLocation();
+                            if (ourSpot.add(Direction.NORTH).equals(leftLocs[k]) || ourSpot.add(Direction.EAST).equals(leftLocs[k]) || ourSpot.add(Direction.SOUTH).equals(leftLocs[k]) || ourSpot.add(Direction.WEST).equals(leftLocs[k]))
+                            {
+                                if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
+                                {
+                                    if (rc.isActive())
                                     {
-                                        rc.move(rc.getLocation().directionTo(leftLocs[1]));
+                                        if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
+                                        {
+                                            target2 = leftLocs[k];
+                                            rc.move(rc.getLocation().directionTo(leftLocs[k]));
+                                        }
+                                        done = true;
+                                        k = -1;
                                     }
                                 }
                             }
                         }
-
-
-
                     }
+
+                    if (!done)
+                    {
+                        if (rc.isActive())
+                        {
+                            if (rc.canMove(rc.getLocation().directionTo(leftLocs[0])))
+                            {
+                                target2 = leftLocs[0];
+                                rc.move(rc.getLocation().directionTo(leftLocs[0]));
+                            }
+                            else if (rc.canMove(rc.getLocation().directionTo(leftLocs[1])))
+                            {
+                                target2 = leftLocs[1];
+                                rc.move(rc.getLocation().directionTo(leftLocs[1]));
+                            }
+                        }
+                    }
+
                     if (numbOfSpots == 1)
                     {
                         for (int i = 8; --i >= 0; )
@@ -975,6 +989,7 @@ public class FightMicro
                                 {
                                     if (rc.canMove(rc.getLocation().directionTo(spotsOpen[i])))
                                     {
+                                        target2 = leftLocs[i];
                                         rc.move(rc.getLocation().directionTo(spotsOpen[i]));
                                     }
                                 }
@@ -985,9 +1000,11 @@ public class FightMicro
                     {
 
                     }
+                    rc.setIndicatorString(0, "Target: "+target2);
                 }
                 else if (numbOfSpots == 1)
                 {
+                    //rc.setIndicatorString(0, "1 path open");
                     MapLocation target2 = null;
                     for (int i = 8; --i>=0; )
                     {
@@ -1013,7 +1030,9 @@ public class FightMicro
                     }
                 }
             }
-        } catch ( Exception e) {}
+        } catch ( Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
