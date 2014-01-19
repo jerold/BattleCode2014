@@ -1119,6 +1119,42 @@ public class FightMicro
     }
 
     /**
+     * This method will finish killing an almost dead enemy before retreating if possible
+     */
+    public static boolean finishKill(RobotController rc, Robot[] closeEnemySoldiers)
+    {
+        try
+        {
+            if (closeEnemySoldiers.length > 0)
+            {
+                int lowestHealth = 100;
+
+                for (int i = closeEnemySoldiers.length; --i >=0; )
+                {
+                    int currentHealth = (int) rc.senseRobotInfo(closeEnemySoldiers[i]).health;
+                    if (currentHealth < lowestHealth)
+                    {
+                        lowestHealth = currentHealth;
+                    }
+                }
+
+                if (lowestHealth < 30 && rc.getHealth() > 10 * closeEnemySoldiers.length)
+                {
+                    Movement.fire(rc, closeEnemySoldiers);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        } catch (Exception e) {}
+
+
+        return false;
+    }
+
+    /**
      * This is our old fight micro which is under modification
      */
     public static boolean fightMode(RobotController rc)
@@ -1172,6 +1208,10 @@ public class FightMicro
                     alliesEngaged = Utilities.AlliesEngaged(rc, enemyBotLoc, alliedBots);
                     // based on our health it may be advantageous to retreat so we can fight another day
                     if (retreat(rc, nearbyEnemies, enemyBotLoc, alliedBots))
+                    {
+
+                    }
+                    else if (finishKill(rc, nearbyEnemies))
                     {
 
                     }
@@ -1299,7 +1339,7 @@ public class FightMicro
                     GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
                     Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
                     Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
-                    if (retreat(rc, nearByEnemies2, enemyBotLoc, alliedBots))
+                    if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
                     {
 
                     }
@@ -1387,9 +1427,11 @@ public class FightMicro
                 {
 
                     MapLocation target = rc.senseLocationOf(nearByEnemies3[0]);
-
+                    if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
+                    {
+                    }
                     // if we have friends ahead then we must join them
-                    if (Utilities.AlliesAhead(rc, nearByAllies, target) > 0)
+                    else if (Utilities.AlliesAhead(rc, nearByAllies, target) > 0)
                     {
                         /*if (!MapLocationInRangeOfEnemyHQ(rc, target))
                         {*/
