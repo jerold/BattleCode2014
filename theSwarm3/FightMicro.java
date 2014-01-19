@@ -837,148 +837,125 @@ public class FightMicro
     {
         try
         {
-            int numbOfSpots = 0;
-            MapLocation target = null;
-            int bestDist = 100;
-            Direction dir = null;
-            MapLocation[] spotsOpen = new MapLocation[8];
-
-            for (int i = enemyBots.length; --i >= 0; )
+            if (enemyBots.length < 25)
             {
-                int currentDist = rc.getLocation().distanceSquaredTo(enemyBots[i]);
-                if (currentDist < bestDist)
+                int numbOfSpots = 0;
+                MapLocation target = null;
+                int bestDist = 100;
+                Direction dir = null;
+                MapLocation[] spotsOpen = new MapLocation[8];
+
+                for (int i = enemyBots.length; --i >= 0; )
                 {
-                    currentDist = bestDist;
-                    target = enemyBots[i];
-                }
-            }
-
-            if (Clock.getRoundNum() < 250)
-            {
-                System.out.println();
-                System.out.println("Targeted Enemy Location: " + target);
-            }
-            if (target != null)
-            {
-                dir = rc.getLocation().directionTo(target);
-            }
-
-            if (dir != null)
-            {
-                //rc.setIndicatorString(0, "Hello World");
-                //System.out.println("Locations to check: ");
-                for (int i = 8; --i >= 0;)
-                {
-                    MapLocation next = rc.getLocation().add(dir);
-
-                    if (next.distanceSquaredTo(target) <= 10)
+                    int currentDist = rc.getLocation().distanceSquaredTo(enemyBots[i]);
+                    if (currentDist < bestDist)
                     {
-                        System.out.print("" + next + ", ");
-                        spotsOpen[i] = next;
-                        numbOfSpots++;
+                        currentDist = bestDist;
+                        target = enemyBots[i];
                     }
-                    else
-                    {
-                        spotsOpen[i] = null;
-                    }
-                    dir = dir.rotateLeft();
                 }
 
-                if (numbOfSpots > 1)
+                if (Clock.getRoundNum() < 250)
                 {
-                    rc.setIndicatorString(0, "Hello World");
-                    // first we will check to see if any allies can only approach the enemy from a certain angle
-                    for (int j = alliedBots.length; --j >= 0; )
-                    {
-                        // here we will throw out locations if they are bad for our buds
-                        int alliedDist = alliedBots[j].distanceSquaredTo(target);
-                        if (alliedDist > 17 && alliedDist <= 25)
-                        {
+                    System.out.println();
+                    System.out.println("Targeted Enemy Location: " + target);
+                }
+                if (target != null)
+                {
+                    dir = rc.getLocation().directionTo(target);
+                }
 
-                            MapLocation onlyAllySpot = alliedBots[j].add(alliedBots[j].directionTo(target));
-
-                            for (int i = 8; --i >= 0;)
-                            {
-                                if (spotsOpen[i] != null)
-                                {
-                                    if (spotsOpen[i].equals(onlyAllySpot))
-                                    {
-                                        spotsOpen[i] = null;
-                                        numbOfSpots--;
-                                    }
-                                }
-                            }
-                        }
-                        // otherwise our bot has multiple paths in so we won't worry about it for now
-                    }
-
-
-                    MapLocation[] leftLocs = new MapLocation[numbOfSpots];
-                    int index = 0;
-
-                    if (Clock.getRoundNum() < 250)
-                    {
-                        System.out.println();
-                        System.out.println("Locations available");
-                    }
+                if (dir != null)
+                {
+                    //rc.setIndicatorString(0, "Hello World");
+                    //System.out.println("Locations to check: ");
                     for (int i = 8; --i >= 0;)
                     {
-                        if (spotsOpen[i] != null)
-                        {
-                            leftLocs[index] = spotsOpen[i];
-                            System.out.print("Index: " + index + " (" + leftLocs[index] + "), ");
-                            index++;
-                        }
-                    }
-                    System.out.println();
+                        MapLocation next = rc.getLocation().add(dir);
 
-                    for (int i = numbOfSpots; --i>=0;)
-                    {
-                        if (leftLocs[i] == null)
+                        if (next.distanceSquaredTo(target) <= 10)
                         {
-                            leftLocs[i] = rc.getLocation();
+                            System.out.print("" + next + ", ");
+                            spotsOpen[i] = next;
+                            numbOfSpots++;
                         }
-                    }
-                    boolean done = false;
-                    MapLocation target2 = null;
-
-                    for (int k = leftLocs.length; --k >= 0; )
-                    {
-                        if (leftLocs != null)
+                        else
                         {
-                            if (rc.senseTerrainTile(leftLocs[k]).equals(TerrainTile.ROAD))
+                            spotsOpen[i] = null;
+                        }
+                        dir = dir.rotateLeft();
+                    }
+
+                    if (numbOfSpots > 1)
+                    {
+                        rc.setIndicatorString(0, "Hello World");
+                        // first we will check to see if any allies can only approach the enemy from a certain angle
+                        for (int j = alliedBots.length; --j >= 0; )
+                        {
+                            // here we will throw out locations if they are bad for our buds
+                            int alliedDist = alliedBots[j].distanceSquaredTo(target);
+                            if (alliedDist > 17 && alliedDist <= 25)
                             {
-                                if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
+
+                                MapLocation onlyAllySpot = alliedBots[j].add(alliedBots[j].directionTo(target));
+
+                                for (int i = 8; --i >= 0;)
                                 {
-                                    if (rc.isActive())
+                                    if (spotsOpen[i] != null)
                                     {
-                                        target2 = leftLocs[k];
-                                        rc.move(rc.getLocation().directionTo(leftLocs[k]));
-                                        done = true;
-                                        k = -1;
+                                        if (spotsOpen[i].equals(onlyAllySpot))
+                                        {
+                                            spotsOpen[i] = null;
+                                            numbOfSpots--;
+                                        }
                                     }
                                 }
                             }
+                            // otherwise our bot has multiple paths in so we won't worry about it for now
                         }
-                    }
 
-                    // if we are still not done then we will attempt to move in the diertction
-                    if (!done)
-                    {
+
+                        MapLocation[] leftLocs = new MapLocation[numbOfSpots];
+                        int index = 0;
+
+                        if (Clock.getRoundNum() < 250)
+                        {
+                            System.out.println();
+                            System.out.println("Locations available");
+                        }
+                        for (int i = 8; --i >= 0;)
+                        {
+                            if (spotsOpen[i] != null)
+                            {
+                                leftLocs[index] = spotsOpen[i];
+                                System.out.print("Index: " + index + " (" + leftLocs[index] + "), ");
+                                index++;
+                            }
+                        }
+                        System.out.println();
+
+                        for (int i = numbOfSpots; --i>=0;)
+                        {
+                            if (leftLocs[i] == null)
+                            {
+                                leftLocs[i] = rc.getLocation();
+                            }
+                        }
+                        boolean done = false;
+                        MapLocation target2 = null;
+
                         for (int k = leftLocs.length; --k >= 0; )
                         {
                             if (leftLocs != null)
                             {
-                                MapLocation ourSpot = rc.getLocation();
-                                Direction direction = ourSpot.directionTo(leftLocs[k]);
-                                if (direction.equals(Direction.NORTH) || direction.equals(Direction.EAST) || direction.equals(Direction.SOUTH) || direction.equals(Direction.WEST))
+                                if (rc.senseTerrainTile(leftLocs[k]).equals(TerrainTile.ROAD))
                                 {
-                                    if (rc.isActive())
+                                    if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
                                     {
-                                        if (rc.canMove(direction))
+                                        if (rc.isActive())
                                         {
                                             target2 = leftLocs[k];
-                                            rc.move(direction);
+                                            rc.move(rc.getLocation().directionTo(leftLocs[k]));
                                             done = true;
                                             k = -1;
                                         }
@@ -986,80 +963,106 @@ public class FightMicro
                                 }
                             }
                         }
-                    }
 
-                    if (!done)
-                    {
-                        if (rc.isActive())
+                        // if we are still not done then we will attempt to move in the diertction
+                        if (!done)
                         {
-                            if (leftLocs.length < 1)
+                            for (int k = leftLocs.length; --k >= 0; )
                             {
-                                target2 = rc.getLocation().add(rc.getLocation().directionTo((target)));
-                                Direction direction = rc.getLocation().directionTo(target2);
-                                if (rc.canMove(direction))
+                                if (leftLocs != null)
                                 {
-                                    rc.move(direction);
-                                }
-                            }
-                            else if (rc.canMove(rc.getLocation().directionTo(leftLocs[0])))
-                            {
-                                target2 = leftLocs[0];
-                                rc.move(rc.getLocation().directionTo(leftLocs[0]));
-                            }
-                            else if (leftLocs.length > 1 && rc.canMove(rc.getLocation().directionTo(leftLocs[1])))
-                            {
-                                target2 = leftLocs[1];
-                                rc.move(rc.getLocation().directionTo(leftLocs[1]));
-                            }
-                        }
-                    }
-
-                    if (numbOfSpots == 1)
-                    {
-                        for (int i = 8; --i >= 0; )
-                        {
-                            if (spotsOpen[i] != null)
-                            {
-                                if (rc.isActive())
-                                {
-                                    if (rc.canMove(rc.getLocation().directionTo(spotsOpen[i])))
+                                    MapLocation ourSpot = rc.getLocation();
+                                    Direction direction = ourSpot.directionTo(leftLocs[k]);
+                                    if (direction.equals(Direction.NORTH) || direction.equals(Direction.EAST) || direction.equals(Direction.SOUTH) || direction.equals(Direction.WEST))
                                     {
-                                        target2 = leftLocs[i];
-                                        rc.move(rc.getLocation().directionTo(spotsOpen[i]));
+                                        if (rc.isActive())
+                                        {
+                                            if (rc.canMove(direction))
+                                            {
+                                                target2 = leftLocs[k];
+                                                rc.move(direction);
+                                                done = true;
+                                                k = -1;
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    else
-                    {
 
-                    }
-                    rc.setIndicatorString(0, "Target: "+target2);
-                }
-                else if (numbOfSpots == 1)
-                {
-                    //rc.setIndicatorString(0, "1 path open");
-                    MapLocation target2 = null;
-                    for (int i = 8; --i>=0; )
-                    {
-                        if (spotsOpen[i] != null)
+                        if (!done)
                         {
-                            target2 = spotsOpen[i];
-                        }
-                    }
-
-                    if (target2 != null)
-                    {
-                        if (rc.isActive())
-                        {
-                            Direction dir2 = rc.getLocation().directionTo(target);
-                            if (rc.canMove(dir2))
+                            if (rc.isActive())
                             {
-                                try
+                                if (leftLocs.length < 1)
                                 {
-                                    rc.move(dir2);
-                                } catch ( Exception e) {}
+                                    target2 = rc.getLocation().add(rc.getLocation().directionTo((target)));
+                                    Direction direction = rc.getLocation().directionTo(target2);
+                                    if (rc.canMove(direction))
+                                    {
+                                        rc.move(direction);
+                                    }
+                                }
+                                else if (rc.canMove(rc.getLocation().directionTo(leftLocs[0])))
+                                {
+                                    target2 = leftLocs[0];
+                                    rc.move(rc.getLocation().directionTo(leftLocs[0]));
+                                }
+                                else if (leftLocs.length > 1 && rc.canMove(rc.getLocation().directionTo(leftLocs[1])))
+                                {
+                                    target2 = leftLocs[1];
+                                    rc.move(rc.getLocation().directionTo(leftLocs[1]));
+                                }
+                            }
+                        }
+
+                        if (numbOfSpots == 1)
+                        {
+                            for (int i = 8; --i >= 0; )
+                            {
+                                if (spotsOpen[i] != null)
+                                {
+                                    if (rc.isActive())
+                                    {
+                                        if (rc.canMove(rc.getLocation().directionTo(spotsOpen[i])))
+                                        {
+                                            target2 = leftLocs[i];
+                                            rc.move(rc.getLocation().directionTo(spotsOpen[i]));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+
+                        }
+                        rc.setIndicatorString(0, "Target: "+target2);
+                    }
+                    else if (numbOfSpots == 1)
+                    {
+                        //rc.setIndicatorString(0, "1 path open");
+                        MapLocation target2 = null;
+                        for (int i = 8; --i>=0; )
+                        {
+                            if (spotsOpen[i] != null)
+                            {
+                                target2 = spotsOpen[i];
+                            }
+                        }
+
+                        if (target2 != null)
+                        {
+                            if (rc.isActive())
+                            {
+                                Direction dir2 = rc.getLocation().directionTo(target);
+                                if (rc.canMove(dir2))
+                                {
+                                    try
+                                    {
+                                        rc.move(dir2);
+                                    } catch ( Exception e) {}
+                                }
                             }
                         }
                     }
@@ -1077,7 +1080,7 @@ public class FightMicro
     {
         try
         {
-            if ((rc.getHealth() <= 50 && rc.getHealth() <= (double) (closeEnemySoldiers.length * 10)) || (((int)rc.getHealth()) % 10 != 0))
+            if ((rc.getHealth() <= 50 && rc.getHealth() <= (double) ((closeEnemySoldiers.length * 10) + 10)) || ((((int)rc.getHealth()) % 10 != 0) && rc.getHealth() < 60))
             {
                 Direction move = null;
                 Direction dir;
@@ -1158,6 +1161,211 @@ public class FightMicro
 
 
         return false;
+    }
+
+    /**
+     * This method returns the center of mass of all known enemies
+     */
+    public static MapLocation centerOfEnemies(MapLocation[] enemyBots)
+    {
+        int x = 0;
+        int y = 0;
+
+        for (int i = enemyBots.length; --i >=0;)
+        {
+            if (enemyBots[i] != null)
+            {
+                x += enemyBots[i].x;
+                y += enemyBots[i].y;
+            }
+        }
+
+        x /= enemyBots.length;
+        y /= enemyBots.length;
+
+        if (x != 0)
+        {
+            return new MapLocation(x, y);
+        }
+
+        return null;
+    }
+
+    /**
+     * This method returns the enemy bot furthest away from center of enemy mass
+     */
+    public static MapLocation isolatedEnemy(MapLocation[] enemybots)
+    {
+        MapLocation center = centerOfEnemies(enemybots);
+        MapLocation target = null;
+
+        int greatestDist = 0;
+
+        for (int i = enemybots.length; -- i>=0;)
+        {
+            int currentDist = enemybots[i].distanceSquaredTo(center);
+            if (currentDist > greatestDist)
+            {
+                target = enemybots[i];
+                greatestDist = currentDist;
+            }
+        }
+
+        if (target != null)
+        {
+            return target;
+        }
+
+        return null;
+    }
+
+    /**
+     * This function moves us further along the flank staying out of range of enemy until we are ready to attack
+     */
+    public static void moveAroundFlank(RobotController rc, MapLocation[] enemyBots, MapLocation[] alliedBots, MapLocation target)
+    {
+        try
+        {
+            MapLocation center = centerOfEnemies(enemyBots);
+
+            Direction dirToCenter = rc.getLocation().directionTo(center);
+            Direction dirToTarget = rc.getLocation().directionTo(target);
+            Direction dirToMove = dirToTarget;
+
+            if (dirToCenter.rotateLeft().equals(dirToTarget) || dirToCenter.rotateLeft().rotateLeft().equals(dirToTarget))
+            {
+                dirToMove = dirToTarget.rotateLeft();
+
+                while (rc.getLocation().add(dirToMove).distanceSquaredTo(target) <= 10)
+                {
+                    dirToMove = dirToMove.rotateLeft();
+                }
+            }
+            else
+            {
+                dirToMove = dirToTarget.rotateRight();
+
+                while (rc.getLocation().add(dirToMove).distanceSquaredTo(target) <= 10)
+                {
+                    dirToMove = dirToMove.rotateRight();
+                }
+            }
+
+            if (rc.isActive())
+            {
+                if (rc.canMove(dirToTarget))
+                {
+                    rc.move(dirToTarget);
+                }
+            }
+        } catch (Exception e) {}
+    }
+
+    /**
+     * This method moves the bot into position to attack the enemy flank
+     */
+    public static void AttackFlank(RobotController rc, MapLocation[] enemyBots, MapLocation[] alliedBots)
+    {
+        try
+        {
+            MapLocation target = isolatedEnemy(enemyBots);
+            int ourDist = rc.getLocation().distanceSquaredTo(target);
+            boolean alliesEngaged = false;
+
+            if (ourDist <= 17)
+            {
+                int alliesInRange = 0;
+                // first we will count the number of allied troops in range of enemy
+                for (int i = alliedBots.length; --i >= 0;)
+                {
+                    int alliedDist = alliedBots[i].distanceSquaredTo(target);
+                    if (alliedDist <= 10)
+                    {
+                        alliesEngaged = true;
+                        i = -1;
+                    }
+                    else if (alliedDist <= 17)
+                    {
+                        alliesInRange++;
+                    }
+                }
+
+                if (alliesEngaged)
+                {
+                    moveToBestAdvanceLoc(rc, enemyBots, alliedBots);
+                }
+                else if (alliesInRange >= 2)
+                {
+                    rc.yield();
+                    Movement.MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                }
+                else
+                {
+                    moveAroundFlank(rc, enemyBots, alliedBots, target);
+                }
+            }
+            else
+            {
+                boolean left = false;
+                MapLocation center = centerOfEnemies(enemyBots);
+                Direction dirToCenter = rc.getLocation().directionTo(center);
+                Direction dirToTarget = rc.getLocation().directionTo(target);
+                Direction dir = dirToTarget;
+                if (dirToCenter.rotateLeft().equals(dirToTarget) || dirToCenter.rotateLeft().rotateLeft().equals(dirToTarget))
+                {
+                    left = true;
+                }
+
+                for (int i = 0; i < 5; i++)
+                {
+                    boolean inRange = false;
+                    for (int j = enemyBots.length; --j>=0;)
+                    {
+                        if (enemyBots[j].distanceSquaredTo(rc.getLocation().add(dir)) <= 10)
+                        {
+                            inRange = true;
+                            j = -1;
+                        }
+                    }
+                    if (!inRange)
+                    {
+                        i = 35;
+                    }
+                    else
+                    {
+                        if (left)
+                        {
+                            dir = dir.rotateLeft();
+                        }
+                        else
+                        {
+                            dir = dir.rotateRight();
+                        }
+                    }
+                }
+
+                if (rc.canMove(dir))
+                {
+                    rc.move(dir);
+                }
+                else
+                {
+                    if (left)
+                    {
+                        dir = dir.rotateLeft();
+                    }
+                    else
+                    {
+                        dir = dir.rotateRight();
+                    }
+
+                    if (rc.canMove(dir))
+                    {
+                        rc.move(dir);
+                    }
+                }
+            }
+        } catch (Exception e) {}
     }
 
     /**
@@ -1355,6 +1563,10 @@ public class FightMicro
                         rc.setIndicatorString(1, "1");
                         moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
                         //Movement.MoveDirection(rc, dir, false);
+                    }
+                    else if (nearByEnemies2.length >= 4)
+                    {
+                        AttackFlank(rc, enemyBotLoc, alliedBots);
                     }
                     else if (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > (nearByEnemies2.length) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
                     {
