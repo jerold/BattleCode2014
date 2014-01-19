@@ -949,6 +949,7 @@ public class FightMicro
                         }
                     }
 
+                    // if we are still not done then we will attempt to move in the diertction
                     if (!done)
                     {
                         for (int k = leftLocs.length; --k >= 0; )
@@ -956,21 +957,20 @@ public class FightMicro
                             if (leftLocs != null)
                             {
                                 MapLocation ourSpot = rc.getLocation();
-                                if (ourSpot.add(Direction.NORTH).equals(leftLocs[k]) || ourSpot.add(Direction.EAST).equals(leftLocs[k]) || ourSpot.add(Direction.SOUTH).equals(leftLocs[k]) || ourSpot.add(Direction.WEST).equals(leftLocs[k]))
+                                Direction direction = ourSpot.directionTo(leftLocs[k]);
+                                if (direction.equals(Direction.NORTH) || direction.equals(Direction.EAST) || direction.equals(Direction.SOUTH) || direction.equals(Direction.WEST))
                                 {
-                                    if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
+                                    if (rc.isActive())
                                     {
-                                        if (rc.isActive())
+                                        if (rc.canMove(direction))
                                         {
-                                            if (rc.canMove(rc.getLocation().directionTo(leftLocs[k])))
-                                            {
-                                                target2 = leftLocs[k];
-                                                rc.move(rc.getLocation().directionTo(leftLocs[k]));
-                                            }
-                                            done = true;
-                                            k = -1;
+                                            target2 = leftLocs[k];
+                                            rc.move(direction);
                                         }
+                                        done = true;
+                                        k = -1;
                                     }
+
                                 }
                             }
                         }
