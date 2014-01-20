@@ -1746,11 +1746,11 @@ public class FightMicro
                 {
 
                     MapLocation target = rc.senseLocationOf(nearByEnemies3[0]);
-                   /* if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
+                    if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
                     {
                     }
                     // if we have friends ahead then we must join them
-                    else*/ if (Utilities.AlliesAhead(rc, nearByAllies, target) > 0)
+                    else if (Utilities.AlliesAhead(rc, nearByAllies, target) > 0)
                     {
                         /*if (!MapLocationInRangeOfEnemyHQ(rc, target))
                         {*/
