@@ -19,7 +19,6 @@ public class Headquarter {
         rc = inRc;
         cache = new UnitCache(rc);
         map = new RoadMap(rc, cache);
-//        tryToSpawn();
 
         while (true) {
             if (!rc.isActive()) { rc.yield(); continue; }
@@ -34,7 +33,8 @@ public class Headquarter {
     }
 
     public static void tryToSpawn() throws GameActionException {
-        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){
+//        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){
+        if(rc.isActive()&&rc.senseRobotCount()<1){
             for(int i=0;i<8;i++){
                 Direction trialDir = allDirections[i];
                 if(rc.canMove(trialDir)){

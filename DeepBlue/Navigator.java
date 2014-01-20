@@ -8,7 +8,7 @@ import battlecode.common.*;
  */
 public class Navigator {
 
-    static final int DIRECTION_WEIGHT_TRAIL = -30;
+    static final int DIRECTION_WEIGHT_TRAIL = -1;
 
     RobotController rc;
     UnitCache cache;
@@ -16,18 +16,28 @@ public class Navigator {
 
     MapLocation destination;
     double directions[];
+    Direction heading;
     double stayPut;
     RoadMap.PathingStrategy pathStrat;
+
+    boolean bugging;
+    boolean bugLeft;
+    int bugStartDistanceFromDestination;
 
     Navigator(RobotController inRc,UnitCache inCache,RoadMap inMap)
     {
         rc = inRc;
         cache = inCache;
         map = inMap;
+        map.observingNavigator = this;
+
         destination = rc.getLocation();
         directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
         stayPut = 999;
         pathStrat = RoadMap.PathingStrategy.DefaultBug;
+        bugging = false;
+        bugLeft = false;
+        bugStartDistanceFromDestination = 0;
     }
 
     public boolean engaging() throws GameActionException
@@ -54,47 +64,19 @@ public class Navigator {
      */
     public void maneuver() throws GameActionException
     {
+        rc.setIndicatorString(0, "Near Node "+map.idForNearestNode(rc.getLocation()));
+
         if (map.pathingStrat == RoadMap.PathingStrategy.DefaultBug)
-            defaultDirectionAssessment();
+            defaultMovement();
         else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
-            smartDirectionAssessment();
-        tryMove();
+            smartMovement();
+        else
+            smartMovement();
     }
 
-    /*
-     *
-     */
-    public void tryMove() throws GameActionException
+    public void pathingStrategyChanged() throws GameActionException
     {
-//        rc.setIndicatorString(0, "Strategy: " + (map.pathingStrat == RoadMap.PathingStrategy.FlowBug ? "Flow" : "Not Flow"));
-//        rc.setIndicatorString(1, "N: " + (int)directions[0] +
-//                ", NE: " + (int)directions[1] +
-//                ", E: " + (int)directions[2] +
-//                ", SE: " + (int)directions[3] +
-//                ", S: " + (int)directions[4] +
-//                ", SW: " + (int)directions[5] +
-//                ", W: " + (int)directions[6] +
-//                ", NW: " + (int)directions[7]);
-
-        if (rc.isActive()) {
-            Direction dir = bestDirection();
-//            rc.setIndicatorString(2, "Direction: " + dir);
-            if (rc.canMove(dir))
-                rc.move(dir);
-        }
-    }
-
-    public Direction bestDirection()
-    {
-        double min = stayPut;
-        Direction bestDirection = null;
-
-        for (int i = 0; i < 8; ++i) {
-            if (min <= directions[i]) continue;
-            min = directions[i];
-            bestDirection = Utilities.directionByOrdinal[i];
-        }
-        return bestDirection;
+        System.out.println("New Path to Destination ["+map.pathingStrat+"]");
     }
 
     public void setDestination(MapLocation location) throws GameActionException
@@ -102,32 +84,112 @@ public class Navigator {
         destination = location;
     }
 
+    private void bugMove() throws GameActionException
+    {
+        if (bugLeft) {
+            // If we run into a wall
+            while (!rc.canMove(heading))
+                heading = heading.rotateRight();
+
+            // keep in contact with left wall
+            if (rc.canMove(heading.rotateLeft()))
+                heading = heading.rotateLeft();
+
+            if (!rc.isActive()) rc.yield();
+            rc.move(heading);
+        } else {
+            // If we run into a wall
+            while (!rc.canMove(heading))
+                heading = heading.rotateLeft();
+
+            // keep in contact with left wall
+            if (rc.canMove(heading.rotateRight()))
+                heading = heading.rotateRight();
+
+            if (!rc.isActive()) rc.yield();
+            rc.move(heading);
+        }
+    }
+
+
+
     //================================================================================
     // Default Methods
     //================================================================================
 
-    public void defaultDirectionAssessment() throws GameActionException
+    public void defaultMovement() throws GameActionException
     {
-        directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+        if (!bugging) {
+            heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc);
+            if(rc.canMove(heading)) {
+                if (!rc.isActive()) rc.yield();
+                    rc.move(heading);
+            } else {
+                bugging = true;
+                bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
+                bugLeft = !bugLeft;
+            }
+        } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
+            bugging = false;
 
-        // Weight for snail trail direction
-        directions[MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc).ordinal()] += DIRECTION_WEIGHT_TRAIL;
+        if (bugging)
+            bugMove();
     }
+
+
+
 
     //================================================================================
     // Smart Methods
     //================================================================================
 
-    public void smartDirectionAssessment() throws GameActionException
+    public void smartMovement() throws GameActionException
+    {
+//        directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+//        MapLocation myLoc = rc.getLocation();
+//        int[] costs = map.ordinalDirectionCosts(myLoc);
+//
+//        // Weight for snail trail direction
+//        directions[map.directionTo(myLoc, destination).ordinal()] += DIRECTION_WEIGHT_TRAIL;
+//
+//        // Add cost for each space
+//        for (int i=0;i<8;i++) {
+//            directions[i] += costs[i];
+//        }
+//
+
+        if (!bugging) {
+            heading = map.directionTo(rc.getLocation(), destination);
+
+            if(rc.canMove(heading)) {
+                if (!rc.isActive()) rc.yield();
+                rc.move(heading);
+            } else {
+                bugging = true;
+                bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
+                bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination);
+            }
+        } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
+            bugging = false;
+
+        if (bugging)
+            bugMove();
+    }
+
+
+
+
+    //================================================================================
+    // Macro Methods
+    //================================================================================
+
+    public void macroDirectionAssessment() throws GameActionException
     {
         directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+        MapLocation myLoc = rc.getLocation();
 
         // Weight for snail trail direction
-        directions[MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc).ordinal()] += DIRECTION_WEIGHT_TRAIL;
-
-        for (int i=0; i<8; i++) {
-            // Distance weights
-            directions[i] += Utilities.distanceBetweenTwoPoints(destination, rc.getLocation().add(Utilities.directionByOrdinal[i]));
-        }
+        directions[MicroPathing.getNextDirection(myLoc.directionTo(destination), true, rc).ordinal()] += DIRECTION_WEIGHT_TRAIL;
+        directions[map.directionTo(myLoc, destination).ordinal()] += DIRECTION_WEIGHT_TRAIL;
     }
 }

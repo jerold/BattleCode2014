@@ -4,12 +4,14 @@ import battlecode.common.MapLocation;
 
 import java.util.ArrayList;
 
-
 /**
  * Directly from the BattleCode 2014 Lectures
  */
 public class VectorFunctions {
-	public static MapLocation findClosest(MapLocation[] manyLocs, MapLocation point){
+    static final int LOC_MOD = 1000;
+
+
+    public static MapLocation findClosest(MapLocation[] manyLocs, MapLocation point){
 		int closestDist = 10000000;
 		int challengerDist = closestDist;
 		MapLocation closestLoc = null;
@@ -35,11 +37,11 @@ public class VectorFunctions {
 	}
 	
 	public static int locToInt(MapLocation m){
-		return (m.x*100 + m.y);
+		return (m.x*LOC_MOD + m.y);
 	}
 	
 	public static MapLocation intToLoc(int i){
-		return new MapLocation(i/100,i%100);
+		return new MapLocation(i/LOC_MOD,i%LOC_MOD);
 	}
 	
 	public static void printPath(ArrayList<MapLocation> path, int bigBoxSize){

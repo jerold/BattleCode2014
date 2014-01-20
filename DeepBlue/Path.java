@@ -1,8 +1,6 @@
 package DeepBlue;
 
 import battlecode.common.*;
-
-import javax.sound.midi.SysexMessage;
 import java.util.ArrayList;
 
 /**
@@ -10,36 +8,151 @@ import java.util.ArrayList;
  */
 public class Path {
 
-    public static MapLocation[] simplePath(RobotController rc, RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
+    public static MapLocation[] getSimplePath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
     {
-//        System.out.println("START PATH");
+        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
+            return null;
+
         ArrayList<MapLocation> roughPath = new ArrayList<MapLocation>();
         MapLocation stepLocation = origin;
         roughPath.add(stepLocation);
-        int stepNumber = 1;
-        boolean blocked = false;
-        while (!blocked && !(stepLocation.x == destination.x && stepLocation.y == destination.y)) {
-            // MapLocation nextStepLocation = stepLocation.add(stepLocation.directionTo(destination));
+        while (!(stepLocation.x == destination.x && stepLocation.y == destination.y)) {
             MapLocation nextStepLocation = stepLocation.add(map.directionTo(stepLocation, destination));
 
             for (MapLocation loc:roughPath)
                 if (loc.x == nextStepLocation.x && loc.y == nextStepLocation.y)
-                    blocked = true;
+                    return null;
 
-            if (!blocked) {
-                stepLocation = nextStepLocation;
-                roughPath.add(stepLocation);
-            }
+            stepLocation = nextStepLocation;
+            roughPath.add(stepLocation);
         }
 
-        MapLocation[] returnPath = null;
-        if (!blocked) {
-            returnPath = new MapLocation[roughPath.size()];
-            for (int i=0; i<roughPath.size();i++)
-                returnPath[i] = roughPath.get(i);
-        }
-//        System.out.println("FINISH PATH");
+        MapLocation[] returnPath = new MapLocation[roughPath.size()];
+        for (int i=0; i<roughPath.size();i++)
+            returnPath[i] = roughPath.get(i);
+
         return returnPath;
+    }
+
+    public static MapLocation[] getMacroPath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
+    {
+        return null;
+    }
+
+//    public static MapLocation[] compoundPath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
+//    {
+//        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
+//            return null;
+//
+//        MapLocation[] straight = straightPath(map, origin, destination);
+//        int sI = 0;
+//        ArrayList<MapLocation> roughPath = new ArrayList<MapLocation>();
+//        while (sI < straight.length) {
+//            if (map.roadMap[straight[sI].x][straight[sI].y] != RoadMap.TILE_VOID) {
+//                roughPath.add(straight[sI]);
+//            } else {
+//                MapLocation bugStart = straight[sI-1];
+//                while (map.roadMap[straight[sI].x][straight[sI].y] == RoadMap.TILE_VOID) {
+//                    sI++;
+//                }
+//                MapLocation bugEnd = straight[sI];
+//                MapLocation[] bugLeft = bugPath(map, bugStart, bugEnd, true);
+//                MapLocation[] bugRight = bugPath(map, bugStart, bugEnd, false);
+//                if (bugLeft.length < bugRight.length)
+//                    for (MapLocation step:bugLeft)
+//                        roughPath.add(step);
+//                else
+//                    for (MapLocation step:bugRight)
+//                        roughPath.add(step);
+//            }
+//            sI++;
+//        }
+//
+//        MapLocation[] returnPath = new MapLocation[roughPath.size()];
+//        for (int i=0; i<roughPath.size();i++)
+//            returnPath[i] = roughPath.get(i);
+//
+//        return returnPath;
+//    }
+
+//    public static MapLocation[] straightPath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
+//    {
+//        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
+//            return null;
+//
+//        ArrayList<MapLocation> roughPath = new ArrayList<MapLocation>();
+//        MapLocation stepLocation = origin;
+//        roughPath.add(stepLocation);
+//        while (!(stepLocation.x == destination.x && stepLocation.y == destination.y)) {
+//            stepLocation = stepLocation.add(stepLocation.directionTo(destination));
+//            roughPath.add(stepLocation);
+//        }
+//
+//        MapLocation[] returnPath = new MapLocation[roughPath.size()];
+//        for (int i=0; i<roughPath.size();i++)
+//            returnPath[i] = roughPath.get(i);
+//
+//        return returnPath;
+//    }
+
+    public static boolean shouldBugLeft(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
+    {
+        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
+            return false;
+        MapLocation bugEnd = origin.add(origin.directionTo(destination));
+        while (map.roadMap[bugEnd.x][bugEnd.y] == RoadMap.TILE_VOID)
+            bugEnd = bugEnd.add(bugEnd.directionTo(destination));
+
+        MapLocation[] bugLeft = getBugPath(map, origin, bugEnd, true);
+        MapLocation[] bugRight = getBugPath(map, origin, bugEnd, false);
+        if (bugLeft.length < bugRight.length)
+            return true;
+        return false;
+    }
+
+    public static MapLocation[] getBugPath(RoadMap map, MapLocation origin, MapLocation destination, boolean leftWall) throws GameActionException
+    {
+        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
+            return null;
+
+        ArrayList<MapLocation> roughPath = new ArrayList<MapLocation>();
+        MapLocation stepLocation = origin;
+        roughPath.add(stepLocation);
+        Direction direction = stepLocation.directionTo(destination);
+        while (!(stepLocation.x == destination.x && stepLocation.y == destination.y)) {
+
+            if (leftWall) {
+                // If we run into a wall
+                while (!validMove(map, stepLocation, direction))
+                    direction = direction.rotateRight();
+
+                // keep in contact with left wall
+                if (validMove(map, stepLocation, direction.rotateLeft()))
+                    direction = direction.rotateLeft();
+            } else {
+                // If we run into a wall
+                while (!validMove(map, stepLocation, direction))
+                    direction = direction.rotateLeft();
+
+                // keep in contact with left wall
+                if (validMove(map, stepLocation, direction.rotateRight()))
+                    direction = direction.rotateRight();
+            }
+
+            stepLocation = stepLocation.add(direction);
+            roughPath.add(stepLocation);
+        }
+
+        MapLocation[] returnPath = new MapLocation[roughPath.size()];
+        for (int i=0; i<roughPath.size();i++)
+            returnPath[i] = roughPath.get(i);
+
+        return returnPath;
+    }
+
+    private static boolean validMove(RoadMap map, MapLocation loc, Direction dir)
+    {
+        return map.roadMap[loc.add(dir).x][loc.add(dir).y] != RoadMap.TILE_VOID;
     }
 
     public static void printPath(MapLocation[] path, RoadMap map)
@@ -48,18 +161,21 @@ public class Path {
             return;
 
         System.out.println("Printing Path");
-        boolean pathBlank;
-        for (int x=0; x<map.MAP_WIDTH;x++) {
-            for (int y=0; y<map.MAP_HEIGHT;y++) {
-                pathBlank = false;
+        boolean pathTile;
+        for (int y=0; y<map.MAP_HEIGHT;y++) {
+            for (int x=0; x<map.MAP_WIDTH;x++) {
+                pathTile = false;
                 for (MapLocation loc:path) {
                     if (loc.x == x && loc.y == y)
-                        pathBlank = true;
+                        pathTile = true;
                 }
-                if (pathBlank)
-                    System.out.print("XX");
-                else if (map.roadMap[x][y] == map.TILE_VOID)
-                    System.out.print("..");
+                if (pathTile) {
+                    if (map.roadMap[x][y] == map.TILE_VOID)
+                        System.out.print("XX");
+                    else
+                        System.out.print("++");
+                } else if (map.roadMap[x][y] == map.TILE_VOID)
+                    System.out.print("[]");
                 else
                     System.out.print("  ");
             }
