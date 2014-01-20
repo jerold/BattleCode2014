@@ -47,7 +47,7 @@ public class MULE
         }
         */
 
-        target = Utilities.spotOfPastr(rc, corner1);
+        target = TowerUtil.bestSpot3(rc);
 
         rc.setIndicatorString(0, "MULE");
 

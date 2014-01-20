@@ -41,7 +41,7 @@ public class Thor
         enemyHQ = rc.senseEnemyHQLocation();
         direction = ourHQ.directionTo(enemyHQ);
         waitingZone = ourHQ;
-        target = Utilities.spotOfSensorTower(rc, corner1);
+        target = TowerUtil.bestSpot3(rc);
         target2 = target;
 
         direction2 = ourHQ.directionTo(target);
@@ -54,7 +54,7 @@ public class Thor
             counter++;
         }
 
-        target3 = Utilities.spotOfPastr(rc, corner1);
+        target3 = TowerUtil.bestSpot3(rc).add(target.directionTo(ourHQ));
         target4 = target3;
         direction2 = ourHQ.directionTo(target3);
         target3 = target3.subtract(direction2);

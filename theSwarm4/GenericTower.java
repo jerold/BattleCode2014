@@ -1,4 +1,4 @@
-package towerbot;
+package theSwarm4;
 
 import battlecode.common.*;
 
@@ -158,7 +158,7 @@ public class GenericTower
 		            			allyPastr = true;
 		            		}
 		            	}
-		            	if(allyPastr || first)
+		            	if(true)
 		            	{
 		            		if(type == 1)
 		                	{
