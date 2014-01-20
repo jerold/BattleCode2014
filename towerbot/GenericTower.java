@@ -28,7 +28,7 @@ public class GenericTower
         
         while(!foundPastr)
         {
-        	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 1, rc.getTeam());
+        	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam());
         	for(Robot bot : bots)
         	{
         		try
@@ -113,8 +113,8 @@ public class GenericTower
 	            lines4 = TowerUtil.generateSpokeLines(rc, target, 4);
         	}
         }
-        rc.setIndicatorString(1, "" + type);
-        rc.setIndicatorString(0, "Tower");
+        
+        type = 1;
     }
 
     public void run()
@@ -138,7 +138,6 @@ public class GenericTower
             	{
 	            	try
 	            	{
-	            		rc.setIndicatorString(0, "Tower");
 		            	MapLocation[] enemies = rc.sensePastrLocations(rc.getTeam().opponent());
 		            	MapLocation[] allies = rc.sensePastrLocations(rc.getTeam());
 		            	MapLocation pastrE = null;
@@ -164,7 +163,7 @@ public class GenericTower
 		            	{
 		            		if(type == 1)
 		                	{
-		                		TowerUtil.pullInto(rc, 10, target);
+		                		TowerUtil.pullInto(rc, 15, target);
 		                	}
 		                	else if(type == 2)
 		                	{
@@ -190,16 +189,6 @@ public class GenericTower
 		    		            		}
 		    		            	}
 		                		}
-		                		if(spokes[2])
-		                		{
-		    		            	for(int k = 0; k < lines3.length; k += 2)
-		    		            	{
-		    		            		if(lines3[k] != null)
-		    		            		{
-		    		            			TowerUtil.fireLine(rc, lines3[k], lines3[k + 1], 1);
-		    		            		}
-		    		            	}
-		                		}
 		                		if(spokes[3])
 		                		{
 		    		            	for(int k = 0; k < lines4.length; k += 2)
@@ -207,6 +196,16 @@ public class GenericTower
 		    		            		if(lines4[k] != null)
 		    		            		{
 		    		            			TowerUtil.fireLine(rc, lines4[k], lines4[k + 1], 1);
+		    		            		}
+		    		            	}
+		                		}
+		                		if(spokes[2])
+		                		{
+		    		            	for(int k = 0; k < lines3.length; k += 2)
+		    		            	{
+		    		            		if(lines3[k] != null)
+		    		            		{
+		    		            			TowerUtil.fireLine(rc, lines3[k], lines3[k + 1], 1);
 		    		            		}
 		    		            	}
 		                		}

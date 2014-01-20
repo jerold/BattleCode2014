@@ -18,23 +18,6 @@ public class Analysis
 		this.rc = rc;
 		first = true;
 		done = false;
-		
-		MapLocation target = TowerUtil.bestSpot(rc);
-		int score = TowerUtil.getSpotScore(rc, target);
-		rc.setIndicatorString(2, "" + score);
-		
-		if(score > 125)
-		{
-			type = 1;
-		}
-		else if(score > 50)
-		{
-			type = 2;
-		}
-		else
-		{
-			type = 3;
-		}
 		type = 2;
 	}
 	

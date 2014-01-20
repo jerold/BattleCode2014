@@ -17,8 +17,8 @@ public class TowerUtil
             {
                 if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
                 {
+                	while(!rc.isActive()){rc.yield();}
                     rc.attackSquare(toFire);
-                    rc.yield();
                 }
             }
             catch(Exception e){}
@@ -33,8 +33,8 @@ public class TowerUtil
             {
                 if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
                 {
+                	while(!rc.isActive()){rc.yield();}
                     rc.attackSquare(toFire);
-                    rc.yield();
                 }
             }
             catch(Exception e){}
@@ -45,17 +45,27 @@ public class TowerUtil
     {
         for(int k = 0; k < directions.length; k++)
         {
-            while(!rc.isActive()){rc.yield();}
-            MapLocation toFire = center.add(directions[k], radius);
+        	int numVoids = 8;
+        	int distAway = 25;
+            int voids = 0;
+            MapLocation toFire = center;
+            for(int a = 0; a < radius && voids < numVoids; a++)
+            {
+            	toFire = toFire.add(directions[k]);
+            	if(rc.senseTerrainTile(toFire) == TerrainTile.VOID)
+            	{
+            		voids++;
+            	}
+            }
             try
             {
-                while(toFire.distanceSquaredTo(center) > 10)
+                while(toFire.distanceSquaredTo(center) > distAway)
                 {
-                	while(!rc.isActive()){rc.yield();}
                     if(toFire.x >= -2 && toFire.x < rc.getMapWidth() + 2 && toFire.y >= -2 && toFire.y < rc.getMapHeight() + 2 && rc.canAttackSquare(toFire))
                     {
                         try
                         {
+                        	while(!rc.isActive()){rc.yield();}
                             rc.attackSquare(toFire);
                         }
                         catch(Exception e){}
@@ -64,6 +74,36 @@ public class TowerUtil
                 }
             }
             catch(Exception e){}
+            if(k == 4)
+            {
+            	voids = 0;
+	            toFire = center;
+	            for(int a = 0; a < radius && voids < numVoids; a++)
+	            {
+	            	toFire = toFire.add(directions[k + 2]);
+	            	if(rc.senseTerrainTile(toFire) == TerrainTile.VOID)
+	            	{
+	            		voids++;
+	            	}
+	            }
+	            try
+	            {
+	                while(toFire.distanceSquaredTo(center) > distAway)
+	                {
+	                    if(toFire.x >= -2 && toFire.x < rc.getMapWidth() + 2 && toFire.y >= -2 && toFire.y < rc.getMapHeight() + 2 && rc.canAttackSquare(toFire))
+	                    {
+	                        try
+	                        {
+	                        	while(!rc.isActive()){rc.yield();}
+	                            rc.attackSquare(toFire);
+	                        }
+	                        catch(Exception e){}
+	                    }
+	                    toFire = toFire.add(toFire.directionTo(center));
+	                }
+	            }
+	            catch(Exception e){}
+            }
         }
     }
     
@@ -307,7 +347,7 @@ public class TowerUtil
     	}
     	lines[index] = current;
 		index++;
-    	while(Math.sqrt(current.distanceSquaredTo(center)) > 4)
+    	while(current.distanceSquaredTo(center) > 49)
     	{
     		current = current.add(current.directionTo(center));
     	}
@@ -319,7 +359,7 @@ public class TowerUtil
     
     private static boolean voidBehind(RobotController rc, MapLocation center, MapLocation current)
     {
-    	for(int k = 0; k < 6; k++)
+    	for(int k = 0; k < 3; k++)
     	{
     		if(rc.senseTerrainTile(current) == TerrainTile.VOID)
     		{
