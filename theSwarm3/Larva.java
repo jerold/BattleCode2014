@@ -1,7 +1,6 @@
 package theSwarm3;
 
 import battlecode.common.*;
-import sun.util.logging.resources.logging;
 
 public class Larva {
 	RobotController rc;
@@ -50,6 +49,7 @@ public class Larva {
                     {
                         rc.wearHat();
                     }
+
                     if (rc.readBroadcast(needNoiseTower) == 1)
                     {
                         rc.broadcast(needNoiseTower, 0);
