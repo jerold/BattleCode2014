@@ -1455,6 +1455,85 @@ public class FightMicro
     }
 
     /**
+     * This method determines if the enemy is split up and/or seperated by void spaces and moves towards the weaker group if so
+     */
+    public static boolean splitUpEnemy(RobotController rc, MapLocation[] enemyBots, MapLocation[] alliedBots)
+    {
+
+        MapLocation center = centerOfEnemies(enemyBots);
+        boolean noEnemiesAtCenter = true;
+        boolean enemySplit = false;
+
+        for (int i = enemyBots.length; --i >=0; )
+        {
+            if (enemyBots[i].distanceSquaredTo(center) <= 4)
+            {
+                noEnemiesAtCenter = false;
+                i = -1;
+            }
+        }
+
+        if (noEnemiesAtCenter)
+        {
+            enemySplit = true;
+        }
+        else
+        {
+            for (int i = enemyBots.length; --i>=0;)
+            {
+                if (enemyBots[i].distanceSquaredTo(center) > (enemyBots.length * enemyBots.length))
+                {
+                    enemySplit = true;
+                    i = -1;
+                }
+            }
+        }
+
+        if (enemySplit)
+        {
+            // now we will determine the weaker side based on how many soldiers are closer to a location on the right
+            MapLocation rightOfCenter;
+            MapLocation leftOfCenter;
+            Direction dir = rc.getLocation().directionTo(center);
+
+            rightOfCenter = center.add(dir.rotateRight().rotateRight());
+            leftOfCenter = center.add(dir.rotateLeft().rotateLeft());
+
+            int numbOfTroopsLeft = 0;
+            int numbOfTroopsRight = 0;
+
+            for (int j = enemyBots.length; --j >= 0;)
+            {
+                if (enemyBots[j].distanceSquaredTo(rightOfCenter) < enemyBots[j].distanceSquaredTo(leftOfCenter))
+                {
+                    numbOfTroopsRight++;
+                }
+                else
+                {
+                    numbOfTroopsLeft++;
+                }
+            }
+
+            if (numbOfTroopsLeft > numbOfTroopsRight)
+            {
+                dir = dir.rotateRight().rotateRight();
+                rightOfCenter = rightOfCenter.add(dir, 5);
+                Movement.MoveDirection(rc, rc.getLocation().directionTo(rightOfCenter), false);
+            }
+            else
+            {
+                dir = dir.rotateLeft().rotateLeft();
+                leftOfCenter = leftOfCenter.add(dir, 5);
+                Movement.MoveDirection(rc, rc.getLocation().directionTo(leftOfCenter), false);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * This is our old fight micro which is under modification
      */
     public static boolean fightMode(RobotController rc)
@@ -1472,7 +1551,6 @@ public class FightMicro
 
             boolean alliesEngaged = false;
 
-            // simple shoot at an enemy if we see one will need to be improved later
             nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
             nearByEnemies4 = nearByEnemies3;
             nearByEnemies10 = nearByEnemies3;
@@ -1519,8 +1597,8 @@ public class FightMicro
                     {
 
                     }
-                    // if there are other bots in range then we should fire
-                    else if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1)
+                    // if there are many enemy bots attacking us then we should retreat
+                    else if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1 && findSoldiersAtDistance(rc, nearByAllies, 4).length < 2)
                     {
                         Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]).opposite();
 
@@ -1535,17 +1613,17 @@ public class FightMicro
                             }
                             else
                             {
-                                Movement.fire(rc, nearByEnemies3);
+                                Movement.fire(rc, nearByEnemies10);
                             }
                         }
                         else
                         {
-                            Movement.fire(rc, nearByEnemies3);
+                            Movement.fire(rc, nearByEnemies10);
                         }
                     }
-                    else if (alliesEngaged)//= nearbyEnemies.length)
+                    else if (alliesEngaged)
                     {
-                        Movement.fire(rc, nearByEnemies3);
+                        Movement.fire(rc, nearByEnemies10);
                     }
                     // if our allies haven't gotten to battle and our opponent isn't almost dead yet wait for them to arrive
                     // assuming we can move to a location our enemy can't hit
@@ -1565,7 +1643,7 @@ public class FightMicro
                         {
                             if (Utilities.MapLocationInRangeOfEnemyHQ(rc, ally))
                             {
-                                Movement.fire(rc, nearByEnemies3);
+                                Movement.fire(rc, nearByEnemies10);
                             }
                             else
                             {
@@ -1574,7 +1652,7 @@ public class FightMicro
                         }
                         else
                         {
-                            Movement.fire(rc, nearByEnemies3);
+                            Movement.fire(rc, nearByEnemies10);
                         }
                     }
                     // if there are multiple enemies attacking us and we don't have support then we need to get out
@@ -1590,17 +1668,17 @@ public class FightMicro
                             }
                             else
                             {
-                                Movement.fire(rc, nearByEnemies3);
+                                Movement.fire(rc, nearByEnemies10);
                             }
                         }
                         else
                         {
-                            Movement.fire(rc, nearByEnemies3);
+                            Movement.fire(rc, nearByEnemies10);
                         }
                     }
                     else if ((rc.getHealth() >= rc.senseRobotInfo(nearbyEnemies[0]).health))
                     {
-                        Movement.fire(rc, nearByEnemies3);
+                        Movement.fire(rc, nearByEnemies10);
                     }
                     // in this case we have lower health than our opponent and will be killed so we should retreat
                     else
@@ -1616,17 +1694,17 @@ public class FightMicro
                                 }
                                 else
                                 {
-                                    Movement.fire(rc, nearByEnemies3);
+                                    Movement.fire(rc, nearByEnemies10);
                                 }
                             }
                             else
                             {
-                                Movement.fire(rc, nearByEnemies3);
+                                Movement.fire(rc, nearByEnemies10);
                             }
                         }
                         else
                         {
-                            Movement.fire(rc, nearByEnemies3);
+                            Movement.fire(rc, nearByEnemies10);
                         }
                     }
                 }
@@ -1644,6 +1722,10 @@ public class FightMicro
                     Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
                     Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
                     if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
+                    {
+
+                    }
+                    else if (splitUpEnemy(rc, enemyBotLoc, alliedBots))
                     {
 
                     }
@@ -1697,7 +1779,6 @@ public class FightMicro
                                 {
                                     Movement.fire(rc, nearByEnemies10);
                                 }
-
                             }
                         }
                     }
@@ -1761,30 +1842,13 @@ public class FightMicro
                             fire(rc);
                         }*/
                     }
+                    else if (nearByEnemies4.length > 0)
+                    {
+                        Movement.fire(rc, nearByEnemies10);
+                    }
                     else if (rc.senseNearbyGameObjects(Robot.class,  target, 10, rc.getTeam()).length > 0)
                     {
                         Movement.MoveDirection(rc, rc.getLocation().directionTo(target), false);
-                    }
-                    // if we see enemy pastrs then kill them!
-                    else if (nearByEnemies4.length > 0)
-                    {
-                        Robot[] nearByEnemies5 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
-                        if (nearByEnemies5.length > 0)
-                        {
-                            Movement.fire(rc, nearByEnemies3);
-                        }
-                        else
-                        {
-                            MapLocation targeter = rc.senseLocationOf(nearByEnemies4[0]);
-                            if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, targeter))
-                            {
-                                Movement.MoveDirection(rc, rc.getLocation().directionTo(targeter), false);
-                            }
-                            else
-                            {
-                                Movement.fire(rc, nearByEnemies3);
-                            }
-                        }
                     }
                     // if there are allies coming up then wait for them
                     else if (Utilities.AlliesBehindUs(rc, nearByAllies, target) > 0)
