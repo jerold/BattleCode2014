@@ -45,7 +45,7 @@ public class Larva {
 				{
 
 
-                    if (rc.senseTeamMilkQuantity(rc.getTeam()) > GameConstants.HAT_MILK_COST)
+                    if (rc.senseTeamMilkQuantity(rc.getTeam()) > 9000000)
                     {
                         rc.wearHat();
                     }

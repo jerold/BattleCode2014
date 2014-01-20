@@ -2021,7 +2021,7 @@ public class FightMicro
                     }
                     else if (runFromEnemyHQ(rc))
                     {
-                        
+
                     }
                     else if (advanceToTarget(rc, enemyBotLoc, endGoal))
                     {
