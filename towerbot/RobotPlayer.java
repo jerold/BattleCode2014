@@ -48,7 +48,7 @@ public class RobotPlayer
 					}
 					else if(type == SmartHQ.MULE)
 					{
-						new MULE(rc, true).run();
+						new fastMULE(rc, true).run();
 					}
 					else if(type == SmartHQ.TOWER)
 					{
@@ -64,7 +64,7 @@ public class RobotPlayer
 					}
 					else if(type == SmartHQ.OPMULE)
 					{
-						new MULE(rc, false).run();
+						new fastMULE(rc, false).run();
 					}
 				}
 			}
