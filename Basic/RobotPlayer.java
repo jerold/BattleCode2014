@@ -39,12 +39,18 @@ public class RobotPlayer {
 		while(true){
 			try{
 				if(rc.getType() == RobotType.HQ){
-					
+					MapLocation test = Basic.TowerUtil.bestSpot3(rc);
+					MapLocation testOpposite = Basic.TowerUtil.getOppositeSpot(rc, test);
 					//all Headquarters methods
-					if(Basic.Utilities.checkRush(rc) == true){
+					/*if(Basic.Utilities.checkRush(rc) == true){
 						System.out.println("RUSH!");
 					}else{
 						System.out.println("Dont rush");
+					}*/
+					if(Basic.Utilities.checkDoublePastr(rc, test, testOpposite) == true){
+						System.out.println("Double Pastr: Best spot: " + test.x + ", " + test.y);
+					} else {
+						System.out.println("no pastr: Best spot: " + test.x + ", " + test.y);
 					}
 					tryToShoot();
 					tryToSpawn();

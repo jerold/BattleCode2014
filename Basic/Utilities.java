@@ -1985,13 +1985,17 @@ public class Utilities
             rc.yield();
         }
     }
+    public static int getMapSize(RobotController rc){
+    	int width = rc.getMapWidth();
+		int height = rc.getMapHeight();
+		int mapSize = width*height;
+		return mapSize;
+    }
     public static boolean checkRush(RobotController rc){//returns true if it is a rushable map
     	try{
     		MapLocation enemy = rc.senseEnemyHQLocation();
     		MapLocation check = rc.getLocation();
-    		int width = rc.getMapWidth();
-    		int height = rc.getMapHeight();
-    		int mapSize = width*height;
+    		int mapSize = Basic.Utilities.getMapSize(rc);
     		Direction dir = rc.getLocation().directionTo(enemy);
     		double dist = rc.getLocation().distanceSquaredTo(enemy);
     		int voidSpace = 0;
@@ -2031,6 +2035,31 @@ public class Utilities
     		MapLocation HQ = rc.senseHQLocation();
     		if(Basic.TowerUtil.getSpotScore(rc, HQ) >= 50){
     			return true;
+    		} else {
+    			return false;
+    		}
+    	}catch(Exception e){
+    		e.printStackTrace();
+    		return false;
+    	}
+    }
+    public static boolean checkDoublePastr(RobotController rc, MapLocation m1, MapLocation m2){
+    	try{
+    		int mapSize = Basic.Utilities.getMapSize(rc);
+    		MapLocation enemy = rc.senseEnemyHQLocation();
+    		MapLocation pastr1 = m1;
+    		MapLocation pastr2 = m2;
+    		int distToEnemy1 = m1.distanceSquaredTo(enemy);
+    		if(mapSize >= 2000){
+    			if(Basic.TowerUtil.getSpotScore(rc, pastr1) > 50){
+    				if(pastr1.distanceSquaredTo(pastr2) > mapSize/1.25 && distToEnemy1 > 1000){
+    					return true;
+    				} else {
+    					return false;
+    				}
+    			} else {
+    				return false;
+    			}
     		} else {
     			return false;
     		}
