@@ -4,6 +4,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
+import sun.util.logging.resources.logging;
 
 public class Larva {
 	RobotController rc;
@@ -75,6 +76,11 @@ public class Larva {
 
 					else
 					{
+                        MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                        if (enemyPastrs.length == 0)
+                        {
+                            target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPoint2Channel()));
+                        }
 						Movement.MoveMapLocation(rc, target, false);
 					}
 				}

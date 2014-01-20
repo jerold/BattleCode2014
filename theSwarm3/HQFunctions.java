@@ -15,6 +15,7 @@ public class HQFunctions
     static final int needPastr = 5;
     static final int takeDownEnemyPastr = 6;
     static final int enemyPastrInRangeOfHQ = 7;
+    static final int rallyPoint2 = 8;
     static Random rand = new Random();
     static Direction[] directions = Direction.values();
 	
@@ -122,6 +123,11 @@ public class HQFunctions
 	{
 		return rallyPoint;
 	}
+
+    public static int rallyPoint2Channel()
+    {
+        return rallyPoint2;
+    }
 
 	public static void moveTargetLocationRandomly(RobotController rc)
 	{

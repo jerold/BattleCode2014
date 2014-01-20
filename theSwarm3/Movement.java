@@ -13,6 +13,8 @@ public class Movement
     static final int needNoiseTower = 4;
     static final int needPastr = 5;
     static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
+    static final int rallyPoint2 = 8;
 
 	static Random rand;
 	
@@ -589,7 +591,7 @@ public class Movement
             {
                 if (Clock.getRoundNum() % 3 == 0)
                 {
-                    rc.broadcast(rallyPoint, convertMapLocationToInt(rc.getLocation()));
+                    rc.broadcast(rallyPoint2, convertMapLocationToInt(rc.getLocation()));
                 }
                 radius = 10;
                 //Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
