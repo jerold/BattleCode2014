@@ -4,6 +4,14 @@ import battlecode.common.*;
 
 public class FightMicro 
 {
+    // these are the channels that we will use to communicate
+    static final int enemyHQ = 1;
+    static final int ourHQ = 2;
+    static final int rallyPoint = 3;
+    static final int needNoiseTower = 4;
+    static final int needPastr = 5;
+    static final int takeDownEnemyPastr = 6;
+
     // These are broadcasting channels for information about enemy bots
 	static final int StartEnemyChannel = 20000;
 	static final int StartEnemyNoiseTower = 20025;
@@ -1081,48 +1089,51 @@ public class FightMicro
 
         try
         {
-            if ((rc.getHealth() <= 50 && rc.getHealth() <= (double) ((closeEnemySoldiers.length * 10) + 10)) || (((rc.getHealth()) % 10 != 0) && rc.getHealth() < 50))
+            if (rc.readBroadcast(takeDownEnemyPastr) == 0)
             {
-                Direction move = null;
-                Direction dir;
-                for (int i = enemyBots.length; --i>=0;)
+                if ((rc.getHealth() <= 50 && rc.getHealth() <= (double) ((closeEnemySoldiers.length * 10) + 10)) || (((rc.getHealth()) % 10 != 0) && rc.getHealth() < 50))
                 {
-                    int adjacentEnemies = 0;
-                    dir = rc.getLocation().directionTo(enemyBots[i]).opposite();
-                    MapLocation next = rc.getLocation().add(dir);
-                    for (int j = enemyBots.length; --j >=0; )
+                    Direction move = null;
+                    Direction dir;
+                    for (int i = enemyBots.length; --i>=0;)
                     {
-                        if (enemyBots[j].distanceSquaredTo(next) <= 10)
+                        int adjacentEnemies = 0;
+                        dir = rc.getLocation().directionTo(enemyBots[i]).opposite();
+                        MapLocation next = rc.getLocation().add(dir);
+                        for (int j = enemyBots.length; --j >=0; )
                         {
-                            adjacentEnemies = 1;
-                            j = -1;
+                            if (enemyBots[j].distanceSquaredTo(next) <= 10)
+                            {
+                                adjacentEnemies = 1;
+                                j = -1;
+                            }
+
                         }
-
-                    }
-                    // then we have our location!!!!!!
-                    if (adjacentEnemies == 0 && rc.canMove(dir))
-                    {
-                        i = -1;
-                        move = dir;
-                    }
-                }
-
-                if (move != null)
-                {
-                    if (rc.isActive())
-                    {
-                        if (rc.canMove(move))
+                        // then we have our location!!!!!!
+                        if (adjacentEnemies == 0 && rc.canMove(dir))
                         {
-
-                            rc.move(move);
+                            i = -1;
+                            move = dir;
                         }
                     }
+
+                    if (move != null)
+                    {
+                        if (rc.isActive())
+                        {
+                            if (rc.canMove(move))
+                            {
+
+                                rc.move(move);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Movement.fire(rc, closeEnemySoldiers);
+                    }
+                    return true;
                 }
-                else
-                {
-                    Movement.fire(rc, closeEnemySoldiers);
-                }
-                return true;
             }
         } catch (Exception e) {}
 
@@ -1389,6 +1400,61 @@ public class FightMicro
     }
 
     /**
+     * This method determines if we should morph into a baneling in an attempt to destroy the enemy FOR THE SWARM!
+     */
+    public static boolean morphBaneling(RobotController rc, MapLocation[] enemyBots, MapLocation[] alliedBots)
+    {
+        try
+        {
+            // we will only morph to Banelings if a enemy pastr must be taken down
+            if (rc.readBroadcast(takeDownEnemyPastr) == 1)
+            {
+                if (enemyBots.length > 5)
+                {
+                    int enemiesShootingUs = 0;
+
+                    for (int i = enemyBots.length; --i>=0;)
+                    {
+                        if (enemyBots[i].distanceSquaredTo(rc.getLocation()) <= 10)
+                        {
+                            enemiesShootingUs++;
+                        }
+                    }
+                    boolean banelingAlreadyMorphed = false;
+
+                    // we will only morph if there are a lot of enemy soldiers that are probably attacking us
+                    if (enemiesShootingUs > 3)
+                    {
+                        for (int j = alliedBots.length; --j>=0;)
+                        {
+                            MapLocation alliedSpot = alliedBots[j];
+                            for (int k = enemyBots.length; --k>=0;)
+                            {
+                                if (alliedSpot.distanceSquaredTo(enemyBots[k]) < 5)
+                                {
+                                    banelingAlreadyMorphed = true;
+                                    k = -1;
+                                    j = -1;
+                                }
+                            }
+                        }
+
+                        if (rc.getHealth() < 100 && !banelingAlreadyMorphed)
+                        {
+                            // the time has come. let each man do his duty
+                            Baneling baneling = new Baneling(rc);
+                            baneling.run();
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {}
+
+        return false;
+    }
+
+    /**
      * This is our old fight micro which is under modification
      */
     public static boolean fightMode(RobotController rc)
@@ -1442,6 +1508,10 @@ public class FightMicro
                     alliesEngaged = Utilities.AlliesEngaged(rc, enemyBotLoc, alliedBots);
                     // based on our health it may be advantageous to retreat so we can fight another day
                     if (retreat(rc, nearbyEnemies, enemyBotLoc, alliedBots))
+                    {
+
+                    }
+                    else if (morphBaneling(rc, enemyBotLoc, alliedBots))
                     {
 
                     }
@@ -1576,6 +1646,12 @@ public class FightMicro
                     if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
                     {
 
+                    }
+                    else if (rc.readBroadcast(takeDownEnemyPastr) == 1 && !alliesEngaged)
+                    {
+                        rc.yield();
+                        MapLocation center = centerOfEnemies(enemyBotLoc);
+                        Movement.MoveDirection(rc, rc.getLocation().directionTo(center), false);
                     }
                     else if (nearByEnemies2.length == 1 && (nearByAllies2.length > 0 || rc.getHealth() > rc.senseRobotInfo(nearByEnemies2[0]).health + 20))
                     {

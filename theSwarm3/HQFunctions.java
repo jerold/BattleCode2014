@@ -13,6 +13,7 @@ public class HQFunctions
     static final int rallyPoint = 3;
     static final int needNoiseTower = 4;
     static final int needPastr = 5;
+    static final int takeDownEnemyPastr = 6;
     static Random rand = new Random();
     static Direction[] directions = Direction.values();
 	
@@ -176,10 +177,12 @@ public class HQFunctions
                 {
                     target = target.add(target.directionTo(closestPastr));
                 }
+                rc.broadcast(takeDownEnemyPastr, 1);
             }
             else
             {
                 findInitialRally(rc);
+                rc.broadcast(takeDownEnemyPastr, 0);
                 initialRally = true;
             }
             /*
