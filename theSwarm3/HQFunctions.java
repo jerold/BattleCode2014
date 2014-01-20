@@ -25,9 +25,10 @@ public class HQFunctions
             if (rc.isActive() && rc.getType() == RobotType.HQ && (rc.senseRobotCount() < 25))
             {
                 Direction toEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-                if (rc.canMove(toEnemy)) {}
-                else
+                while (!rc.canMove(toEnemy))
                 {
+                    toEnemy = toEnemy.rotateLeft();
+                    /*
                     for (int i = 0; i < 7; i++)
                     {
                         toEnemy = toEnemy.rotateLeft();
@@ -40,7 +41,7 @@ public class HQFunctions
                         {
                             toEnemy = Direction.NONE;
                         }
-                    }
+                    }*/
                 }
 
                 if (toEnemy != Direction.NONE)
