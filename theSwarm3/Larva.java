@@ -1,9 +1,6 @@
 package theSwarm3;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
+import battlecode.common.*;
 import sun.util.logging.resources.logging;
 
 public class Larva {
@@ -49,6 +46,10 @@ public class Larva {
 				{
 
 
+                    if (rc.senseTeamMilkQuantity(rc.getTeam()) > GameConstants.HAT_MILK_COST)
+                    {
+                        rc.wearHat();
+                    }
                     if (rc.readBroadcast(needNoiseTower) == 1)
                     {
                         rc.broadcast(needNoiseTower, 0);
