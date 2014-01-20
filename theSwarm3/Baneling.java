@@ -17,6 +17,9 @@ public class Baneling {
     public Baneling (RobotController rc)
     {
         this.rc = rc;
+        rc.setIndicatorString(0, "Baneling");
+        rc.setIndicatorString(1, "");
+        rc.setIndicatorString(2, "");
     }
 
     public  void run()
