@@ -61,16 +61,18 @@ public class Larva {
                         drone.run();
                     }
 
+                    if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
+                    {
+                        target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
+                    }
+
 					rc.setIndicatorString(1, "Target:" + target);
                     rc.setIndicatorString(2, "Not Running fight micro 1");
-                    if (FightMicro.fightMode(rc, null))
+                    if (FightMicro.fightMode(rc, target))
                     {
                         rc.setIndicatorString(2, "Running fight micro");
                     }
-					else if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
-					{
-						target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
-					}
+
 					else
 					{
 						Movement.MoveMapLocation(rc, target, false);
