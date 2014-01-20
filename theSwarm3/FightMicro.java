@@ -1637,6 +1637,7 @@ public class FightMicro
         {
             if (target != null)
             {
+                rc.setIndicatorString(2, "Moving toward Target");
                 Direction dir = rc.getLocation().directionTo(target);
                 MapLocation goal = rc.getLocation().add(dir);
                 for (int i = enemyBots.length; --i >=0; )
