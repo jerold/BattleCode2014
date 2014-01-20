@@ -6,6 +6,7 @@ package Basic;
 import java.util.Random;
 
 import battlecode.common.*;
+import battlecode.world.GameMap;
 
 public class Utilities
 {
@@ -1983,6 +1984,60 @@ public class Utilities
             e.printStackTrace();
             rc.yield();
         }
+    }
+    public static boolean checkRush(RobotController rc){//returns true if it is a rushable map
+    	try{
+    		MapLocation enemy = rc.senseEnemyHQLocation();
+    		MapLocation check = rc.getLocation();
+    		int width = rc.getMapWidth();
+    		int height = rc.getMapHeight();
+    		int mapSize = width*height;
+    		Direction dir = rc.getLocation().directionTo(enemy);
+    		double dist = rc.getLocation().distanceSquaredTo(enemy);
+    		int voidSpace = 0;
+    		while(!check.equals(enemy)){
+    			if(rc.senseTerrainTile(check) == TerrainTile.VOID){
+    				voidSpace++;
+    				check = check.add(dir);
+    			} else{
+    				check = check.add(dir);
+    			}
+    			dir = check.directionTo(enemy);
+    		}
+    		if(dist <= 550){
+    			if(voidSpace == 0){
+    				rc.setIndicatorString(1, "Rush!");
+    				return true;
+    			} else {
+    				return false;
+    			}
+    		} else if(dist <= mapSize/2.2){
+    			if(voidSpace == 0){
+    				rc.setIndicatorString(1, "Rush!");
+    				return true;
+    			} else {
+    				return false;
+    			}
+    		}else{
+    			return false;
+    		}
+    	} catch (Exception e){
+    		e.printStackTrace();
+    		return false;
+    	}
+    }
+    public static boolean checkHQTower(RobotController rc){//returns true if an HQ tower should be set up
+    	try{
+    		MapLocation HQ = rc.senseHQLocation();
+    		if(Basic.TowerUtil.getSpotScore(rc, HQ) >= 50){
+    			return true;
+    		} else {
+    			return false;
+    		}
+    	}catch(Exception e){
+    		e.printStackTrace();
+    		return false;
+    	}
     }
 }
 
