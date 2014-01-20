@@ -1849,11 +1849,11 @@ public class FightMicro
                     Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
                     if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
                     {
-
+                        rc.setIndicatorString(1, "Fly you fools");
                     }
                     else if (takeDownPastrNearHQ(rc, alliedBots, nearByEnemies10))
                     {
-
+                        rc.setIndicatorString(1, "Enemy HQ pastr");
                     }
                     else if (splitUpEnemy(rc, enemyBotLoc, alliedBots))
                     {
@@ -1866,7 +1866,6 @@ public class FightMicro
                     else if (rc.readBroadcast(takeDownEnemyPastr) == 1 && !alliesEngaged)
                     {
                         rc.setIndicatorString(1, "Take down enemy Pastr");
-                        rc.yield();
                         MapLocation center = centerOfEnemies(enemyBotLoc);
                         if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, center))
                         {
