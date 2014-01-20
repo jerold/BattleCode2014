@@ -79,7 +79,11 @@ public class Larva {
                         MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                         if (enemyPastrs.length == 0)
                         {
-                            target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPoint2Channel()));
+                            int location = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
+                            if (location != 0)
+                            {
+                                target = Movement.convertIntToMapLocation(location);
+                            }
                         }
 						Movement.MoveMapLocation(rc, target, false);
 					}
