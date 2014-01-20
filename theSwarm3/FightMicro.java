@@ -1151,10 +1151,17 @@ public class FightMicro
                     }
                     else
                     {
-                        //Movement.fire(rc, closeEnemySoldiers, alliedBots);
-                        // Baneling testing time
-                        Baneling baneling = new Baneling(rc);
-                        baneling.run();
+                        for (int i = enemyBots.length; -- i>=0;)
+                        {
+                            if (rc.getLocation().distanceSquaredTo(enemyBots[i]) <= 10)
+                            {
+                                // Baneling testing time
+                                Baneling baneling = new Baneling(rc);
+                                baneling.run();
+                            }
+                        }
+
+                        Movement.fire(rc, closeEnemySoldiers, alliedBots);
                     }
                     return true;
                 }
