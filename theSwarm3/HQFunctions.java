@@ -224,6 +224,7 @@ public class HQFunctions
             if (!initialRally)
             {
                 rc.broadcast(rallyPoint, Movement.convertMapLocationToInt(target));
+                rc.broadcast(rallyPoint2, Movement.convertMapLocationToInt(target));
             }
 
         } catch (Exception e) {}
