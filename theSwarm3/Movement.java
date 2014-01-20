@@ -124,7 +124,7 @@ public class Movement
         return loc;
     }
 
-    public static void MoveMapLocation(RobotController rc, MapLocation target, boolean sneak)
+    public static void MoveMapLocation(RobotController rc, MapLocation target, boolean sneak, boolean larva)
     {
         MapLocation[] pastLocations = new MapLocation[10];
         int side = 45;
@@ -150,10 +150,13 @@ public class Movement
             // we put the try block inside of the while loop so an exception won't terminate the method
             try
             {
-                int point = rc.readBroadcast(rallyPoint);
-                if (!target.equals(convertIntToMapLocation(point)))
+                if (larva)
                 {
-                    target = convertIntToMapLocation(point);
+                    int point = rc.readBroadcast(rallyPoint);
+                    if (!target.equals(convertIntToMapLocation(point)))
+                    {
+                        target = convertIntToMapLocation(point);
+                    }
                 }
                 if (rc.isActive())
                 {

@@ -31,7 +31,7 @@ public class Extractor {
                     }
                     else
                     {
-                        Movement.MoveMapLocation(rc, towerSpot, false);
+                        Movement.MoveMapLocation(rc, towerSpot, false, true);
                     }
                 }
             } catch (Exception e) {}
