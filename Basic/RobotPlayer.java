@@ -41,8 +41,15 @@ public class RobotPlayer {
 				if(rc.getType() == RobotType.HQ){
 					
 					//all Headquarters methods
+					if(Basic.Utilities.checkRush(rc) == true){
+						System.out.println("RUSH!");
+					}else{
+						System.out.println("Dont rush");
+					}
 					tryToShoot();
 					tryToSpawn();
+					
+					
 					cRoad = rc.getLocation();
 					if(initializeRoads == false){
 						for(int i = rc.getLocation().x - 5; i < rc.getLocation().x + 5; i++){//For all X values
@@ -72,6 +79,9 @@ public class RobotPlayer {
 					
 					//all Soldier methods
 					sTryToShoot();
+					//if(Basic.Utilities.checkHQTower(rc) == true){
+					//	System.out.println("HQ Tower!");
+					//}
 					readBroadcast();
 					
 				}
