@@ -11,6 +11,7 @@ public class FightMicro
     static final int needNoiseTower = 4;
     static final int needPastr = 5;
     static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
 
     // These are broadcasting channels for information about enemy bots
 	static final int StartEnemyChannel = 20000;
@@ -1486,6 +1487,61 @@ public class FightMicro
     }
 
     /**
+     * This method will attempt to take down an enemy pastr near the hq or die bravely in the attempt
+     */
+    public static boolean takeDownPastrNearHQ(RobotController rc, MapLocation[] alliedBots, Robot[] AllEnemies)
+    {
+        try
+        {
+            if (rc.readBroadcast(enemyPastrInRangeOfHQ) == 1)
+            {
+                if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 49)
+                {
+                    MapLocation target = null;
+
+                    for (int j = AllEnemies.length; --j >=0; )
+                    {
+                        if (rc.canSenseObject(AllEnemies[j]))
+                        {
+                            if (rc.senseRobotInfo(AllEnemies[j]).type == RobotType.PASTR)
+                            {
+                                target = rc.senseRobotInfo(AllEnemies[j]).location;
+                            }
+                        }
+                    }
+
+                    if (target != null)
+                    {
+                        Direction dir = rc.getLocation().directionTo(target);
+                        if (rc.isActive())
+                        {
+                            if (rc.canMove(dir))
+                            {
+                                rc.move(dir);
+                            }
+                            else if (rc.canMove(dir.rotateLeft()))
+                            {
+                                rc.move(dir.rotateLeft());
+                            }
+                            else if (rc.canMove(dir.rotateRight()))
+                            {
+                                rc.move(dir.rotateRight());
+                            }
+                            else
+                            {
+                                Movement.fire(rc, AllEnemies, alliedBots);
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {}
+
+        return false;
+    }
+
+    /**
      * This method determines if the enemy is split up and/or seperated by void spaces and moves towards the weaker group if so
      */
     public static boolean splitUpEnemy(RobotController rc, MapLocation[] enemyBots, MapLocation[] alliedBots)
@@ -1565,9 +1621,39 @@ public class FightMicro
     }
 
     /**
+     * This function returns true if we have a mapLocation to go to and if it isn't in range of any enemy soldiers
+     */
+    public static boolean advanceToTarget(RobotController rc, MapLocation[] enemyBots, MapLocation target)
+    {
+        try
+        {
+            if (target != null)
+            {
+                Direction dir = rc.getLocation().directionTo(target);
+                MapLocation goal = rc.getLocation().add(dir);
+                for (int i = enemyBots.length; --i >=0; )
+                {
+                    if (enemyBots[i].distanceSquaredTo(goal) <= 10)
+                    {
+                        return false;
+                    }
+                }
+
+                if (rc.canMove(dir))
+                {
+                    rc.move(dir);
+                    return true;
+                }
+            }
+        } catch (Exception e) {}
+
+        return false;
+    }
+
+    /**
      * This is our old fight micro which is under major renovation
      */
-    public static boolean fightMode(RobotController rc)
+    public static boolean fightMode(RobotController rc, MapLocation endGoal)
     {
         try
         {
@@ -1756,9 +1842,17 @@ public class FightMicro
                     {
 
                     }
+                    else if (takeDownPastrNearHQ(rc, alliedBots, nearByEnemies10))
+                    {
+
+                    }
                     else if (splitUpEnemy(rc, enemyBotLoc, alliedBots))
                     {
                         rc.setIndicatorString(1, "Split Up Enemy");
+                    }
+                    else if (advanceToTarget(rc, enemyBotLoc, endGoal))
+                    {
+
                     }
                     else if (rc.readBroadcast(takeDownEnemyPastr) == 1 && !alliesEngaged)
                     {
@@ -1865,6 +1959,14 @@ public class FightMicro
                     MapLocation target = rc.senseLocationOf(nearByEnemies3[0]);
                     if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
                     {
+                    }
+                    else if (advanceToTarget(rc, enemyBotLoc, endGoal))
+                    {
+
+                    }
+                    else if (takeDownPastrNearHQ(rc, alliedBots, nearByEnemies10))
+                    {
+
                     }
                     // if we have friends ahead then we must join them
                     else if (Utilities.AlliesAhead(rc, nearByAllies, target) > 0)

@@ -173,7 +173,7 @@ public class Movement
 
                     rc.setIndicatorString(2, "Not Running fight micro 2");
 
-                    if (FightMicro.fightMode(rc))
+                    if (FightMicro.fightMode(rc, target))
                     {
                         rc.setIndicatorString(2, "Running fight micro 2");
                     	//fire(rc);
@@ -275,7 +275,7 @@ public class Movement
 
 
                                         boolean ranFight = false;
-                                        if (FightMicro.fightMode(rc))
+                                        if (FightMicro.fightMode(rc, target))
                                         {
                                             ranFight = true;
                                             rc.setIndicatorString(2, "Running fight micro 3");
@@ -429,7 +429,7 @@ public class Movement
 
     public static boolean MapLocationInRangeOfEnemyHQ(RobotController rc, MapLocation target)
     {
-        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 24)
+        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
         {
             return true;
         }

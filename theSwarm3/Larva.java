@@ -63,7 +63,7 @@ public class Larva {
 
 					rc.setIndicatorString(1, "Target:" + target);
                     rc.setIndicatorString(2, "Not Running fight micro 1");
-                    if (FightMicro.fightMode(rc))
+                    if (FightMicro.fightMode(rc, null))
                     {
                         rc.setIndicatorString(2, "Running fight micro");
                     }
