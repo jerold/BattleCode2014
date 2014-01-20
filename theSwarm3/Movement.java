@@ -587,7 +587,10 @@ public class Movement
             // In this case we are a soldier
             else
             {
-                rc.broadcast(rallyPoint, convertMapLocationToInt(rc.getLocation()));
+                if (Clock.getRoundNum() % 3 == 0)
+                {
+                    rc.broadcast(rallyPoint, convertMapLocationToInt(rc.getLocation()));
+                }
                 radius = 10;
                 //Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
                 enemies = FightMicro.findSoldiersAtDistance(rc, enemies, radius);
