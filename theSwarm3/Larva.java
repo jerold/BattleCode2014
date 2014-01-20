@@ -86,7 +86,7 @@ public class Larva {
                                 target = Movement.convertIntToMapLocation(location);
                             }
                         }
-						Movement.MoveMapLocation(rc, target, false);
+						Movement.MoveMapLocation(rc, target, false, true);
 					}
 				}
                 else

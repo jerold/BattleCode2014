@@ -31,7 +31,7 @@ public class Drone {
                     }
                     else
                     {
-                        Movement.MoveMapLocation(rc, pastrSpot, false);
+                        Movement.MoveMapLocation(rc, pastrSpot, false, true);
                     }
                 }
 
