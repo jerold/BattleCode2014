@@ -1512,26 +1512,34 @@ public class FightMicro
 
                     if (target != null)
                     {
-                        Direction dir = rc.getLocation().directionTo(target);
-                        if (rc.isActive())
+                        if (rc.getLocation().distanceSquaredTo(target) <= 10)
                         {
-                            if (rc.canMove(dir))
-                            {
-                                rc.move(dir);
-                            }
-                            else if (rc.canMove(dir.rotateLeft()))
-                            {
-                                rc.move(dir.rotateLeft());
-                            }
-                            else if (rc.canMove(dir.rotateRight()))
-                            {
-                                rc.move(dir.rotateRight());
-                            }
-                            else
-                            {
-                                Movement.fire(rc, AllEnemies, alliedBots);
-                            }
+                            Movement.fire(rc, AllEnemies, alliedBots);
                             return true;
+                        }
+                        else
+                        {
+                            Direction dir = rc.getLocation().directionTo(target);
+                            if (rc.isActive())
+                            {
+                                if (rc.canMove(dir))
+                                {
+                                    rc.move(dir);
+                                }
+                                else if (rc.canMove(dir.rotateLeft()))
+                                {
+                                    rc.move(dir.rotateLeft());
+                                }
+                                else if (rc.canMove(dir.rotateRight()))
+                                {
+                                    rc.move(dir.rotateRight());
+                                }
+                                else
+                                {
+                                    Movement.fire(rc, AllEnemies, alliedBots);
+                                }
+                                return true;
+                            }
                         }
                     }
                 }
@@ -1852,7 +1860,7 @@ public class FightMicro
                     }
                     else if (advanceToTarget(rc, enemyBotLoc, endGoal))
                     {
-
+                        rc.setIndicatorString(1, "Advance to Target Loc");
                     }
                     else if (rc.readBroadcast(takeDownEnemyPastr) == 1 && !alliesEngaged)
                     {
@@ -1962,7 +1970,7 @@ public class FightMicro
                     }
                     else if (advanceToTarget(rc, enemyBotLoc, endGoal))
                     {
-
+                        rc.setIndicatorString(1, "Advance to target Loc");
                     }
                     else if (takeDownPastrNearHQ(rc, alliedBots, nearByEnemies10))
                     {
