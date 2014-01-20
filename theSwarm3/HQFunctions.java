@@ -1,7 +1,7 @@
 package theSwarm3;
 
 import battlecode.common.*;
-
+import theSwarm3.Movement;
 import java.util.Random;
 
 public class HQFunctions 
@@ -14,6 +14,7 @@ public class HQFunctions
     static final int needNoiseTower = 4;
     static final int needPastr = 5;
     static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
     static Random rand = new Random();
     static Direction[] directions = Direction.values();
 	
@@ -24,7 +25,7 @@ public class HQFunctions
             if (rc.isActive() && rc.getType() == RobotType.HQ && (rc.senseRobotCount() < 25))
             {
                 Direction toEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-                if (rc.senseObjectAtLocation(rc.getLocation().add(toEnemy)) == null) {}
+                if (rc.canMove(toEnemy)) {}
                 else
                 {
                     for (int i = 0; i < 7; i++)
@@ -178,11 +179,21 @@ public class HQFunctions
                     target = target.add(target.directionTo(closestPastr));
                 }
                 rc.broadcast(takeDownEnemyPastr, 1);
+
+                if (closestPastr.distanceSquaredTo(rc.senseEnemyHQLocation()) < 10)
+                {
+                    rc.broadcast(enemyPastrInRangeOfHQ, 1);
+                }
+                else
+                {
+                    rc.broadcast(enemyPastrInRangeOfHQ, 0);
+                }
             }
             else
             {
                 findInitialRally(rc);
                 rc.broadcast(takeDownEnemyPastr, 0);
+                rc.broadcast(enemyPastrInRangeOfHQ, 0);
                 initialRally = true;
             }
             /*
