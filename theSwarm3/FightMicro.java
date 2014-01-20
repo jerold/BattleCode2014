@@ -1655,7 +1655,7 @@ public class FightMicro
                     }
                     else if (nearByEnemies2.length == 1 && (nearByAllies2.length > 0 || rc.getHealth() > rc.senseRobotInfo(nearByEnemies2[0]).health + 20))
                     {
-
+                        moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
                     }
                     // if our brethern are in the field of action we must join them!
                     else if (alliesEngaged && (enemyBotLoc.length <= (alliedBots.length + 1)) && numbOfRobotsAttackingTarget(rc, rc.getLocation().add(dir), enemyBotLoc, alliedBots) < 2)
@@ -1663,13 +1663,13 @@ public class FightMicro
                         rc.setIndicatorString(1, "1");
                         moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
                         //Movement.MoveDirection(rc, dir, false);
-                    }
+                    }/*
                     else if (nearByEnemies3.length >= 4)
                     {
                         rc.setIndicatorString(1, "Flanking");
                         AttackFlank(rc, enemyBotLoc, alliedBots);
-                    }
-                    else if (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > (nearByEnemies2.length) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
+                    }*/
+                    else if (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > (nearByEnemies3.length) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
                     {
                         rc.setIndicatorString(1, "2");
                         moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
