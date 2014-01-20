@@ -851,6 +851,7 @@ public class FightMicro
                 int bestDist = 100;
                 Direction dir = null;
                 MapLocation[] spotsOpen = new MapLocation[8];
+                MapLocation[] secondChoice = new MapLocation[8];
 
                 for (int i = enemyBots.length; --i >= 0; )
                 {
@@ -879,12 +880,16 @@ public class FightMicro
                     for (int i = 8; --i >= 0;)
                     {
                         MapLocation next = rc.getLocation().add(dir);
-
-                        if (next.distanceSquaredTo(target) <= 10 && !Utilities.MapLocationInRangeOfEnemyHQ(rc, next))
+                        int nextDist = next.distanceSquaredTo(target);
+                        if (nextDist <= 10 && !Utilities.MapLocationInRangeOfEnemyHQ(rc, next))
                         {
                             System.out.print("" + next + ", ");
                             spotsOpen[i] = next;
                             numbOfSpots++;
+                        }
+                        else if (nextDist < rc.getLocation().distanceSquaredTo(target) && !Utilities.MapLocationInRangeOfEnemyHQ(rc, next))
+                        {
+                            secondChoice[i] = next;
                         }
                         else
                         {
@@ -1067,6 +1072,25 @@ public class FightMicro
                                     {
                                         rc.move(dir2);
                                     } catch ( Exception e) {}
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (rc.isActive())
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        if (secondChoice[i] != null)
+                        {
+                            Direction direction = rc.getLocation().directionTo(secondChoice[i]);
+                            if (rc.canMove(direction))
+                            {
+                                if (rc.isActive())
+                                {
+                                    rc.move(direction);
+                                    i = 989;
                                 }
                             }
                         }
