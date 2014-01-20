@@ -1,5 +1,6 @@
 package theSwarm3;
 
+import UED.*;
 import battlecode.common.*;
 
 import java.util.Random;
@@ -146,9 +147,15 @@ public class Movement
         // this method will run until we get to our target location
         while (!rc.getLocation().equals(target) || rc.getLocation().isAdjacentTo(target))
         {
+
             // we put the try block inside of the while loop so an exception won't terminate the method
             try
             {
+                int point = rc.readBroadcast(rallyPoint);
+                if (!target.equals(convertIntToMapLocation(point)))
+                {
+                    target = convertIntToMapLocation(point);
+                }
                 if (rc.isActive())
                 {
                     if (rc.getLocation().isAdjacentTo(target))
