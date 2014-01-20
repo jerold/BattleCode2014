@@ -54,11 +54,11 @@ public class Baneling {
                         double alliedHealth = rc.senseRobotInfo(nearByAllies[j]).health;
                         if (alliedHealth >= 40 + (rc.getHealth()/2))
                         {
-                            totalDamage += 40 + (rc.getHealth()/2);
+                            totalDamage -= 40 + (rc.getHealth()/2);
                         }
                         else
                         {
-                            totalDamage += alliedHealth;
+                            totalDamage -= alliedHealth;
                         }
                     }
 
