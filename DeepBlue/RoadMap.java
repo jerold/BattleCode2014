@@ -2,6 +2,7 @@ package DeepBlue;
 
 import battlecode.common.*;
 
+import javax.sound.midi.SysexMessage;
 import java.util.ArrayList;
 
 /**
@@ -13,26 +14,27 @@ public class RoadMap {
     RobotController rc;
     UnitCache cache;
 
-    static int MAX_WIDTH = 100; // Prevent heavy processing on larger maps
-    static final double MAX_VOID_DENSITY = .6;
-
     static final int TILE_VOID = 999;
 
     int MAP_WIDTH;
     int MAP_HEIGHT;
     int[][] roadMap;
+    double[][] cgMap;
     int[][] cowGrowthMap;
 
+    static final double MACRO_PATH_MAX_VOID_DENSITY = .75;
     static final int NO_PATH_EXISTS = -1;
-    static final int MAX_NODE_SPACING = 6;
+    static final int MIN_NODE_SPACING = 6;
+    static final int MAX_NODES_IN_LINE = 8;
+
+    int nodeCount;
+    int usableNodeCount;
     int nodesInLine;
     int nodeSpacing;
     int nodePadding;
     int[][] macroNextNode;
-    boolean[][] macroPathChecked;
+    boolean[] macroUsableNode;
     int[][] macroPathDistance;
-    int[] neighborIdOffeset;
-
 
     public enum PathingStrategy {
         DefaultBug,
@@ -41,7 +43,12 @@ public class RoadMap {
 
     PathingStrategy pathingStrat;
     double voidDensity;
+
     boolean mapUploaded;
+    int mapProgress;
+    boolean macroPathingUploaded;
+    int macroPathingProgress;
+    boolean expectMacroPathing;
 
     RoadMap(RobotController inRc, UnitCache inCache) throws GameActionException
     {
@@ -51,17 +58,56 @@ public class RoadMap {
         MAP_HEIGHT = rc.getMapHeight();
         MAP_WIDTH = rc.getMapWidth();
         roadMap = new int[MAP_WIDTH][MAP_HEIGHT];
+        cowGrowthMap = new int[MAP_WIDTH][MAP_HEIGHT];
         voidDensity = 0.0;
-        mapUploaded = false;
         pathingStrat = PathingStrategy.DefaultBug;
 
+        // Initialize Upload Flags and indicators
+        mapUploaded = false;
+        mapProgress = 0;
+        macroPathingUploaded = false;
+        macroPathingProgress = 0;
+        expectMacroPathing = true;
+
+        // Initialize Macro Path Variables and Direction Arrays
+        usableNodeCount = 0;
+        calibrateNodeStructure();
+        macroNextNode = new int[nodeCount][nodeCount];
+        macroUsableNode = new boolean[nodeCount];
+        macroPathDistance = new int[nodeCount][nodeCount];
+
+        // Initialize Map and Pathing signal Flags
         if (rc.getType() == RobotType.HQ)
-            resetMapUploadedFlag();
+            broadcastFlags();
     }
+
+
+
 
     //================================================================================
     // Facilitator Methods
     //================================================================================
+
+    public void checkForUpdates() throws GameActionException
+    {
+        if (rc.getType() == RobotType.HQ) {
+            if (!mapUploaded)
+                assessMap();
+            if (mapUploaded && expectMacroPathing && !macroPathingUploaded)
+                assessMacroPathing();
+        } else {
+            if (!mapUploaded)
+                readBroadcastMap();
+            if (mapUploaded && expectMacroPathing && !macroPathingUploaded)
+                readBroadcastMacro();
+        }
+    }
+
+    public void broadcastFlags() throws GameActionException
+    {
+        broadcastMapUploadedFlag();
+        broadcastMacroUploadedFlag();
+    }
 
     public int valueForLocation(MapLocation loc) throws GameActionException
     {
@@ -72,15 +118,12 @@ public class RoadMap {
 
     public Direction directionTo(MapLocation origin, MapLocation destination) throws GameActionException
     {
-//        System.out.print("\nDirection To: ");
         int ordinalDir = origin.directionTo(destination).ordinal();
-//        System.out.println(". ");
         if (valueForLocation(origin.add(Utilities.directionByOrdinal[ordinalDir])) != TILE_VOID) return Utilities.directionByOrdinal[ordinalDir];
 
         Direction[] dirs = Utilities.directionByOrdinal;
 
         // Rotate 1 Left and Right, 3 Checked
-//        System.out.println("... ");
         Direction dirLeft = dirs[ordinalDir].rotateLeft();
         Direction dirRight = dirs[ordinalDir].rotateRight();
         if (valueForLocation(origin.add(dirLeft)) != TILE_VOID) {
@@ -89,7 +132,6 @@ public class RoadMap {
         } else if (valueForLocation(origin.add(dirRight)) != TILE_VOID) return dirRight;
 
         // Rotate 1 Left and Right, 5 Checked
-//        System.out.println("..... ");
         dirLeft = dirLeft.rotateLeft();
         dirRight = dirRight.rotateRight();
         if (valueForLocation(origin.add(dirLeft)) != TILE_VOID) {
@@ -98,7 +140,6 @@ public class RoadMap {
         } else if (valueForLocation(origin.add(dirRight)) != TILE_VOID) return dirRight;
 
         // Rotate 1 Left and Right, 7 Checked
-//        System.out.println("....... ");
         dirLeft = dirLeft.rotateLeft();
         dirRight = dirRight.rotateRight();
         if (valueForLocation(origin.add(dirLeft)) != TILE_VOID) {
@@ -106,252 +147,355 @@ public class RoadMap {
             else return dirLeft;
         } else if (valueForLocation(origin.add(dirRight)) != TILE_VOID) return dirRight;
 
-//        System.out.println("........ ");
         return dirs[ordinalDir].opposite();
+    }
+
+    private MapLocation locationForNode(int nodeId) {
+        if ((nodeId%nodesInLine) >= nodesInLine/2) {
+            MapLocation mirrorLocation = locationForNode(oppositeNodeId(nodeId));
+            return new MapLocation(MAP_WIDTH-mirrorLocation.x-1, MAP_HEIGHT-mirrorLocation.y-1);
+        }
+        return new MapLocation((nodeId/nodesInLine) * nodeSpacing + nodePadding, (nodeId%nodesInLine) * nodeSpacing + nodePadding);
+    }
+
+    private int oppositeNodeId(int nodeId) {
+        //System.out.println(nodeId + "< - >" + (nodeCount - nodeId - 1));
+        return nodeCount - nodeId - 1;
+    }
+
+    private int nodeForLocation(MapLocation loc) {
+        int nodeId = ((loc.x - nodePadding)/nodeSpacing) * nodesInLine; // THIS ISNT FINISHED
+        return nodeId;
+    }
+
+    private void calibrateNodeStructure()
+    {
+        nodesInLine = MAX_NODES_IN_LINE;
+        nodeSpacing = (MAP_WIDTH-4)/(nodesInLine-1);
+        while (nodeSpacing < MIN_NODE_SPACING) {
+            nodesInLine-=2;
+            nodeSpacing = (MAP_WIDTH-4)/(nodesInLine-1);
+        }
+        nodeCount = nodesInLine * nodesInLine;
+        nodePadding = (MAP_WIDTH - nodeSpacing*(nodesInLine-1))/2;
+    }
+
+    private void setMacroInfoForNode(int origNodeId, boolean usable)
+    {
+        macroUsableNode[origNodeId] = usable;
+
+        macroUsableNode[oppositeNodeId(origNodeId)] = usable;
+    }
+
+    private void setMacroInfoForNode(int origNodeId, int destNodeId, int nextNodeId, int dist)
+    {
+        macroNextNode[origNodeId][destNodeId] = nextNodeId;
+        macroPathDistance[origNodeId][destNodeId] = dist;
+
+        macroNextNode[oppositeNodeId(origNodeId)][oppositeNodeId(destNodeId)] = oppositeNodeId(nextNodeId);
+        macroPathDistance[oppositeNodeId(origNodeId)][oppositeNodeId(destNodeId)] = dist;
+
+    }
+
+    private void setMacroInfoForNode(int origNodeId, int destNodeId, int nextNodeId, boolean usable, int dist)
+    {
+        macroUsableNode[origNodeId] = usable;
+        macroNextNode[origNodeId][destNodeId] = nextNodeId;
+        macroPathDistance[origNodeId][destNodeId] = dist;
+
+        macroUsableNode[oppositeNodeId(origNodeId)] = usable;
+        macroNextNode[oppositeNodeId(origNodeId)][oppositeNodeId(destNodeId)] = oppositeNodeId(nextNodeId);
+        macroPathDistance[oppositeNodeId(origNodeId)][oppositeNodeId(destNodeId)] = dist;
+
     }
 
     //================================================================================
     // Macro Path Assessments Methods
     //================================================================================
 
-    private void assessMacroPathing() throws GameActionException
+    private void initMacroArrays() throws GameActionException
     {
-        nodesInLine = 1;
-        int divVal = 2;
-        while ((MAP_WIDTH-4)/divVal > MAX_NODE_SPACING) {
-            nodesInLine = divVal;
-            divVal++;
-        }
-        nodesInLine++;
-        nodeSpacing = MAP_WIDTH/nodesInLine;
-        nodePadding = (MAP_WIDTH - nodeSpacing*(nodesInLine-1))/2;
-        neighborIdOffeset = new int[]{(-nodesInLine)-1, -nodesInLine, (-nodesInLine)+1, -1, +1, nodesInLine-1, nodesInLine, nodesInLine+1};
-
-        int nodeCount = nodesInLine * nodesInLine;
-        System.out.println("Map Size: " + MAP_WIDTH + ", " + MAP_HEIGHT);
-        System.out.println("Macro Matrix Even Split Size: " + nodesInLine + "x" + nodesInLine + " (" + nodeCount + " nodes spaced by " + nodeSpacing + ")");
-        System.out.println("START MACRO ASSESSMENT:  " + Clock.getRoundNum());
-
-        // Initialize Direction Arrays
-        macroNextNode = new int[nodeCount][nodeCount];
-        macroPathChecked = new boolean[nodeCount][nodeCount];
-        macroPathDistance = new int[nodeCount][nodeCount];
-        for (int origNodeId = 0; origNodeId<nodeCount; origNodeId++) {
-            for (int destNodeId = 0; destNodeId<nodeCount; destNodeId++) {
-                if (origNodeId != destNodeId) {
-                    int oppOrigNodeId = nodeCount - origNodeId - 1;
-                    int oppDestNodeId = nodeCount - destNodeId - 1;
-
-                    macroNextNode[origNodeId][destNodeId] = destNodeId;
-                    macroPathChecked[origNodeId][destNodeId] = false;
-                    macroPathDistance[origNodeId][destNodeId] = TILE_VOID;
-
-                    macroNextNode[destNodeId][origNodeId] = origNodeId;
-                    macroPathChecked[destNodeId][origNodeId] = false;
-                    macroPathDistance[destNodeId][origNodeId] = TILE_VOID;
-                } else {
-                    macroNextNode[origNodeId][destNodeId] = NO_PATH_EXISTS;
-                    macroPathDistance[origNodeId][destNodeId] = 0;
-                    macroPathChecked[origNodeId][destNodeId] = true;
+        if (macroPathingProgress < nodeCount) {
+            for (int origNodeId = 0; origNodeId<nodeCount/2; origNodeId++) {
+                MapLocation originNodeLocation = locationForNode(origNodeId);
+                if (initOriginOnlyMacroArraysAndCheckIfUsable(origNodeId, originNodeLocation)) {
+                    for (int destNodeId = 0; destNodeId<nodeCount; destNodeId++) {
+                        initOriginAndDestinationMacroArrays(origNodeId, destNodeId);
+                    }
+                    initNeighborEdgesForOrigin(origNodeId, originNodeLocation);
+                    if (macroUsableNode[origNodeId])
+                        usableNodeCount++;
                 }
             }
+            for (int origNodeId = 0; origNodeId<nodeCount/2; origNodeId++) {
+                updatePathsToIncludeNodesReachableByAccessibleNeighbors(origNodeId);
+            }
+        }
+    }
+
+    /*
+    Returns false if the node is a void node and therefore unusable
+     */
+    private boolean initOriginOnlyMacroArraysAndCheckIfUsable(int origNodeId, MapLocation originNodeLocation)
+    {
+        setMacroInfoForNode(origNodeId, origNodeId, origNodeId, false, 0);
+
+        if (roadMap[originNodeLocation.x][originNodeLocation.y] != TILE_VOID)
+            return true;
+        return false;
+    }
+
+    private void initOriginAndDestinationMacroArrays(int origNodeId, int destNodeId)
+    {
+        // If the arrays have already been initialized or a distance calculated by something else don't overwrite
+        if (origNodeId != destNodeId) {
+            if (macroPathDistance[origNodeId][destNodeId] == 0)
+                setMacroInfoForNode(origNodeId, destNodeId, NO_PATH_EXISTS, TILE_VOID);
+            if (macroPathDistance[destNodeId][origNodeId] == 0)
+                setMacroInfoForNode(destNodeId, origNodeId, NO_PATH_EXISTS, TILE_VOID);
         }
 
-        // Initialize Neighbor Distances
-        for (int origNodeId = 0; origNodeId<nodeCount; origNodeId++) {
-            int oppOrigNodeId = nodeCount - origNodeId - 1;
-            MapLocation originNodeLocation = locationForNode(origNodeId);
+    }
 
-            if (roadMap[originNodeLocation.x][originNodeLocation.y] != TILE_VOID) {
-                if (origNodeId%nodesInLine == 0) // First Rows need not check spaces to the left
-                    neighborIdOffeset = new int[]{-nodesInLine, (-nodesInLine)+1, +1, nodesInLine, nodesInLine+1};
-                else if ((origNodeId+1)%nodesInLine == 0) // Last Rows need not check to the right
-                    neighborIdOffeset = new int[]{(-nodesInLine)-1, -nodesInLine, -1, nodesInLine-1, nodesInLine};
-                else
-                    neighborIdOffeset = new int[]{(-nodesInLine)-1, -nodesInLine, (-nodesInLine)+1, -1, +1, nodesInLine-1, nodesInLine, nodesInLine+1};
+    private void initNeighborEdgesForOrigin(int origNodeId, MapLocation originNodeLocation) throws GameActionException
+    {
+        int[] neighborIdOffeset = neighborOffsetsForNode(origNodeId);
 
-                // Update Distance to neighbors this is typically as close as we're going to get
-//                System.out.print("Node[" + origNodeId + "] ");
-                for (int nOffset:neighborIdOffeset) {
-                    int neighborNodeId = origNodeId+nOffset;
-                    int oppNeighborNodeId = nodeCount - neighborNodeId - 1;
+        // Update Distance to neighbors this is typically as close as we're going to get
+        for (int nOffset:neighborIdOffeset) {
+            int neighborNodeId = origNodeId+nOffset;
 
-//                    System.out.print(" (" + neighborNodeId + ")");
-                    if (neighborNodeId >= 0 && neighborNodeId < nodeCount) {
-                        MapLocation neighborNodeLocation = locationForNode(neighborNodeId);
-                        MapLocation[] path = Path.simplePath(rc, this, originNodeLocation, neighborNodeLocation);
-                        if (path != null && path.length > 0 && roadMap[neighborNodeLocation.x][neighborNodeLocation.y] != TILE_VOID) {
-                            macroNextNode[origNodeId][neighborNodeId] = neighborNodeId;
-                            macroPathDistance[origNodeId][neighborNodeId] = path.length;
-                            macroPathChecked[origNodeId][neighborNodeId] = true;
+            if (neighborNodeId >= 0 && neighborNodeId < nodeCount) {
+                MapLocation neighborNodeLocation = locationForNode(neighborNodeId);
 
-                            macroNextNode[neighborNodeId][origNodeId] = origNodeId;
-                            macroPathDistance[neighborNodeId][origNodeId] = path.length;
-                            macroPathChecked[neighborNodeId][origNodeId] = true;
+                if (roadMap[neighborNodeLocation.x][neighborNodeLocation.y] != TILE_VOID) {
+                    MapLocation[] path = Path.simplePath(rc, this, originNodeLocation, neighborNodeLocation);
+                    if (path != null && path.length > 0) {
+                        // System.out.print(".");
+                        setMacroInfoForNode(origNodeId, true);
+                        setMacroInfoForNode(neighborNodeId, true);
+                        setMacroInfoForNode(origNodeId, neighborNodeId, neighborNodeId, path.length);
 
-                            macroNextNode[oppOrigNodeId][oppNeighborNodeId] = oppNeighborNodeId;
-                            macroPathDistance[oppOrigNodeId][oppNeighborNodeId] = path.length;
-                            macroPathChecked[oppOrigNodeId][oppNeighborNodeId] = true;
-
-                            macroNextNode[oppNeighborNodeId][oppOrigNodeId] = oppOrigNodeId;
-                            macroPathDistance[oppNeighborNodeId][oppOrigNodeId] = path.length;
-                            macroPathChecked[oppNeighborNodeId][oppOrigNodeId] = true;
-
-                            for (MapLocation step:path) {
-                                cowGrowthMap[step.x][step.y] = 1;
-//                            cowGrowthMap[MAP_WIDTH - step.x - 1][MAP_HEIGHT - step.y - 1] = 3;
-                            }
-//                            System.out.print(path.length + " ");
-                        } else {
-                            macroNextNode[origNodeId][neighborNodeId] = NO_PATH_EXISTS;
-                            macroPathDistance[origNodeId][neighborNodeId] = TILE_VOID;
-                            macroPathChecked[origNodeId][neighborNodeId] = true;
-
-                            macroNextNode[neighborNodeId][origNodeId] = NO_PATH_EXISTS;
-                            macroPathDistance[neighborNodeId][origNodeId] = TILE_VOID;
-                            macroPathChecked[neighborNodeId][origNodeId] = true;
-
-                            macroNextNode[oppOrigNodeId][oppNeighborNodeId] = NO_PATH_EXISTS;
-                            macroPathDistance[oppOrigNodeId][oppNeighborNodeId] = TILE_VOID;
-                            macroPathChecked[oppOrigNodeId][oppNeighborNodeId] = true;
-
-                            macroNextNode[oppNeighborNodeId][oppOrigNodeId] = NO_PATH_EXISTS;
-                            macroPathDistance[oppNeighborNodeId][oppOrigNodeId] = TILE_VOID;
-                            macroPathChecked[oppNeighborNodeId][oppOrigNodeId] = true;
-//                            System.out.print(". ");
+                        // This section is only for testing and must be removed so as not to effect tower placement
+                        for (MapLocation step:path) {
+                            cowGrowthMap[step.x][step.y] += 1;
+                            cowGrowthMap[MAP_WIDTH - step.x - 1][MAP_HEIGHT - step.y - 1] += 1;
                         }
                     }
                 }
-//                System.out.println("");
             }
-
-
         }
+    }
+
+    private void updatePathsToIncludeNodesReachableByAccessibleNeighbors(int origNodeId) throws GameActionException
+    {
+        ArrayList<Integer> nodeIdToCheck = new ArrayList<Integer>();
+        int[] neighborIdOffeset = neighborOffsetsForNode(origNodeId);
+        for (int nOffset:neighborIdOffeset) {
+            int neighborNodeId = origNodeId+nOffset;
+            if (neighborNodeId >= 0 && neighborNodeId < nodeCount && macroUsableNode[neighborNodeId] && macroNextNode[origNodeId][neighborNodeId] != NO_PATH_EXISTS)
+                nodeIdToCheck.add(neighborNodeId);
+        }
+
+        while (!nodeIdToCheck.isEmpty()) {
+            int queueNodeId = nodeIdToCheck.get(0);
+            int[] queueNodeNeighborIdOffeset = neighborOffsetsForNode(queueNodeId);
+            for (int qnOffset:queueNodeNeighborIdOffeset) {
+                int queueNodeNeighborId = queueNodeId+qnOffset;
+                if (queueNodeNeighborId >= 0 && queueNodeNeighborId < nodeCount && macroUsableNode[queueNodeNeighborId]) {
+                    if (macroNextNode[origNodeId][queueNodeNeighborId] != NO_PATH_EXISTS) {
+                        int distanceFromOriginToQueueNodeToQueueNodeNeighbor = macroPathDistance[origNodeId][queueNodeId] + macroPathDistance[queueNodeId][queueNodeNeighborId];
+                        int distanceFromOriginToQueueNodeNeighbor = macroPathDistance[origNodeId][queueNodeNeighborId];
+                        if (distanceFromOriginToQueueNodeToQueueNodeNeighbor < distanceFromOriginToQueueNodeNeighbor) {
+                            setMacroInfoForNode(origNodeId, queueNodeNeighborId, macroNextNode[origNodeId][queueNodeId], distanceFromOriginToQueueNodeToQueueNodeNeighbor);
+                            nodeIdToCheck.add(queueNodeNeighborId);
+                        }
+                    } else {
+                        int distanceFromOriginToQueueNodeToQueueNodeNeighbor = macroPathDistance[origNodeId][queueNodeId] + macroPathDistance[queueNodeId][queueNodeNeighborId];
+                        setMacroInfoForNode(origNodeId, queueNodeNeighborId, macroNextNode[origNodeId][queueNodeId], distanceFromOriginToQueueNodeToQueueNodeNeighbor);
+                        nodeIdToCheck.add(queueNodeNeighborId);
+                    }
+                }
+            }
+            nodeIdToCheck.remove(0);
+        }
+    }
+
+    private int[] neighborOffsetsForNode(int nodeId)
+    {
+        if (nodeId%nodesInLine == 0) // First Rows need not check spaces to the left
+            return new int[]{-nodesInLine, (-nodesInLine)+1, +1, nodesInLine, nodesInLine+1};
+        else if ((nodeId+1)%nodesInLine == 0) // Last Rows need not check to the right
+            return new int[]{(-nodesInLine)-1, -nodesInLine, -1, nodesInLine-1, nodesInLine};
+        return new int[]{(-nodesInLine)-1, -nodesInLine, (-nodesInLine)+1, -1, +1, nodesInLine-1, nodesInLine, nodesInLine+1};
+    }
+
+    private void assessMacroPathing() throws GameActionException
+    {
+
+        if (macroPathingProgress == 0) {
+            System.out.println("Map Size: " + MAP_WIDTH + ", " + MAP_HEIGHT);
+            System.out.println("Macro Matrix Even Split Size: " + nodesInLine + "x" + nodesInLine + " (" + nodeCount + " nodes spaced by " + nodeSpacing + ")");
+            System.out.println("START MACRO ASSESSMENT");
+            rc.setIndicatorString(1, "Working On Macro");
+        }
+
+        initMacroArrays();
 
         for (int origNodeId = 0; origNodeId<nodeCount; origNodeId++) {
             MapLocation nodeLoc = locationForNode(origNodeId);
             cowGrowthMap[nodeLoc.x][nodeLoc.y] = 9;
+
+//            if (macroUsableNode[origNodeId]) {
+//                for (int destNodeId = 0; destNodeId<nodeCount; destNodeId++) {
+//                    if (macroUsableNode[destNodeId]) {
+//                        System.out.println("Node[" + origNodeId + "][" + destNodeId + "] -> " + macroNextNode[origNodeId][destNodeId] + " (" + macroPathDistance[origNodeId][destNodeId] + ")");
+//                    }
+//                }
+//            }
+//            System.out.println("");
         }
 
-        System.out.println("FINISH MACRO ASSESSMENT: " + Clock.getRoundNum());
+        System.out.println("FINISH MACRO ASSESSMENT");
+        rc.setIndicatorString(1, "Done with Macro");
+
+        macroPathingUploaded = true;
+        BroadcastMacro();
 
         printMap();
     }
 
-    private MapLocation locationForNode(int nodeId) {
-        return new MapLocation((nodeId/nodesInLine) * nodeSpacing + nodePadding, (nodeId%nodesInLine) * nodeSpacing + nodePadding);
+    public void readBroadcastMacro() throws GameActionException
+    {
+        macroPathingUploaded = rc.readBroadcast(Utilities.macroUploadedChannel) == 1;
+
+        if (macroPathingUploaded) {
+            pathingStrat = PathingStrategy.SmartBug;
+
+//            System.out.println("Soldier Pulling Macro Pathing");
+            rc.setIndicatorString(1, "Pulling Macro Pathing");
+
+            // Do it
+
+            rc.setIndicatorString(1, "Finished Pulling Macro Pathing");
+//            printMap();
+        }
     }
+
+    public void BroadcastMacro() throws GameActionException
+    {
+        rc.setIndicatorString(1, "Broadcasting Macro");
+
+        // Do it
+
+        rc.setIndicatorString(1, "Finished Broadcasting Macro");
+        broadcastMapUploadedFlag();
+    }
+
+    public void broadcastMacroUploadedFlag() throws GameActionException
+    {
+        rc.broadcast(Utilities.macroUploadedChannel, VectorFunctions.locToInt(new MapLocation(macroPathingUploaded ? 1 : 0, expectMacroPathing ? 1 : 0)));
+    }
+
+
+
 
     //================================================================================
     // Map Updates, Checks, and Assessments Methods
     //================================================================================
 
-    public void checkForUpdates() throws GameActionException
-    {
-        if (rc.getType() == RobotType.HQ)
-            assessMap();
-        else if (shouldCheckBroadCasts())
-            readBroadcastForNewMap();
-    }
-
-    public boolean shouldCheckBroadCasts() throws GameActionException
-    {
-        return !mapUploaded;
-    }
-
-    public void resetMapUploadedFlag() throws GameActionException
-    {
-        mapUploaded = false;
-        broadcastUploadedFlag();
-    }
-
     private void assessMap() throws GameActionException
     {
-        if (mapUploaded) return;
+        System.out.println("START MAP ASSESSMENT");
+        rc.setIndicatorString(1, "Working On Map");
+        cgMap = rc.senseCowGrowth();
 
         // Map Details are read in from the game board
-        double[][] cgMap = rc.senseCowGrowth();
-        cowGrowthMap = new int[MAP_WIDTH][MAP_HEIGHT];
+        for (int x=0; x<=MAP_WIDTH/2;x++) {
+            for (int y=0; y<MAP_HEIGHT;y++) {
+                int ordValue = rc.senseTerrainTile(new MapLocation(x,y)).ordinal();//0 NORMAL, 1 ROAD, 2 VOID, 3 OFF_MAP
+                roadMap[x][y] = ordValue;
+                cowGrowthMap[x][y] = (int)cgMap[x][y];
 
-        if (!mapUploaded) {
-            rc.setIndicatorString(1, "Working On Map");
-            for (int x=0; x<=MAP_WIDTH/2;x++) {
-                for (int y=0; y<MAP_HEIGHT;y++) {
-                    int ordValue = rc.senseTerrainTile(new MapLocation(x,y)).ordinal();//0 NORMAL, 1 ROAD, 2 VOID, 3 OFF_MAP
-                    roadMap[x][y] = ordValue;
-                    // cowGrowthMap[x][y] = (int)cgMap[x][y];
+                roadMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = ordValue;
+                cowGrowthMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = (int)cgMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1];
+
+                if (ordValue > 1) {
+                    voidDensity++;
+                    roadMap[x][y] = TILE_VOID;
                     cowGrowthMap[x][y] = 0;
 
-                    roadMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = ordValue;
-                    // cowGrowthMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = (int)cgMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1];
+                    roadMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = TILE_VOID;
                     cowGrowthMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = 0;
-
-                    if (ordValue > 1) {
-                        voidDensity++;
-                        roadMap[x][y] = TILE_VOID;
-                        cowGrowthMap[x][y] = 0;
-
-                        roadMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = TILE_VOID;
-                        cowGrowthMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = 0;
-                    }
                 }
             }
-            voidDensity/=(MAP_HEIGHT*MAP_WIDTH);
 
-            MapLocation[] path =  Path.simplePath(rc, this, cache.MY_HQ, cache.ENEMY_HQ);
-            Path.printPath(path, this);
-
-            assessMacroPathing();
-
-            System.out.println("Finished Map: " + Clock.getRoundNum());
-            rc.setIndicatorString(1, "Done with Map");
-            mapUploaded = true;
-            broadcastMap();
-            return;
+            // Our seconds unit can typically spawn at around round 20 so we start trying... Hacky right.
+            if (Clock.getRoundNum() > 20 && rc.senseRobotCount() < 3)
+                Headquarter.tryToSpawn();
         }
+
+//        printMap();
+
+        voidDensity/=(MAP_HEIGHT*MAP_WIDTH);
+        System.out.println("Void Density: " + voidDensity);
+
+        System.out.println("FINISH MAP ASSESSMENT");
+        rc.setIndicatorString(1, "Done with Map");
+
+        mapUploaded = true;
+        broadcastMap();
+        return;
     }
 
-    public void readBroadcastForNewMap() throws GameActionException
+    public void readBroadcastMap() throws GameActionException
     {
-        MapLocation loadStatus = VectorFunctions.intToLoc(rc.readBroadcast(Utilities.mapLoadedChannel));
+        mapUploaded = rc.readBroadcast(Utilities.mapUploadedChannel) == 1;
 
-        boolean pullMapDetails = false;
-        if (mapUploaded = loadStatus.x == 1 && pathingStrat == PathingStrategy.DefaultBug) {
+        if (mapUploaded) {
             pathingStrat = PathingStrategy.SmartBug;
-            pullMapDetails = true;
-        }
 
-        roadMap = new int[MAP_WIDTH][MAP_HEIGHT];
-        cowGrowthMap = new int[MAP_WIDTH][MAP_HEIGHT];
-        if(pullMapDetails) {
-            System.out.println("Soldier Pulling Map");
+//            System.out.println("Soldier Pulling Map");
+            rc.setIndicatorString(1, "Pulling Map");
+
+            roadMap = new int[MAP_WIDTH][MAP_HEIGHT];
+            cowGrowthMap = new int[MAP_WIDTH][MAP_HEIGHT];
             for (int x=0; x<MAP_WIDTH;x++) {
                 for (int y=0; y<MAP_HEIGHT;y++) {
-                    MapLocation mapDetails = VectorFunctions.intToLoc(rc.readBroadcast(y*MAP_HEIGHT+x));
+                    MapLocation mapDetails = VectorFunctions.intToLoc(rc.readBroadcast(Utilities.startMapChannels + y*MAP_HEIGHT+x));
                     roadMap[x][y] = mapDetails.x;
                     cowGrowthMap[x][y] = mapDetails.y;
                 }
             }
-            // printMap();
+
+            rc.setIndicatorString(1, "Finished Pulling Map");
+//            printMap();
         }
     }
 
     public void broadcastMap() throws GameActionException
     {
+        rc.setIndicatorString(1, "Broadcasting Map");
         for (int y=0; y<MAP_HEIGHT;y++) {
             for (int x=0; x<MAP_WIDTH;x++) {
                 rc.broadcast(y*MAP_HEIGHT+x, VectorFunctions.locToInt(new MapLocation(roadMap[y][x], cowGrowthMap[y][x])));
             }
         }
-        rc.setIndicatorString(1, "Finished With Broadcasting Map and Flow");
-        broadcastUploadedFlag();
+        rc.setIndicatorString(1, "Finished Broadcasting Map");
+        broadcastMapUploadedFlag();
     }
 
-    // x:(Map Loaded) y:(Flow Loaded)
-    public void broadcastUploadedFlag() throws GameActionException
+    public void broadcastMapUploadedFlag() throws GameActionException
     {
-        rc.broadcast(Utilities.mapLoadedChannel, VectorFunctions.locToInt(new MapLocation(mapUploaded ? 1 : 0, (int)(voidDensity*100))));
+        rc.broadcast(Utilities.mapUploadedChannel, mapUploaded ? 1 : 0);
     }
+
+
+
+
+    //================================================================================
+    // Print Methods
+    //================================================================================
 
     public char asciiValue(int fVal)
     {

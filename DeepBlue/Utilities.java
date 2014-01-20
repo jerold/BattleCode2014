@@ -14,8 +14,9 @@ public class Utilities
 
     // channels for communication
     static final int startMapChannels = 0;
-    static final int mapLoadedChannel = 10000;
-    static final int startPastrChannels = 10001;
+    static final int mapUploadedChannel = 10000;
+    static final int macroUploadedChannel = 10001;
+    static final int startPastrChannels = 10002;
     static final int PastrDetailCount = 5; // [LastActiveRound, DefenderCount, EnemyCount, CowCount, PastrLocation]
 
 

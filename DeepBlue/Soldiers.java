@@ -29,7 +29,6 @@ public class Soldiers {
             if (!rc.isActive()) { rc.yield(); continue; }
 
             cache.reset();
-
             map.checkForUpdates();
 
             // Do unit strategy picker
