@@ -702,7 +702,6 @@ public class FightMicro
         {
             if (enemyBots != null)
             {
-                rc.setIndicatorString(1, "Enemy Bots Length: " + enemyBots.length + ", Allied Bots length: "+alliedBots.length);
                 for (int i = enemyBots.length; --i >= 0; )
                 {
 
@@ -896,7 +895,6 @@ public class FightMicro
 
                     if (numbOfSpots > 1)
                     {
-                        rc.setIndicatorString(0, "Hello World");
                         // first we will check to see if any allies can only approach the enemy from a certain angle
                         for (int j = alliedBots.length; --j >= 0; )
                         {
@@ -1045,7 +1043,6 @@ public class FightMicro
                         {
 
                         }
-                        rc.setIndicatorString(0, "Target: "+target2);
                     }
                     else if (numbOfSpots == 1)
                     {
@@ -1727,10 +1724,11 @@ public class FightMicro
                     }
                     else if (splitUpEnemy(rc, enemyBotLoc, alliedBots))
                     {
-
+                        rc.setIndicatorString(1, "Split Up Enemy");
                     }
                     else if (rc.readBroadcast(takeDownEnemyPastr) == 1 && !alliesEngaged)
                     {
+                        rc.setIndicatorString(1, "Take down enemy Pastr");
                         rc.yield();
                         MapLocation center = centerOfEnemies(enemyBotLoc);
                         if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, center))
@@ -1738,8 +1736,9 @@ public class FightMicro
                         	Movement.MoveDirection(rc, rc.getLocation().directionTo(center), false);
                         }
                     }
-                    else if (nearByEnemies2.length == 1 && (nearByAllies2.length > 0 || rc.getHealth() > rc.senseRobotInfo(nearByEnemies2[0]).health + 20))
+                    else if (nearByEnemies2.length == 1 && (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > 0 || rc.getHealth() > rc.senseRobotInfo(nearByEnemies2[0]).health + 20))
                     {
+                        rc.setIndicatorString(1, "0");
                         moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
                     }
                     // if our brethern are in the field of action we must join them!
