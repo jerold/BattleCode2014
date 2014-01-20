@@ -1,7 +1,6 @@
 package theSwarm3;
 
 import battlecode.common.*;
-import theSwarm3.Movement;
 import java.util.Random;
 
 public class HQFunctions 
