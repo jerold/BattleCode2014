@@ -822,7 +822,7 @@ public class FightMicro
                     for (int j = enemyBots.length; --j >= 0;)
                     {
                         MapLocation enemySpot = enemyBots[j];
-                        if (alliedSpot.distanceSquaredTo(enemySpot) <= 20 && (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(alliedBots[j])).actionDelay < 2))
+                        if ((alliedSpot.distanceSquaredTo(enemySpot)) <= 20 && (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(alliedBots[j])).actionDelay < 2))
                         {
                             numb++;
                             j = -1;
@@ -1565,7 +1565,7 @@ public class FightMicro
     }
 
     /**
-     * This is our old fight micro which is under modification
+     * This is our old fight micro which is under major renovation
      */
     public static boolean fightMode(RobotController rc)
     {
@@ -1770,7 +1770,7 @@ public class FightMicro
                         	Movement.MoveDirection(rc, rc.getLocation().directionTo(center), false);
                         }
                     }
-                    else if (nearByEnemies2.length == 1 && (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > 0 || rc.getHealth() > rc.senseRobotInfo(nearByEnemies2[0]).health + 20))
+                    else if (nearByEnemies3.length == 1 && (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > 1 || rc.getHealth() > rc.senseRobotInfo(nearByEnemies2[0]).health))
                     {
                         rc.setIndicatorString(1, "0");
                         moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
@@ -1787,7 +1787,7 @@ public class FightMicro
                         rc.setIndicatorString(1, "Flanking");
                         AttackFlank(rc, enemyBotLoc, alliedBots);
                     }*/
-                    else if (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > (nearByEnemies3.length) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
+                    else if ((numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > (nearByEnemies3.length)) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
                     {
                         rc.setIndicatorString(1, "2");
                         moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
