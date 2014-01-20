@@ -1430,7 +1430,7 @@ public class FightMicro
             // we will only morph to Banelings if a enemy pastr must be taken down
             if (rc.readBroadcast(takeDownEnemyPastr) == 1)
             {
-                if (enemyBots.length > 5)
+                if (enemyBots.length > 3)
                 {
                     int enemiesShootingUs = 0;
 
@@ -1444,7 +1444,7 @@ public class FightMicro
                     boolean banelingAlreadyMorphed = false;
 
                     // we will only morph if there are a lot of enemy soldiers that are probably attacking us
-                    if (enemiesShootingUs > 3)
+                    if (enemiesShootingUs > 2)
                     {
                         for (int j = alliedBots.length; --j>=0;)
                         {
