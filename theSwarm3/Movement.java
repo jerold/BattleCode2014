@@ -6,6 +6,14 @@ import java.util.Random;
 
 public class Movement
 {
+
+    static final int enemyHQ = 1;
+    static final int ourHQ = 2;
+    static final int rallyPoint = 3;
+    static final int needNoiseTower = 4;
+    static final int needPastr = 5;
+    static final int takeDownEnemyPastr = 6;
+
 	static Random rand;
 	
 	public static void MoveDirection(RobotController rc, Direction dir, boolean sneak)
@@ -421,7 +429,7 @@ public class Movement
 
     public static boolean MapLocationInRangeOfEnemyHQ(RobotController rc, MapLocation target)
     {
-        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 1)
+        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 24)
         {
             return true;
         }
@@ -579,6 +587,7 @@ public class Movement
             // In this case we are a soldier
             else
             {
+                rc.broadcast(rallyPoint, convertMapLocationToInt(rc.getLocation()));
                 radius = 10;
                 //Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
                 enemies = FightMicro.findSoldiersAtDistance(rc, enemies, radius);
@@ -591,7 +600,17 @@ public class Movement
                         {
                             target = enemies[k];
                         }
-                        else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health)
+                        // we don't target noise towers unless they are the only unit left in our range of ifre
+                        else if (rc.senseRobotInfo(enemies[k]).type == RobotType.NOISETOWER && enemies.length > 1)
+                        {
+                        }
+                        // near the end of the game we target enemy pastrs
+                        else if (Clock.getRoundNum() > 1970 && rc.senseRobotInfo(enemies[k]).type == RobotType.PASTR)
+                        {
+                            target = enemies[k];
+                            k = enemies.length;
+                        }
+                        else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health && !rc.senseRobotInfo(target).isConstructing)
                         {
                             target = enemies[k];
                         }
