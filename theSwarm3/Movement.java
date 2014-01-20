@@ -454,7 +454,7 @@ public class Movement
         return false;
     }
 
-    public static void fire(RobotController rc, Robot[] enemies)
+    public static void fire(RobotController rc, Robot[] enemies, MapLocation[] allyBots)
     {
         int radius;
 
@@ -592,6 +592,105 @@ public class Movement
                 //Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
                 enemies = FightMicro.findSoldiersAtDistance(rc, enemies, radius);
                 Robot target = null;
+
+
+                if (enemies != null && allyBots != null)
+                {
+                    if (allyBots.length > 1)
+                    {
+                        int[] alliedBotsCount = new int[enemies.length];
+                        for (int i = enemies.length; --i>=0;)
+                        {
+                            MapLocation target2 = rc.senseRobotInfo(enemies[i]).location;
+
+                            for (int j = allyBots.length; --j >=0;)
+                            {
+                                if (target2.distanceSquaredTo(allyBots[j]) <= 10)
+                                {
+                                    alliedBotsCount[i]++;
+                                }
+                            }
+                        }
+
+                        int bestVal = 0;
+                        int bestIndex = -1;
+                        int tieIndex = -1;
+                        int tie2Index = -1;
+
+                        for (int i = enemies.length; --i>=0;)
+                        {
+                            if (alliedBotsCount[i] > bestVal)
+                            {
+                                bestVal = alliedBotsCount[i];
+                                bestIndex = i;
+                                tie2Index = -1;
+                                tieIndex = -1;
+                            }
+                            else if (alliedBotsCount[i] == bestVal && tieIndex == -1)
+                            {
+                                tieIndex = i;
+                            }
+                            else if (alliedBotsCount[i] == bestVal)
+                            {
+                                tie2Index = i;
+                            }
+
+                        }
+
+                        if (bestIndex != -1)
+                        {
+                            if (tieIndex != -1)
+                            {
+                                if (tie2Index != -1)
+                                {
+                                    double bestVal2 = rc.senseRobotInfo(enemies[bestIndex]).health;
+                                    double tieVal = rc.senseRobotInfo(enemies[tieIndex]).health;
+                                    double tie2Val = rc.senseRobotInfo(enemies[tie2Index]).health;
+
+                                    if (bestVal2 < tieVal)
+                                    {
+                                        if (bestVal2 < tie2Val)
+                                        {
+                                            target = enemies[bestIndex];
+                                        }
+                                        else
+                                        {
+                                            target = enemies[tie2Index];
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (tieVal < tie2Val)
+                                        {
+                                            target = enemies[tieIndex];
+                                        }
+                                        else
+                                        {
+                                            target = enemies[tie2Index];
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (rc.senseRobotInfo(enemies[bestIndex]).health < rc.senseRobotInfo(enemies[tieIndex]).health)
+                                    {
+                                        target = enemies[bestIndex];
+                                    }
+                                    else
+                                    {
+                                        target = enemies[tieIndex];
+                                    }
+
+                                }
+                            }
+                            else
+                            {
+                                target = enemies[bestIndex];
+                            }
+                        }
+                    }
+                }
+
                 if (enemies != null)
                 {
                     for(int k = 0; k < enemies.length; k++)
