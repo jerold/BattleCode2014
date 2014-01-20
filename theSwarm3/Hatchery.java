@@ -29,7 +29,7 @@ public class Hatchery {
 
 			if (rc.isActive())
 			{
-                Movement.fire(rc, enemies);
+                Movement.fire(rc, enemies, null);
 				HQFunctions.SpawnSoldiers(rc);
 			}
 
