@@ -1,6 +1,5 @@
 package theSwarm3;
 
-import UED.*;
 import battlecode.common.*;
 
 import java.util.Random;

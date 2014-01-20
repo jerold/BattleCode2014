@@ -4,6 +4,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
+import sun.util.logging.resources.logging;
 
 public class Larva {
 	RobotController rc;
@@ -61,18 +62,29 @@ public class Larva {
                         drone.run();
                     }
 
+                    if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
+                    {
+                        target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
+                    }
+
 					rc.setIndicatorString(1, "Target:" + target);
                     rc.setIndicatorString(2, "Not Running fight micro 1");
-                    if (FightMicro.fightMode(rc))
+                    if (FightMicro.fightMode(rc, target))
                     {
                         rc.setIndicatorString(2, "Running fight micro");
                     }
-					else if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
-					{
-						target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
-					}
+
 					else
 					{
+                        MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                        if (enemyPastrs.length == 0)
+                        {
+                            int location = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
+                            if (location != 0)
+                            {
+                                target = Movement.convertIntToMapLocation(location);
+                            }
+                        }
 						Movement.MoveMapLocation(rc, target, false);
 					}
 				}

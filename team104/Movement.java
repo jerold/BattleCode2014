@@ -6,6 +6,16 @@ import java.util.Random;
 
 public class Movement
 {
+
+    static final int enemyHQ = 1;
+    static final int ourHQ = 2;
+    static final int rallyPoint = 3;
+    static final int needNoiseTower = 4;
+    static final int needPastr = 5;
+    static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
+    static final int rallyPoint2 = 8;
+
 	static Random rand;
 	
 	public static void MoveDirection(RobotController rc, Direction dir, boolean sneak)
@@ -136,9 +146,15 @@ public class Movement
         // this method will run until we get to our target location
         while (!rc.getLocation().equals(target) || rc.getLocation().isAdjacentTo(target))
         {
+
             // we put the try block inside of the while loop so an exception won't terminate the method
             try
             {
+                int point = rc.readBroadcast(rallyPoint);
+                if (!target.equals(convertIntToMapLocation(point)))
+                {
+                    target = convertIntToMapLocation(point);
+                }
                 if (rc.isActive())
                 {
                     if (rc.getLocation().isAdjacentTo(target))
@@ -165,7 +181,7 @@ public class Movement
 
                     rc.setIndicatorString(2, "Not Running fight micro 2");
 
-                    if (FightMicro.fightMode(rc))
+                    if (FightMicro.fightMode(rc, target))
                     {
                         rc.setIndicatorString(2, "Running fight micro 2");
                     	//fire(rc);
@@ -267,7 +283,7 @@ public class Movement
 
 
                                         boolean ranFight = false;
-                                        if (FightMicro.fightMode(rc))
+                                        if (FightMicro.fightMode(rc, target))
                                         {
                                             ranFight = true;
                                             rc.setIndicatorString(2, "Running fight micro 3");
@@ -421,7 +437,7 @@ public class Movement
 
     public static boolean MapLocationInRangeOfEnemyHQ(RobotController rc, MapLocation target)
     {
-        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 1)
+        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
         {
             return true;
         }
@@ -446,7 +462,7 @@ public class Movement
         return false;
     }
 
-    public static void fire(RobotController rc, Robot[] enemies)
+    public static void fire(RobotController rc, Robot[] enemies, MapLocation[] allyBots)
     {
         int radius;
 
@@ -579,10 +595,113 @@ public class Movement
             // In this case we are a soldier
             else
             {
+                if (Clock.getRoundNum() % 3 == 0)
+                {
+                    rc.broadcast(rallyPoint2, convertMapLocationToInt(rc.getLocation()));
+                }
                 radius = 10;
                 //Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
                 enemies = FightMicro.findSoldiersAtDistance(rc, enemies, radius);
                 Robot target = null;
+
+
+                if (enemies != null && allyBots != null)
+                {
+                    if (allyBots.length > 1)
+                    {
+                        int[] alliedBotsCount = new int[enemies.length];
+                        for (int i = enemies.length; --i>=0;)
+                        {
+                            MapLocation target2 = rc.senseRobotInfo(enemies[i]).location;
+
+                            for (int j = allyBots.length; --j >=0;)
+                            {
+                                if (target2.distanceSquaredTo(allyBots[j]) <= 10)
+                                {
+                                    alliedBotsCount[i]++;
+                                }
+                            }
+                        }
+
+                        int bestVal = 0;
+                        int bestIndex = -1;
+                        int tieIndex = -1;
+                        int tie2Index = -1;
+
+                        for (int i = enemies.length; --i>=0;)
+                        {
+                            if (alliedBotsCount[i] > bestVal)
+                            {
+                                bestVal = alliedBotsCount[i];
+                                bestIndex = i;
+                                tie2Index = -1;
+                                tieIndex = -1;
+                            }
+                            else if (alliedBotsCount[i] == bestVal && tieIndex == -1)
+                            {
+                                tieIndex = i;
+                            }
+                            else if (alliedBotsCount[i] == bestVal)
+                            {
+                                tie2Index = i;
+                            }
+
+                        }
+
+                        if (bestIndex != -1)
+                        {
+                            if (tieIndex != -1)
+                            {
+                                if (tie2Index != -1)
+                                {
+                                    double bestVal2 = rc.senseRobotInfo(enemies[bestIndex]).health;
+                                    double tieVal = rc.senseRobotInfo(enemies[tieIndex]).health;
+                                    double tie2Val = rc.senseRobotInfo(enemies[tie2Index]).health;
+
+                                    if (bestVal2 < tieVal)
+                                    {
+                                        if (bestVal2 < tie2Val)
+                                        {
+                                            target = enemies[bestIndex];
+                                        }
+                                        else
+                                        {
+                                            target = enemies[tie2Index];
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (tieVal < tie2Val)
+                                        {
+                                            target = enemies[tieIndex];
+                                        }
+                                        else
+                                        {
+                                            target = enemies[tie2Index];
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (rc.senseRobotInfo(enemies[bestIndex]).health < rc.senseRobotInfo(enemies[tieIndex]).health)
+                                    {
+                                        target = enemies[bestIndex];
+                                    }
+                                    else
+                                    {
+                                        target = enemies[tieIndex];
+                                    }
+
+                                }
+                            }
+                            else
+                            {
+                                target = enemies[bestIndex];
+                            }
+                        }
+                    }
+                }
+
                 if (enemies != null)
                 {
                     for(int k = 0; k < enemies.length; k++)
@@ -591,7 +710,17 @@ public class Movement
                         {
                             target = enemies[k];
                         }
-                        else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health)
+                        // we don't target noise towers unless they are the only unit left in our range of ifre
+                        else if (rc.senseRobotInfo(enemies[k]).type == RobotType.NOISETOWER && enemies.length > 1)
+                        {
+                        }
+                        // near the end of the game we target enemy pastrs
+                        else if (Clock.getRoundNum() > 1970 && rc.senseRobotInfo(enemies[k]).type == RobotType.PASTR)
+                        {
+                            target = enemies[k];
+                            k = enemies.length;
+                        }
+                        else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health && !rc.senseRobotInfo(target).isConstructing)
                         {
                             target = enemies[k];
                         }

@@ -175,6 +175,8 @@ public class Utilities
                             if (enemySpot.distanceSquaredTo(allies[j]) <= 10)
                             {
                                 alliesEngaged = true;
+                                j = -1;
+                                i = -1;
                             }
                         }
                     }

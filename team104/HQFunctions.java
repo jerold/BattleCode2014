@@ -1,7 +1,6 @@
 package team104;
 
 import battlecode.common.*;
-
 import java.util.Random;
 
 public class HQFunctions 
@@ -14,6 +13,8 @@ public class HQFunctions
     static final int needNoiseTower = 4;
     static final int needPastr = 5;
     static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
+    static final int rallyPoint2 = 8;
     static Random rand = new Random();
     static Direction[] directions = Direction.values();
 	
@@ -24,9 +25,10 @@ public class HQFunctions
             if (rc.isActive() && rc.getType() == RobotType.HQ && (rc.senseRobotCount() < 25))
             {
                 Direction toEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-                if (rc.senseObjectAtLocation(rc.getLocation().add(toEnemy)) == null) {}
-                else
+                while (!rc.canMove(toEnemy))
                 {
+                    toEnemy = toEnemy.rotateLeft();
+                    /*
                     for (int i = 0; i < 7; i++)
                     {
                         toEnemy = toEnemy.rotateLeft();
@@ -39,7 +41,7 @@ public class HQFunctions
                         {
                             toEnemy = Direction.NONE;
                         }
-                    }
+                    }*/
                 }
 
                 if (toEnemy != Direction.NONE)
@@ -121,6 +123,11 @@ public class HQFunctions
 		return rallyPoint;
 	}
 
+    public static int rallyPoint2Channel()
+    {
+        return rallyPoint2;
+    }
+
 	public static void moveTargetLocationRandomly(RobotController rc)
 	{
 		try
@@ -178,11 +185,21 @@ public class HQFunctions
                     target = target.add(target.directionTo(closestPastr));
                 }
                 rc.broadcast(takeDownEnemyPastr, 1);
+
+                if (closestPastr.distanceSquaredTo(rc.senseEnemyHQLocation()) < 10)
+                {
+                    rc.broadcast(enemyPastrInRangeOfHQ, 1);
+                }
+                else
+                {
+                    rc.broadcast(enemyPastrInRangeOfHQ, 0);
+                }
             }
             else
             {
                 findInitialRally(rc);
                 rc.broadcast(takeDownEnemyPastr, 0);
+                rc.broadcast(enemyPastrInRangeOfHQ, 0);
                 initialRally = true;
             }
             /*
@@ -206,6 +223,7 @@ public class HQFunctions
             if (!initialRally)
             {
                 rc.broadcast(rallyPoint, Movement.convertMapLocationToInt(target));
+                rc.broadcast(rallyPoint2, Movement.convertMapLocationToInt(target));
             }
 
         } catch (Exception e) {}
