@@ -33,8 +33,7 @@ public class Headquarter {
     }
 
     public static void tryToSpawn() throws GameActionException {
-//        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){
-        if(rc.isActive()&&rc.senseRobotCount()<1){
+        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){
             for(int i=0;i<8;i++){
                 Direction trialDir = allDirections[i];
                 if(rc.canMove(trialDir)){
