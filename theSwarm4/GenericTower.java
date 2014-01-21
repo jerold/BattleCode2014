@@ -16,14 +16,14 @@ public class GenericTower
     {
     	this.troll = troll;
     	first = true;
-    	int width = rc.getMapWidth();
-    	int height = rc.getMapHeight();
-    	double[][] cows = rc.senseCowGrowth();
+    	//int width = rc.getMapWidth();
+    	//int height = rc.getMapHeight();
+    	//double[][] cows = rc.senseCowGrowth();
         this.rc = rc;
         target = rc.getLocation();
-        int voidTotal = 0;
-        int cowTotal = 0;
-        int offMap = 0;
+        //int voidTotal = 0;
+        //int cowTotal = 0;
+        //int offMap = 0;
         boolean foundPastr = false;
         
         while(!foundPastr)
@@ -43,7 +43,7 @@ public class GenericTower
         	}
         }
         
-        for(int k = target.x - 10; k < target.x + 10; k++)
+        /*for(int k = target.x - 10; k < target.x + 10; k++)
         {
         	for(int a = target.y - 10; a < target.y + 10; a++)
         	{
@@ -112,7 +112,7 @@ public class GenericTower
 	            lines3 = TowerUtil.generateSpokeLines(rc, target, 3);
 	            lines4 = TowerUtil.generateSpokeLines(rc, target, 4);
         	}
-        }
+        }*/
         type = 1;
     }
 
@@ -138,7 +138,7 @@ public class GenericTower
 	            	try
 	            	{
 		            	MapLocation[] enemies = rc.sensePastrLocations(rc.getTeam().opponent());
-		            	MapLocation[] allies = rc.sensePastrLocations(rc.getTeam());
+		            	Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam());
 		            	MapLocation pastrE = null;
 		            	boolean enemyPastr = false;
 		            	boolean allyPastr = false;
@@ -151,14 +151,11 @@ public class GenericTower
 		            			pastrE = enemies[k];
 		            		}
 		            	}
-		            	for(int k = 0; k < allies.length; k++)
+		            	if(allies.length > 0)
 		            	{
-		            		if(allies[k].distanceSquaredTo(target) < 5)
-		            		{
-		            			allyPastr = true;
-		            		}
+		            		allyPastr = true;
 		            	}
-		            	if(true)
+		            	if(allyPastr)
 		            	{
 		            		if(type == 1)
 		                	{

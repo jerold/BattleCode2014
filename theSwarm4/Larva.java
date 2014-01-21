@@ -48,17 +48,17 @@ public class Larva {
 				if (rc.isActive())
 				{
 
-
+					int k = rc.readBroadcast(needPastr);
                     if (rc.readBroadcast(needNoiseTower) == 1)
                     {
                         rc.broadcast(needNoiseTower, 0);
                         Extractor extractor = new Extractor(rc);
                         extractor.run();
                     }
-                    else if (rc.readBroadcast(needPastr) == 1)
+                    else if (k != 0)
                     {
                         rc.broadcast(needPastr, 0);
-                        Drone drone = new Drone(rc);
+                        Drone drone = new Drone(rc, k);
                         drone.run();
                     }
 
