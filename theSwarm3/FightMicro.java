@@ -1776,6 +1776,7 @@ public class FightMicro
                 }
             }
         }
+        return false;
     }
     
     /**

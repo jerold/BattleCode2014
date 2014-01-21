@@ -22,6 +22,10 @@ public class Larva {
     static final int rallyPoint = 3;
     static final int needNoiseTower = 4;
     static final int needPastr = 5;
+    static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
+    static final int rallyPoint2 = 8;
+    static final int defendPastr = 9;
 	
 	public Larva(RobotController rc)
 	{
@@ -69,11 +73,15 @@ public class Larva {
 
 					rc.setIndicatorString(1, "Target:" + target);
                     rc.setIndicatorString(2, "Not Running fight micro 1");
-                    if (FightMicro.fightMode(rc, target))
+                    MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
+                    if (ourPastrs.length > 0 && FightMicro.defenseMicro(rc, ourPastrs[0]))
+                    {
+
+                    }
+                    else if (FightMicro.fightMode(rc, target))
                     {
                         rc.setIndicatorString(2, "Running fight micro");
                     }
-
 					else
 					{
                         MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
