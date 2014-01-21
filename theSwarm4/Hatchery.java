@@ -57,7 +57,7 @@ public class Hatchery {
 				try
 				{
 					rc.broadcast(4, 1);
-					rc.broadcast(5, 1);
+					rc.broadcast(5, 3);
 					build = false;
 				}
 				catch(Exception e){}
