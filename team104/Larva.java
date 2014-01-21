@@ -1,10 +1,6 @@
 package team104;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
-import sun.util.logging.resources.logging;
+import battlecode.common.*;
 
 public class Larva {
 	RobotController rc;
@@ -48,6 +44,11 @@ public class Larva {
 				if (rc.isActive())
 				{
 
+
+                    if (rc.senseTeamMilkQuantity(rc.getTeam()) > 9000000)
+                    {
+                        rc.wearHat();
+                    }
 
                     if (rc.readBroadcast(needNoiseTower) == 1)
                     {

@@ -1660,6 +1660,49 @@ public class FightMicro
     }
 
     /**
+     * This function gets us away from the hq if we are near it and there is no enemy pastr near it
+     */
+    public static boolean runFromEnemyHQ(RobotController rc)
+    {
+        try
+        {
+            MapLocation enemyHQ = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.enemyHQChannel()));
+            if (rc.getLocation().distanceSquaredTo(enemyHQ) < 35)
+            {
+                if (rc.readBroadcast(enemyPastrInRangeOfHQ) == 0)
+                {
+                    Direction direction = rc.getLocation().directionTo(enemyHQ).opposite();
+                    if (rc.isActive())
+                    {
+                        if (rc.canMove(direction))
+                        {
+                            rc.move(direction);
+                        }
+                        else if (rc.canMove(direction.rotateLeft()))
+                        {
+                            rc.move(direction.rotateLeft());
+                        }
+                        else if (rc.canMove(direction.rotateRight()))
+                        {
+                            rc.move(direction.rotateRight());
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        return true;
+                    }
+
+
+                }
+            }
+        } catch (Exception e) {}
+
+        return false;
+    }
+
+    /**
      * This is our old fight micro which is under major renovation
      */
     public static boolean fightMode(RobotController rc, MapLocation endGoal)
@@ -1712,6 +1755,10 @@ public class FightMicro
                     alliesEngaged = Utilities.AlliesEngaged(rc, enemyBotLoc, alliedBots);
                     // based on our health it may be advantageous to retreat so we can fight another day
                     if (retreat(rc, nearbyEnemies, enemyBotLoc, alliedBots))
+                    {
+
+                    }
+                    else if (runFromEnemyHQ(rc))
                     {
 
                     }
@@ -1855,6 +1902,10 @@ public class FightMicro
                     {
                         rc.setIndicatorString(1, "Enemy HQ pastr");
                     }
+                    else if (runFromEnemyHQ(rc))
+                    {
+
+                    }
                     else if (splitUpEnemy(rc, enemyBotLoc, alliedBots))
                     {
                         rc.setIndicatorString(1, "Split Up Enemy");
@@ -1967,6 +2018,10 @@ public class FightMicro
                     MapLocation target = rc.senseLocationOf(nearByEnemies3[0]);
                     if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
                     {
+                    }
+                    else if (runFromEnemyHQ(rc))
+                    {
+
                     }
                     else if (advanceToTarget(rc, enemyBotLoc, endGoal))
                     {

@@ -1702,6 +1702,93 @@ public class FightMicro
         return false;
     }
 
+    
+    /**
+     * This function returns true if there is a good retreat location to go to and false otherwise 
+     */
+    public static boolean retreatToAllies(RobotController rc, Robot[] inRangeEnemies, MapLocation[] enemyBots, MapLocation[] alliedBots)
+    {
+    	try
+    	{
+    		if (rc.isActive())
+    		{
+		    	MapLocation closestAlly = null;
+		    	int closestDist = 100;
+		    	
+		    	for (int i = alliedBots.length; --i>=0;)
+		    	{
+		    		int currentDist = rc.getLocation().distanceSquaredTo(alliedBots[i]);
+		    		if (currentDist < closestDist)
+		    		{
+		    			closestAlly = alliedBots[i];
+		    			closestDist = currentDist;
+		    		}
+		    	}
+		    	
+		    	if (closestAlly != null)
+		    	{
+		    		Direction dirToAlly = rc.getLocation().directionTo(closestAlly);
+			    	if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBots, rc.getLocation().add(dirToAlly)))
+			    	{
+			    		if (rc.canMove(dirToAlly))
+			    		{
+			    			rc.move(dirToAlly);
+			    			return true;
+			    		}
+			    	}
+		    	}
+    		}
+    	} catch (Exception e) {}
+    	
+    	return false;
+    }
+    
+    /**
+     * This method is for defense micro where we defend a target location by holding ground until the enemy outnumbers us then retreating
+     * in an attempt to get the enemy to attack us piecemeal and get destroyed upon our lines
+     */
+    public static boolean defenseMicro(RobotController rc, MapLocation defenseRadius)
+    {
+    	if (rc.isActive())
+    	{
+    		Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+    		if (allVisibleEnemies.length > 0)
+    		{
+    			Robot[] inRangeEnemies = findSoldiers(rc, allVisibleEnemies);
+    			Robot[] allVisibleAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+    			Robot[] allVisibleAlliedSoldiers = findSoldiers(rc, allVisibleAllies);
+    			MapLocation[] enemyBotLoc = locationOfBots(rc, allVisibleEnemies);
+                MapLocation[] alliedBots = locationOfBots(rc, allVisibleAllies);
+    			
+    			// if there are 
+    			if (inRangeEnemies.length > 0)
+    			{
+    				// if a bunch of enemies have positioned themselves to just attack us and we have friends then we should retreat
+    				if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1 && allVisibleAlliedSoldiers.length > 1)
+    				{
+    					if (retreatToAllies(rc, inRangeEnemies, enemyBotLoc, alliedBots))
+    					{
+    						
+    					}
+    					else
+    					{
+    						Movement.fire(rc, inRangeEnemies, alliedBots);
+    					}
+    				}
+    				else 
+    				{
+    					Movement.fire(rc, inRangeEnemies, alliedBots);
+    				}
+    			}
+    		}
+    	}
+    	else
+    	{
+    		
+    	}
+    	return false;
+    }
+    
     /**
      * This is our old fight micro which is under major renovation
      */
