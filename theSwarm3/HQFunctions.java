@@ -161,6 +161,7 @@ public class HQFunctions
             MapLocation target = Movement.convertIntToMapLocation(rc.readBroadcast(rallyPoint));
             Direction dir = directions[rand.nextInt(8)];
             MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+            MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
             MapLocation closestPastr = null;
             int closestDist = 1000000;
             boolean initialRally = false;
@@ -194,6 +195,18 @@ public class HQFunctions
                 {
                     rc.broadcast(enemyPastrInRangeOfHQ, 0);
                 }
+            }
+            else if (ourPastrs.length > 0)
+            {
+                target = ourPastrs[0];
+                Direction direction = target.directionTo(rc.senseEnemyHQLocation());
+
+
+                for (int i = 0; i < 8; i++)
+                {
+                    target = target.add(direction);
+                }
+
             }
             else
             {
