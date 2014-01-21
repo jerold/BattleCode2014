@@ -1152,7 +1152,7 @@ public class FightMicro
                             if (rc.getLocation().distanceSquaredTo(enemyBots[i]) <= 10)
                             {
                                 // Baneling testing time
-                                theSwarm3.Baneling baneling = new theSwarm3.Baneling(rc);
+                                Baneling baneling = new Baneling(rc);
                                 baneling.run();
                             }
                         }

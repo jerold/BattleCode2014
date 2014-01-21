@@ -16,6 +16,7 @@ public class HQFunctions
     static final int enemyPastrInRangeOfHQ = 7;
     static final int rallyPoint2 = 8;
     static final int defendPastr = 9;
+    static final int pastLoc = 10;
     static Random rand = new Random();
     static Direction[] directions = Direction.values();
 	

@@ -1,9 +1,6 @@
 package theSwarm4;
 
-import battlecode.common.MapLocation;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 /**
  * Different types correspond to different times to turn into pastures
@@ -12,6 +9,7 @@ import battlecode.common.RobotType;
  * 3 means it will wait until there are no enemies nearby, there is a tower, and it has been waiting at least 500 turns
  */
 public class Drone {
+	static final int pastLoc = 10;
     RobotController rc;
     MapLocation pastrSpot;
     int type;
@@ -21,6 +19,7 @@ public class Drone {
         this.rc = rc;
         this.type = type;
         pastrSpot = TowerUtil.bestSpot3(rc);
+        
     }
 
     public void run()
@@ -29,6 +28,7 @@ public class Drone {
         {
             try
             {
+            	rc.broadcast(pastLoc, Utilities.convertMapLocationToInt(pastrSpot));
                 if (rc.isActive())
                 {
                     if (rc.getLocation().x == pastrSpot.x && rc.getLocation().y == pastrSpot.y)
