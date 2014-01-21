@@ -1737,12 +1737,52 @@ public class FightMicro
     	
     	return false;
     }
+
+    /**
+     * This method will return true and react accoridingly if enemies get between us our defense postion
+     */
+    public static boolean enemyInfiltration(RobotController rc, MapLocation[] enemyBots, MapLocation[] alliedBots, Robot[] inRangeEnemies, MapLocation defenseLoc)
+    {
+        if (rc.isActive())
+        {
+
+            if (enemyBots.length > 0)
+            {
+                boolean enemiesInOurWay = false;
+                int ourDistToDefenseLoc = rc.getLocation().distanceSquaredTo(defenseLoc);
+                for (int i = enemyBots.length; --i>=0;)
+                {
+                    int enemyDistToDefenseLoc = enemyBots[i].distanceSquaredTo(defenseLoc);
+                    if (ourDistToDefenseLoc >= enemyDistToDefenseLoc)
+                    {
+                        i = -1;
+                        enemiesInOurWay = true;
+                    }
+                }
+
+                if (enemiesInOurWay)
+                {
+                    if (inRangeEnemies.length > 0)
+                    {
+                        Movement.fire(rc, inRangeEnemies,alliedBots);
+                    }
+                    else
+                    {
+                        Direction dir = rc.getLocation().directionTo(defenseLoc);
+                        Movement.MoveDirection(rc, dir, false);
+
+                    }
+                    return true;
+                }
+            }
+        }
+    }
     
     /**
      * This method is for defense micro where we defend a target location by holding ground until the enemy outnumbers us then retreating
      * in an attempt to get the enemy to attack us piecemeal and get destroyed upon our lines
      */
-    public static boolean defenseMicro(RobotController rc, MapLocation defenseRadius)
+    public static boolean defenseMicro(RobotController rc, MapLocation defenseLoc)
     {
     	if (rc.isActive())
     	{
@@ -1763,7 +1803,6 @@ public class FightMicro
     				{
     					if (retreatToAllies(rc, inRangeEnemies, enemyBotLoc, alliedBots))
     					{
-    						
     					}
     					else
     					{
@@ -1775,6 +1814,23 @@ public class FightMicro
     					Movement.fire(rc, inRangeEnemies, alliedBots);
     				}
     			}
+                else if (allVisibleEnemies.length > 0)
+                {
+                    // ideally we move toward our allies to strengthen our position
+                    if (retreatToAllies(rc, allVisibleEnemies, enemyBotLoc, alliedBots))
+                    {
+
+                    }
+                    else if (enemyInfiltration(rc, enemyBotLoc, alliedBots, inRangeEnemies, defenseLoc))
+                    {
+
+                    }
+                    else
+                    {
+                        Movement.fire(rc, allVisibleEnemies, alliedBots);
+                    }
+                }
+                return true;
     		}
     	}
     	else
