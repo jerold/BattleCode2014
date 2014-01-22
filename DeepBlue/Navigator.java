@@ -15,8 +15,10 @@ public class Navigator {
     RoadMap map;
 
     MapLocation destination;
-    MapLocation[] pathToDestination;
-    int pathProgress;
+    int destinationNodeId;
+    MapLocation nextStep;
+    int nextStepNodeId;
+    boolean hasArrived;
 
     Direction heading;
     double stayPut;
@@ -34,8 +36,10 @@ public class Navigator {
         map.observingNavigator = this;
 
         destination = rc.getLocation();
-        pathToDestination = new MapLocation[0];
-        pathProgress = 0;
+        destinationNodeId = 0;
+        nextStep = destination;
+        nextStepNodeId = 0;
+        hasArrived = false;
 
         stayPut = 999;
         pathStrat = RoadMap.PathingStrategy.DefaultBug;
@@ -56,9 +60,9 @@ public class Navigator {
     {
         if (passive) {
             maneuver();
-            return;
+        } else {
+            // Movement while in range of enemies
         }
-        // Movement while in range of enemies
     }
 
     /*
@@ -66,12 +70,17 @@ public class Navigator {
      */
     public void maneuver() throws GameActionException
     {
-        if (map.pathingStrat == RoadMap.PathingStrategy.DefaultBug)
-            defaultMovement();
-        else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
-            smartMovement();
-        else
-            macroMovement();
+        if (!hasArrived) {
+            if (map.pathingStrat == RoadMap.PathingStrategy.DefaultBug)
+                defaultMovement();
+            else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
+                smartMovement();
+            if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
+//                macroMovement();
+                smartMovement();
+            }
+        }
+//        rc.setIndicatorString(1, "Pathing["+map.pathingStrat+"] NextStep("+nextStepNodeId+")["+nextStep.x+","+nextStep.y+"] Dest("+destinationNodeId+")["+destination.x+","+destination.y+"]");
     }
 
 
@@ -84,6 +93,7 @@ public class Navigator {
     public void pathingStrategyChanged() throws GameActionException
     {
         if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
+            bugging = false;
             setDestination(destination);
         }
     }
@@ -91,37 +101,50 @@ public class Navigator {
     public void setDestination(MapLocation location) throws GameActionException
     {
         destination = location;
+        depart();
+    }
+
+    private void arrive()
+    {
+        hasArrived = true;
+    }
+
+    private void depart() throws GameActionException
+    {
+        hasArrived = false;
         if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
-            pathProgress = 0;
-            MapLocation[] newPath = Path.getMacroPath(map, rc.getLocation(), destination);
-            if (newPath != null)
-                pathToDestination = newPath;
+            destinationNodeId = map.idForNearestNode(destination);
+            readBroadcastNextStep();
         }
     }
 
-    public MapLocation nextStep() throws GameActionException
+    private void readBroadcastNextStep() throws GameActionException
+    {
+        int nearRcNodeId = map.idForNearestNode(rc.getLocation());
+        int channel = Utilities.startMacroChannels + nearRcNodeId*map.nodeCount+destinationNodeId;
+        MapLocation signal = VectorFunctions.intToLoc(rc.readBroadcast(channel));
+        nextStepNodeId = signal.x;
+        nextStep = map.locationForNode(nextStepNodeId);
+        System.out.println("SOLDIER Node["+nearRcNodeId+"] -> ["+nextStepNodeId+"] -> ["+destinationNodeId+"]  ~"+(Utilities.startMacroChannels+nearRcNodeId*map.nodeCount+destinationNodeId)+"~  "+signal.x+","+signal.y);
+    }
+
+    public MapLocation getNextStep() throws GameActionException
     {
         if (atFinalDestination())
             return destination;
-        return pathToDestination[pathProgress];
-    }
-
-    private void clearPassedWaypoints()
-    {
-        if (pathProgress < pathToDestination.length && rc.getLocation().isAdjacentTo(pathToDestination[pathProgress])) {
-            pathProgress++;
-            if (pathProgress == pathToDestination.length) {
-                pathToDestination = new MapLocation[0];
-                pathProgress = 0;
-            }
-        }
+        if (rc.getLocation().isAdjacentTo(nextStep))
+            readBroadcastNextStep();
+        return nextStep;
     }
 
     private boolean atFinalDestination() throws GameActionException
     {
-        clearPassedWaypoints();
-        if (pathToDestination.length == 0)
+        if (hasArrived)
             return true;
+        if (rc.getLocation().isAdjacentTo(destination)) {
+            arrive();
+            return true;
+        }
         return false;
     }
 
@@ -201,12 +224,14 @@ public class Navigator {
     public void smartMovement() throws GameActionException
     {
         if (!bugging) {
+            MicroPathing.addLocationToTrail(rc.getLocation()); // Snail Trail
             heading = map.directionTo(rc.getLocation(), destination); // Heading set by the map to avoid void space
 
-            if(rc.canMove(heading)) {
+            if(MicroPathing.canMove(heading, true, rc) && rc.canMove(heading)) {
                 if (!rc.isActive()) rc.yield();
                 rc.move(heading);
             } else {
+                heading = rc.getLocation().directionTo(destination);
                 bugging = true;
                 bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
                 bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination); // Bugging is pre-simulated to pick the shortest direction
@@ -228,12 +253,14 @@ public class Navigator {
     public void macroMovement() throws GameActionException
     {
         if (!bugging) {
-            heading = map.directionTo(rc.getLocation(), nextStep()); // Heading is either a straight shot or a path built from the pre-computed breadth-first node paths
+            MicroPathing.addLocationToTrail(rc.getLocation()); // Snail Trail
+            heading = map.directionTo(rc.getLocation(), getNextStep()); // Heading is either a straight shot or a path built from the pre-computed breadth-first node paths
 
-            if(rc.canMove(heading)) {
+            if(MicroPathing.canMove(heading, true, rc) && rc.canMove(heading)) {
                 if (!rc.isActive()) rc.yield();
                 rc.move(heading);
             } else {
+                heading = rc.getLocation().directionTo(destination);
                 bugging = true;
                 bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
                 bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination); // Bugging is pre-simulated to pick the shortest direction

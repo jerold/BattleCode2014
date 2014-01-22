@@ -91,7 +91,7 @@ public class RoadMap {
 
     public void checkForUpdates() throws GameActionException
     {
-        if (rc.getType() == RobotType.HQ) {
+        if (cache.rcType == RobotType.HQ) {
             if (!mapUploaded)
                 assessMap();
             if (mapUploaded && expectMacroPathing && !macroPathingUploaded)
@@ -331,7 +331,7 @@ public class RoadMap {
                     if (path != null && path.length > 0) {
                         setMacroInfoForNode(origNodeId, true);
                         setMacroInfoForNode(origNodeId, neighborNodeId, neighborNodeId, true, path.length);
-//                        addPathToMap(path);
+                        addPathToMap(path);
                     }
                 }
             }
@@ -393,9 +393,11 @@ public class RoadMap {
         System.out.println("FINISH MACRO ASSESSMENT");
         rc.setIndicatorString(1, "Done with Macro");
 
+//        printMacro();
+//        printMap();
+
         macroPathingUploaded = true;
         BroadcastMacro();
-//        printMap();
     }
 
     public void readBroadcastMacro() throws GameActionException
@@ -404,32 +406,31 @@ public class RoadMap {
         expectMacroPathing = rc.readBroadcast(Utilities.macroExpectChannel) == 1;
 
         if (macroPathingUploaded) {
-//            System.out.println("SOLDIER READING MACRO");
             pathingStrat = PathingStrategy.MacroPath;
-            rc.setIndicatorString(1, "Pulling Macro");
-
-            for (int originId=0; originId<nodeCount/2;originId++) {
-                boolean usable = false;
-                for (int destinationId=0; destinationId<nodeCount;destinationId++) {
-                    int channel = Utilities.startMacroChannels + originId*nodeCount+destinationId;
-                    MapLocation signal = VectorFunctions.intToLoc(rc.readBroadcast(channel));
-                    setMacroInfoForNode(originId, destinationId, signal.x == TILE_VOID ? NO_PATH_EXISTS : signal.x, signal.y);
-                    if (signal.y != TILE_VOID)
-                        usable = true;
-                }
-                setMacroInfoForNode(originId, usable);
-            }
-
-//            for (int originId=0; originId<nodeCount;originId++) {
-//                if (macroUsableNode[originId]) {
-//                    for (int destinationId=0; destinationId<nodeCount;destinationId++) {
-//                        System.out.println("Node [" + originId + "][" + destinationId + "]  ->  [" + macroNextNode[originId][destinationId]+"]  "+macroPathDistance[originId][destinationId]+"  ["+macroUsableNode[destinationId]+"]");
-//                    }
+//            rc.setIndicatorString(1, "Pulling Macro");
+//
+//            for (int originId=0; originId<nodeCount/2;originId++) {
+//                boolean usable = false;
+//                for (int destinationId=0; destinationId<nodeCount;destinationId++) {
+//                    int channel = Utilities.startMacroChannels + originId*nodeCount+destinationId;
+//                    MapLocation signal = VectorFunctions.intToLoc(rc.readBroadcast(channel));
+//                    setMacroInfoForNode(originId, destinationId, signal.x == TILE_VOID ? NO_PATH_EXISTS : signal.x, signal.y);
+//                    if (signal.y != TILE_VOID)
+//                        usable = true;
 //                }
+//                setMacroInfoForNode(originId, usable);
 //            }
-
-//            System.out.println("SOLDIER FINISHED READING MACRO");
-            rc.setIndicatorString(1, "Finished Pulling Macro");
+//
+////            for (int originId=0; originId<nodeCount;originId++) {
+////                if (macroUsableNode[originId]) {
+////                    for (int destinationId=0; destinationId<nodeCount;destinationId++) {
+////                        System.out.println("Node [" + originId + "][" + destinationId + "]  ->  [" + macroNextNode[originId][destinationId]+"]  "+macroPathDistance[originId][destinationId]+"  ["+macroUsableNode[destinationId]+"]");
+////                    }
+////                }
+////            }
+//
+////            System.out.println("SOLDIER FINISHED READING MACRO");
+//            rc.setIndicatorString(1, "Finished Pulling Macro");
             if (observingNavigator != null)
                 observingNavigator.pathingStrategyChanged();
         }
@@ -446,14 +447,6 @@ public class RoadMap {
                 Headquarter.tryToSpawn();
             }
         }
-
-//        for (int originId=0; originId<nodeCount;originId++) {
-//            if (macroUsableNode[originId]) {
-//                for (int destinationId=0; destinationId<nodeCount;destinationId++) {
-//                    System.out.println("HQ Node ["+originId+"]["+destinationId+"]  ->  ["+macroNextNode[originId][destinationId]+"]  "+macroPathDistance[originId][destinationId]+"  ["+macroUsableNode[destinationId]+"]");
-//                }
-//            }
-//        }
 
         rc.setIndicatorString(1, "Finished Broadcasting Macro");
         broadcastMacroFlag();
@@ -592,6 +585,15 @@ public class RoadMap {
         for (MapLocation step:path) {
             cowGrowthMap[step.x][step.y]++;
             cowGrowthMap[MAP_WIDTH-step.x-1][MAP_HEIGHT-step.y-1]++;
+        }
+    }
+
+    public void printMacro()
+    {
+        for (int originId=0; originId<nodeCount;originId++) {
+            for (int destinationId=0; destinationId<nodeCount;destinationId++) {
+                System.out.println("Node["+originId+"] -> ["+macroNextNode[originId][destinationId]+"] -> ["+destinationId+"]  ~"+(Utilities.startMacroChannels+originId*nodeCount+destinationId)+"~");
+            }
         }
     }
 
