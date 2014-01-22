@@ -70,17 +70,15 @@ public class Navigator {
      */
     public void maneuver() throws GameActionException
     {
-        if (!hasArrived) {
-            if (map.pathingStrat == RoadMap.PathingStrategy.DefaultBug)
-                defaultMovement();
-            else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
-                smartMovement();
-            if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
-//                macroMovement();
-                smartMovement();
-            }
+        if (map.pathingStrat == RoadMap.PathingStrategy.DefaultBug)
+            defaultMovement();
+        else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
+            smartMovement();
+        if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
+            macroMovement();
+//                smartMovement();
         }
-//        rc.setIndicatorString(1, "Pathing["+map.pathingStrat+"] NextStep("+nextStepNodeId+")["+nextStep.x+","+nextStep.y+"] Dest("+destinationNodeId+")["+destination.x+","+destination.y+"]");
+        rc.setIndicatorString(1, "Pathing["+map.pathingStrat+"] NextStep("+nextStepNodeId+")["+nextStep.x+","+nextStep.y+"] Dest("+destinationNodeId+")["+destination.x+","+destination.y+"] @["+hasArrived+"]");
     }
 
 
@@ -94,7 +92,7 @@ public class Navigator {
     {
         if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
             bugging = false;
-            setDestination(destination);
+            setDestination(cache.MY_HQ);
         }
     }
 
@@ -121,11 +119,22 @@ public class Navigator {
     private void readBroadcastNextStep() throws GameActionException
     {
         int nearRcNodeId = map.idForNearestNode(rc.getLocation());
-        int channel = Utilities.startMacroChannels + nearRcNodeId*map.nodeCount+destinationNodeId;
+
+        boolean oppositeBroadcast = false;
+        if (nearRcNodeId >= map.nodeCount/2) // to save space only half of the pathing is sent, so get the larger half details by fetching their opposite, then inverting
+            oppositeBroadcast = true;
+
+        int channel = Utilities.startMacroChannels+nearRcNodeId*map.nodeCount+destinationNodeId;
+        if (oppositeBroadcast)
+            channel = Utilities.startMacroChannels+map.oppositeNodeId(nearRcNodeId)*map.nodeCount+map.oppositeNodeId(destinationNodeId);
         MapLocation signal = VectorFunctions.intToLoc(rc.readBroadcast(channel));
-        nextStepNodeId = signal.x;
+
+        nextStepNodeId = signal.x == RoadMap.TILE_VOID ? RoadMap.NO_PATH_EXISTS : signal.x;
+        if (oppositeBroadcast) // Opposite channel means opposite result.
+            nextStepNodeId = map.oppositeNodeId(nextStepNodeId);
+
         nextStep = map.locationForNode(nextStepNodeId);
-        System.out.println("SOLDIER Node["+nearRcNodeId+"] -> ["+nextStepNodeId+"] -> ["+destinationNodeId+"]  ~"+(Utilities.startMacroChannels+nearRcNodeId*map.nodeCount+destinationNodeId)+"~  "+signal.x+","+signal.y);
+//        System.out.println("SOLDIER Node["+nearRcNodeId+"] -> ["+nextStepNodeId+"] -> ["+destinationNodeId+"]  ~"+(Utilities.startMacroChannels+nearRcNodeId*map.nodeCount+destinationNodeId)+"~  "+signal.x+","+signal.y);
     }
 
     public MapLocation getNextStep() throws GameActionException
@@ -134,7 +143,9 @@ public class Navigator {
             return destination;
         if (rc.getLocation().isAdjacentTo(nextStep))
             readBroadcastNextStep();
-        return nextStep;
+        if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), nextStep) < Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination))
+            return nextStep;
+        return destination;
     }
 
     private boolean atFinalDestination() throws GameActionException
@@ -197,21 +208,23 @@ public class Navigator {
 
     public void defaultMovement() throws GameActionException
     {
-        if (!bugging) {
-            heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc); // Heading set with slime tail avoidance
-            if(rc.canMove(heading)) {
-                if (!rc.isActive()) rc.yield();
-                    rc.move(heading);
-            } else {
-                bugging = true;
-                bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
-                bugLeft = !bugLeft; // bugging direction is a basic flip-flop
-            }
-        } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
-            bugging = false;
+        if (!atFinalDestination()) {
+            if (!bugging) {
+                heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc); // Heading set with slime tail avoidance
+                if(rc.canMove(heading)) {
+                    if (!rc.isActive()) rc.yield();
+                        rc.move(heading);
+                } else {
+                    bugging = true;
+                    bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
+                    bugLeft = !bugLeft; // bugging direction is a basic flip-flop
+                }
+            } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
+                bugging = false;
 
-        if (bugging)
-            bugMove();
+            if (bugging)
+                bugMove();
+        }
     }
 
 
@@ -223,24 +236,26 @@ public class Navigator {
 
     public void smartMovement() throws GameActionException
     {
-        if (!bugging) {
-            MicroPathing.addLocationToTrail(rc.getLocation()); // Snail Trail
-            heading = map.directionTo(rc.getLocation(), destination); // Heading set by the map to avoid void space
+        if (!atFinalDestination()) {
+            if (!bugging) {
+                MicroPathing.addLocationToTrail(rc.getLocation()); // Snail Trail
+                heading = map.directionTo(rc.getLocation(), destination); // Heading set by the map to avoid void space
 
-            if(MicroPathing.canMove(heading, true, rc) && rc.canMove(heading)) {
-                if (!rc.isActive()) rc.yield();
-                rc.move(heading);
-            } else {
-                heading = rc.getLocation().directionTo(destination);
-                bugging = true;
-                bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
-                bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination); // Bugging is pre-simulated to pick the shortest direction
-            }
-        } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
-            bugging = false;
+                if(MicroPathing.canMove(heading, true, rc) && rc.canMove(heading)) {
+                    if (!rc.isActive()) rc.yield();
+                    rc.move(heading);
+                } else {
+                    heading = rc.getLocation().directionTo(destination);
+                    bugging = true;
+                    bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
+                    bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination); // Bugging is pre-simulated to pick the shortest direction
+                }
+            } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
+                bugging = false;
 
-        if (bugging)
-            bugMove();
+            if (bugging)
+                bugMove();
+        }
     }
 
 
@@ -252,23 +267,40 @@ public class Navigator {
 
     public void macroMovement() throws GameActionException
     {
-        if (!bugging) {
+        if (!atFinalDestination()) {
             MicroPathing.addLocationToTrail(rc.getLocation()); // Snail Trail
             heading = map.directionTo(rc.getLocation(), getNextStep()); // Heading is either a straight shot or a path built from the pre-computed breadth-first node paths
 
-            if(MicroPathing.canMove(heading, true, rc) && rc.canMove(heading)) {
+            if(rc.canMove(heading)) {
                 if (!rc.isActive()) rc.yield();
                 rc.move(heading);
-            } else {
-                heading = rc.getLocation().directionTo(destination);
-                bugging = true;
-                bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
-                bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination); // Bugging is pre-simulated to pick the shortest direction
             }
-        } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
-            bugging = false;
 
-        if (bugging)
-            bugMove();
+//            if (!bugging) {
+//                MicroPathing.addLocationToTrail(rc.getLocation()); // Snail Trail
+//                heading = map.directionTo(rc.getLocation(), getNextStep()); // Heading is either a straight shot or a path built from the pre-computed breadth-first node paths
+//
+//                System.out.println("MACRO MOVE 2");
+//
+//                if(MicroPathing.canMove(heading, true, rc) && rc.canMove(heading)) {
+//                    if (!rc.isActive()) rc.yield();
+//                    rc.move(heading);
+//                } else {
+//                    heading = rc.getLocation().directionTo(destination);
+//                    bugging = true;
+//                    bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
+//                    bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination); // Bugging is pre-simulated to pick the shortest direction
+//                }
+//
+//                System.out.println("MACRO MOVE 3");
+//
+//            } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
+//                bugging = false;
+//
+//            System.out.println("MACRO MOVE 4");
+//
+//            if (bugging)
+//                bugMove();
+        }
     }
 }
