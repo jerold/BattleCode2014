@@ -1,6 +1,7 @@
 package DeepBlue;
 
 import battlecode.common.*;
+import java.util.Random;
 
 /**
  * Created by Jerold Albertson on 1/12/14.
@@ -11,6 +12,8 @@ public class Soldiers {
     static UnitCache cache;
     static RoadMap map;
     static Navigator nav;
+    static MapLocation destination;
+    static Random rand = new Random();
 
     static Direction allDirections[] = Direction.values();
     static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
@@ -30,6 +33,8 @@ public class Soldiers {
 
             cache.reset();
             map.checkForUpdates();
+
+
 
             // Do unit strategy picker
             // strategy picks destinations and performs special tasks

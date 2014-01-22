@@ -46,7 +46,8 @@ public class Drone {
                     	else if(type == 3)
                     	{
                     		while(!towerNear(rc)){rc.yield();}
-                    		for(int k = 0; k < 500; k++){rc.yield();}
+                            // was 500 before I changed it
+                    		for(int k = 0; k < 100; k++){rc.yield();}
                     		while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){rc.yield();}
                     	}
                         rc.construct(RobotType.PASTR);

@@ -1,4 +1,4 @@
-package theSwarm5;
+package theSwarm7;
 
 import battlecode.common.*;
 
@@ -150,12 +150,7 @@ public class Movement
             // we put the try block inside of the while loop so an exception won't terminate the method
             try
             {
-                if (FightMicro.fightMode(rc, target))
-                {
-                    rc.setIndicatorString(2, "Running fight micro 2");
-                    //fire(rc);
-                }
-                else if (rc.isActive())
+                if (rc.isActive())
                 {
                     if (rc.getLocation().isAdjacentTo(target))
                     {
@@ -181,8 +176,12 @@ public class Movement
 
                     rc.setIndicatorString(2, "Not Running fight micro 2");
 
-
-                    if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
+                    if (FightMicro.fightMode(rc, target))
+                    {
+                        rc.setIndicatorString(2, "Running fight micro 2");
+                    	//fire(rc);
+                    }
+                    else if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
                     {
                         MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
                     }
@@ -271,21 +270,20 @@ public class Movement
 
                                 try
                                 {
-                                    boolean ranFight = false;
-                                    if (FightMicro.fightMode(rc, target))
-                                    {
-                                        ranFight = true;
-                                        rc.setIndicatorString(2, "Running fight micro 3");
-                                    }
-                                    else if (rc.isActive())
+                                    if (rc.isActive())
                                     {
                                         dir2 = rc.getLocation().directionTo(target);
 
                                         rc.setIndicatorString(2, "Not Running fight micro 3");
 
 
-
-                                        if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
+                                        boolean ranFight = false;
+                                        if (FightMicro.fightMode(rc, target))
+                                        {
+                                            ranFight = true;
+                                            rc.setIndicatorString(2, "Running fight micro 3");
+                                        }
+                                        else if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
                                         {
                                             MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
                                         }
@@ -626,11 +624,11 @@ public class Movement
             {
 
                 radius = 10;
-                Robot[] enemies2 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-                enemies = FightMicro.findSoldiersAtDistance(rc, enemies2, radius);
+                //Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
+                enemies = FightMicro.findSoldiersAtDistance(rc, enemies, radius);
                 Robot target = null;
 
-                if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) > 50 && enemies2.length > 0)
+                if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) > 50 && enemies.length > 0)
                 {
                     rc.broadcast(rallyPoint2, convertMapLocationToInt(rc.getLocation()));
                 }

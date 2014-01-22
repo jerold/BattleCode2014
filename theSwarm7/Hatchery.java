@@ -1,18 +1,20 @@
-package theSwarm5;
+package theSwarm7;
 
-import battlecode.common.Clock;
-import battlecode.common.MapLocation;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
+import battlecode.common.*;
 
 public class Hatchery {
 	
-	RobotController rc;
+	static RobotController rc;
 	MapLocation target;
     boolean goneForPastr = false;
     int roundNum = 0;
     int fightZone;
     int roundSet = 0;
+    static UnitCache cache;
+    static RoadMap map;
+
+    static Direction allDirections[] = Direction.values();
+    static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
 
     // these are the channels that we will use to communicate to our bots
     static final int enemyHQ = 1;
@@ -33,6 +35,15 @@ public class Hatchery {
 		HQFunctions.InitialLocationBroadcasts(rc);
 
 		HQFunctions.findInitialRally(rc);
+
+        try {
+            cache = new UnitCache(rc);
+            map = new RoadMap(rc, cache);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
 	}
 
 	public void run()
@@ -46,8 +57,12 @@ public class Hatchery {
                 if (rc.isActive())
                 {
                     Movement.fire(rc, enemies, null);
-                    HQFunctions.SpawnSoldiers(rc);
+                    tryToSpawn();
+
+
                 }
+
+
 
                 int broadcast = rc.readBroadcast(rallyPoint2);
                 if (broadcast != 0)
@@ -68,23 +83,27 @@ public class Hatchery {
 
                 if (Clock.getRoundNum() % 5 == 0 && Clock.getRoundNum() > 100)
                 {
-                    //HQFunctions.moveTargetLocationRandomly(rc);
-                    /*
-                    if (goneForPastr && (rc.sensePastrLocations(rc.getTeam()).length > 0 || roundNum > (Clock.getRoundNum() - 250)))
-                    {
-                        HQFunctions.setTargetLocation(rc, goneForPastr);
-                    }
-                    else
-                    {
-                        goneForPastr = HQFunctions.setTargetLocation(rc, goneForPastr);
-                        roundNum = Clock.getRoundNum();
-                    }*/
                     HQFunctions.setTargetLocation(rc, true);
-                    //HQFunctions.findInitialRally(rc);
 
                 }
+
+                cache.reset();
+                map.checkForUpdates();
+
             } catch (Exception e) {}
 			rc.yield();
 		}
 	}
+
+    public static void tryToSpawn() throws GameActionException {
+        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){ // if(rc.isActive()&&rc.senseRobotCount()<2){
+            for(int i=0;i<8;i++){
+                Direction trialDir = allDirections[i];
+                if(rc.canMove(trialDir)){
+                    rc.spawn(trialDir);
+                    break;
+                }
+            }
+        }
+    }
 }

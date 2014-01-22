@@ -1,4 +1,4 @@
-package theSwarm5;
+package theSwarm7;
 
 import battlecode.common.*;
 
@@ -12,7 +12,6 @@ public class FightMicro
     static final int needPastr = 5;
     static final int takeDownEnemyPastr = 6;
     static final int enemyPastrInRangeOfHQ = 7;
-    static final int rallyPoint2 = 8;
 
     // These are broadcasting channels for information about enemy bots
 	static final int StartEnemyChannel = 20000;
@@ -878,13 +877,13 @@ public class FightMicro
                     {
                         MapLocation next = rc.getLocation().add(dir);
                         int nextDist = next.distanceSquaredTo(target);
-                        if (nextDist <= 10 && !Utilities.MapLocationInRangeOfEnemyHQ(rc, next))
+                        if (nextDist <= 10 && !Utilities2.MapLocationInRangeOfEnemyHQ(rc, next))
                         {
                             System.out.print("" + next + ", ");
                             spotsOpen[i] = next;
                             numbOfSpots++;
                         }
-                        else if (nextDist < rc.getLocation().distanceSquaredTo(target) && !Utilities.MapLocationInRangeOfEnemyHQ(rc, next))
+                        else if (nextDist < rc.getLocation().distanceSquaredTo(target) && !Utilities2.MapLocationInRangeOfEnemyHQ(rc, next))
                         {
                             secondChoice[i] = next;
                         }
@@ -933,7 +932,7 @@ public class FightMicro
                         }
                         for (int i = 8; --i >= 0;)
                         {
-                            if (spotsOpen[i] != null && !Utilities.MapLocationInRangeOfEnemyHQ(rc, spotsOpen[i]))
+                            if (spotsOpen[i] != null && !Utilities2.MapLocationInRangeOfEnemyHQ(rc, spotsOpen[i]))
                             {
                                 leftLocs[index] = spotsOpen[i];
                                 System.out.print("Index: " + index + " (" + leftLocs[index] + "), ");
@@ -1766,7 +1765,7 @@ public class FightMicro
 		    	if (closestAlly != null)
 		    	{
 		    		Direction dirToAlly = rc.getLocation().directionTo(closestAlly);
-			    	if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBots, rc.getLocation().add(dirToAlly)))
+			    	if (Utilities2.MapLocationOutOfRangeOfEnemies(rc, enemyBots, rc.getLocation().add(dirToAlly)))
 			    	{
 			    		if (rc.canMove(dirToAlly))
 			    		{
@@ -1912,123 +1911,143 @@ public class FightMicro
 
             // here we only do necessary scans to reduce bitcode usage
 
-            if (rc.isActive())
+            if (nearByEnemies3.length > 0)
             {
-                if (nearByEnemies3.length > 0)
+                nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                nearByAllies = findSoldiers(rc, nearByAllies);
+                nearbyEnemies = findSoldiersAtDistance(rc, nearByEnemies3, 10);
+
+                MapLocation[] enemyBotLoc = locationOfBots(rc, nearByEnemies3);
+                MapLocation[] alliedBots = locationOfBots(rc, nearByAllies);
+
+                if (nearbyEnemies.length > 0)
                 {
-                    if (Clock.getRoundNum() % 3 == 0)
-                    {
-                        rc.broadcast(rallyPoint2, Movement.convertMapLocationToInt(rc.getLocation()));
-                    }
-                    nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-                    nearByAllies = findSoldiers(rc, nearByAllies);
-                    nearbyEnemies = findSoldiersAtDistance(rc, nearByEnemies3, 10);
+                }
+                else
+                {
+                    nearByEnemies2 = findSoldiersAtDistance(rc, nearByEnemies3, 24);
+                }
 
-                    MapLocation[] enemyBotLoc = locationOfBots(rc, nearByEnemies3);
-                    MapLocation[] alliedBots = locationOfBots(rc, nearByAllies);
 
-                    if (nearbyEnemies.length > 0)
+                /**
+                 * We see an enemy in our range so either we shoot it or we run outside of its range
+                 */
+                if (nearbyEnemies.length > 0)
+                {
+                    alliesEngaged = Utilities2.AlliesEngaged(rc, enemyBotLoc, alliedBots);
+                    // based on our health it may be advantageous to retreat so we can fight another day
+                    if (retreat(rc, nearbyEnemies, enemyBotLoc, alliedBots))
                     {
+
                     }
+                    else if (runFromEnemyHQ(rc))
+                    {
+
+                    }
+                    else if (morphBaneling(rc, enemyBotLoc, alliedBots))
+                    {
+
+                    }
+                    else if (finishKill(rc, nearbyEnemies, alliedBots))
+                    {
+
+                    }
+                    else if (rc.readBroadcast(takeDownEnemyPastr) == 1)
+                    {
+                        Movement.fire(rc, nearByEnemies10, alliedBots);
+                    }
+                    // if there are many enemy bots attacking us then we should retreat
+                    else if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1 && findSoldiersAtDistance(rc, nearByAllies, 4).length < 2)
+                    {
+                        Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]).opposite();
+
+                        if (Utilities2.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, rc.getLocation().add(dir)))
+                        {
+                            if (rc.canMove(dir))
+                            {
+                                if (rc.isActive())
+                                {
+                                    rc.move(dir);
+                                }
+                            }
+                            else
+                            {
+                                Movement.fire(rc, nearByEnemies10, alliedBots);
+                            }
+                        }
+                        else
+                        {
+                            Movement.fire(rc, nearByEnemies10, alliedBots);
+                        }
+                    }
+                    else if (alliesEngaged)
+                    {
+                        Movement.fire(rc, nearByEnemies10, alliedBots);
+                    }
+                    // if our allies haven't gotten to battle and our opponent isn't almost dead yet wait for them to arrive
+                    // assuming we can move to a location our enemy can't hit
+                    else if ((nearByAllies.length > 0  && (rc.senseRobotInfo(nearbyEnemies[0]).health > 30)))
+                    {
+                        MapLocation ally;
+                        if (alliedBots[0] != null)
+                        {
+                            ally = rc.getLocation().add(rc.getLocation().directionTo(alliedBots[0]));
+                        }
+                        else
+                        {
+                            ally = rc.getLocation().add(rc.getLocation().directionTo(rc.senseLocationOf(nearByAllies[0])));
+                        }
+
+                        if (Utilities2.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, ally))
+                        {
+                            if (Utilities2.MapLocationInRangeOfEnemyHQ(rc, ally))
+                            {
+                                Movement.fire(rc, nearByEnemies10, alliedBots);
+                            }
+                            else
+                            {
+                                Movement.MoveDirection(rc, rc.getLocation().directionTo(ally), false);
+                            }
+                        }
+                        else
+                        {
+                            Movement.fire(rc, nearByEnemies10, alliedBots);
+                        }
+                    }
+                    // if there are multiple enemies attacking us and we don't have support then we need to get out
+                    // of there if possible
+                    else if (nearbyEnemies.length > 1)
+                    {
+                        MapLocation enemy = rc.getLocation().subtract(rc.getLocation().directionTo(enemyBotLoc[0]));
+                        if (Utilities2.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, enemy))
+                        {
+                            if (!Utilities2.MapLocationInRangeOfEnemyHQ(rc, enemy))
+                            {
+                                Movement.MoveDirection(rc, rc.getLocation().directionTo(enemy), false);
+                            }
+                            else
+                            {
+                                Movement.fire(rc, nearByEnemies10, alliedBots);
+                            }
+                        }
+                        else
+                        {
+                            Movement.fire(rc, nearByEnemies10, alliedBots);
+                        }
+                    }
+                    else if ((rc.getHealth() >= rc.senseRobotInfo(nearbyEnemies[0]).health))
+                    {
+                        Movement.fire(rc, nearByEnemies10, alliedBots);
+                    }
+                    // in this case we have lower health than our opponent and will be killed so we should retreat
                     else
                     {
-                        nearByEnemies2 = findSoldiersAtDistance(rc, nearByEnemies3, 24);
-                    }
-
-
-                    /**
-                     * We see an enemy in our range so either we shoot it or we run outside of its range
-                     */
-                    if (nearbyEnemies.length > 0)
-                    {
-                        alliesEngaged = Utilities.AlliesEngaged(rc, enemyBotLoc, alliedBots);
-                        // based on our health it may be advantageous to retreat so we can fight another day
-                        if (retreat(rc, nearbyEnemies, enemyBotLoc, alliedBots))
+                        MapLocation enemy = rc.getLocation().subtract(rc.getLocation().directionTo(enemyBotLoc[0]));
+                        if (Utilities2.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, enemy))
                         {
-
-                        }
-                        else if (runFromEnemyHQ(rc))
-                        {
-
-                        }
-                        else if (morphBaneling(rc, enemyBotLoc, alliedBots))
-                        {
-
-                        }
-                        else if (finishKill(rc, nearbyEnemies, alliedBots))
-                        {
-
-                        }
-                        else if (rc.readBroadcast(takeDownEnemyPastr) == 1)
-                        {
-                            Movement.fire(rc, nearByEnemies10, alliedBots);
-                        }
-                        // if there are many enemy bots attacking us then we should retreat
-                        else if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1 && findSoldiersAtDistance(rc, nearByAllies, 4).length < 2)
-                        {
-                            Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]).opposite();
-
-                            if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, rc.getLocation().add(dir)))
+                            if (!Utilities2.MapLocationInRangeOfEnemyHQ(rc, enemy))
                             {
-                                if (rc.canMove(dir))
-                                {
-                                    if (rc.isActive())
-                                    {
-                                        rc.move(dir);
-                                    }
-                                }
-                                else
-                                {
-                                    Movement.fire(rc, nearByEnemies10, alliedBots);
-                                }
-                            }
-                            else
-                            {
-                                Movement.fire(rc, nearByEnemies10, alliedBots);
-                            }
-                        }
-                        else if (alliesEngaged)
-                        {
-                            Movement.fire(rc, nearByEnemies10, alliedBots);
-                        }
-                        // if our allies haven't gotten to battle and our opponent isn't almost dead yet wait for them to arrive
-                        // assuming we can move to a location our enemy can't hit
-                        else if ((nearByAllies.length > 0  && (rc.senseRobotInfo(nearbyEnemies[0]).health > 30)))
-                        {
-                            MapLocation ally;
-                            if (alliedBots[0] != null)
-                            {
-                                ally = rc.getLocation().add(rc.getLocation().directionTo(alliedBots[0]));
-                            }
-                            else
-                            {
-                                ally = rc.getLocation().add(rc.getLocation().directionTo(rc.senseLocationOf(nearByAllies[0])));
-                            }
-
-                            if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, ally))
-                            {
-                                if (Utilities.MapLocationInRangeOfEnemyHQ(rc, ally))
-                                {
-                                    Movement.fire(rc, nearByEnemies10, alliedBots);
-                                }
-                                else
-                                {
-                                    Movement.MoveDirection(rc, rc.getLocation().directionTo(ally), false);
-                                }
-                            }
-                            else
-                            {
-                                Movement.fire(rc, nearByEnemies10, alliedBots);
-                            }
-                        }
-                        // if there are multiple enemies attacking us and we don't have support then we need to get out
-                        // of there if possible
-                        else if (nearbyEnemies.length > 1)
-                        {
-                            MapLocation enemy = rc.getLocation().subtract(rc.getLocation().directionTo(enemyBotLoc[0]));
-                            if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, enemy))
-                            {
-                                if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, enemy))
+                                if (!Utilities2.MapLocationInRangeOfEnemyHQ(rc, enemy))
                                 {
                                     Movement.MoveDirection(rc, rc.getLocation().directionTo(enemy), false);
                                 }
@@ -2042,21 +2061,126 @@ public class FightMicro
                                 Movement.fire(rc, nearByEnemies10, alliedBots);
                             }
                         }
-                        else if ((rc.getHealth() >= rc.senseRobotInfo(nearbyEnemies[0]).health))
+                        else
                         {
                             Movement.fire(rc, nearByEnemies10, alliedBots);
                         }
-                        // in this case we have lower health than our opponent and will be killed so we should retreat
-                        else
+                    }
+                }
+                /**
+                 * If we can see enemies but they are one move away then ...
+                 */
+                else if (nearByEnemies2.length > 0)
+                {
+                    MapLocation enemySlot = rc.senseLocationOf(nearByEnemies2[0]);
+                    //nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
+                    //nearByAllies3 = findSoldiers(rc, nearByAllies3);
+                    alliesEngaged = Utilities2.AlliesEngaged(rc, enemyBotLoc, alliedBots);
+                    nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 9);
+                    GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
+                    Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
+                    Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
+                    if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
+                    {
+                        rc.setIndicatorString(1, "Fly you fools");
+                    }
+                    else if (nearByEnemies4.length > 0)
+                    {
+                        Movement.fire(rc, nearByEnemies10, alliedBots);
+                    }
+                    else if (takeDownPastrNearHQ(rc, alliedBots, nearByEnemies10))
+                    {
+                        rc.setIndicatorString(1, "Enemy HQ pastr");
+                    }
+                    else if (runFromEnemyHQ(rc))
+                    {
+
+                    }
+                    else if (splitUpEnemy(rc, enemyBotLoc, alliedBots))
+                    {
+                        rc.setIndicatorString(1, "Split Up Enemy");
+                    }
+                    else if (advanceToTarget(rc, enemyBotLoc, endGoal))
+                    {
+                        rc.setIndicatorString(1, "Advance to Target Loc");
+                    }
+                    else if (rc.readBroadcast(takeDownEnemyPastr) == 1 && !alliesEngaged)
+                    {
+                        rc.setIndicatorString(1, "Take down enemy Pastr");
+                        MapLocation center = centerOfEnemies(enemyBotLoc);
+                        if (!Utilities2.MapLocationInRangeOfEnemyHQ(rc, center))
                         {
-                            MapLocation enemy = rc.getLocation().subtract(rc.getLocation().directionTo(enemyBotLoc[0]));
-                            if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, enemy))
+                        	Movement.MoveDirection(rc, rc.getLocation().directionTo(center), false);
+                        }
+                    }
+                    else if (nearByEnemies3.length == 1 && (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > 1 || rc.getHealth() > rc.senseRobotInfo(nearByEnemies2[0]).health))
+                    {
+                        rc.setIndicatorString(1, "0");
+                        moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
+                    }
+                    // if our brethern are in the field of action we must join them!
+                    else if (alliesEngaged && (enemyBotLoc.length <= (alliedBots.length + 1)) && numbOfRobotsAttackingTarget(rc, rc.getLocation().add(dir), enemyBotLoc, alliedBots) < 2)
+                    {
+                        rc.setIndicatorString(1, "1");
+                        moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
+                        //Movement.MoveDirection(rc, dir, false);
+                    }/*
+                    else if (nearByEnemies3.length >= 4)
+                    {
+                        rc.setIndicatorString(1, "Flanking");
+                        AttackFlank(rc, enemyBotLoc, alliedBots);
+                    }*/
+                    else if ((numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > (nearByEnemies3.length)) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
+                    {
+                        rc.setIndicatorString(1, "2");
+                        moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
+                        //Movement.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
+                    }
+                    else if (nearByAllies2 != null && nearByAllies2.length > 0)
+                    {
+                        rc.setIndicatorString(1, "3");
+                        // if a nearby ally has high health we will join him
+                        if (rc.senseRobotInfo(nearByAllies2[0]).health > 75)
+                        {
+                            MapLocation target = rc.senseLocationOf(nearByAllies2[0]);
+                            Direction dir2 = rc.getLocation().directionTo(target);
+
+                            if (Utilities2.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, rc.getLocation().add(dir2)))
                             {
-                                if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, enemy))
+                                if (rc.canMove(dir2))
                                 {
-                                    if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, enemy))
+                                    if (rc.isActive())
                                     {
-                                        Movement.MoveDirection(rc, rc.getLocation().directionTo(enemy), false);
+                                        rc.move(dir2);
+                                    }
+                                }
+                                else
+                                {
+                                    Movement.fire(rc, nearByEnemies10, alliedBots);
+                                }
+                            }
+                        }
+                    }
+                    else if (nearByEnemies2.length == 1 && rc.getHealth() > (rc.senseRobotInfo(nearByEnemies2[0]).health + 10) && nearByEnemies3.length == 1)
+                    {
+                        rc.setIndicatorString(1, "4");
+                        moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
+                        //Movement.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
+                    }
+                    else
+                    {
+                        rc.setIndicatorString(1, "5");
+                        if (nearByEnemies4.length > 0)
+                        {
+                            Robot[] nearByEnemies5 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
+                            if (nearByEnemies5.length > 0)
+                            {
+                                MapLocation spot = rc.senseLocationOf(nearByEnemies5[0]);
+                                if (Utilities2.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, spot))
+                                {
+                                    if (!Utilities2.MapLocationInRangeOfEnemyHQ(rc, spot))
+                                    {
+                                        Movement.MoveDirection(rc, rc.getLocation().directionTo(spot), false);
                                     }
                                     else
                                     {
@@ -2074,261 +2198,111 @@ public class FightMicro
                             }
                         }
                     }
-                    /**
-                     * If we can see enemies but they are one move away then ...
-                     */
-                    else if (nearByEnemies2.length > 0)
-                    {
-                        MapLocation enemySlot = rc.senseLocationOf(nearByEnemies2[0]);
-                        //nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
-                        //nearByAllies3 = findSoldiers(rc, nearByAllies3);
-                        alliesEngaged = Utilities.AlliesEngaged(rc, enemyBotLoc, alliedBots);
-                        nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 9);
-                        GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
-                        Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
-                        Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
-                        if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
-                        {
-                            rc.setIndicatorString(1, "Fly you fools");
-                        }
-                        else if (nearByEnemies4.length > 0)
-                        {
-                            Movement.fire(rc, nearByEnemies10, alliedBots);
-                        }
-                        else if (takeDownPastrNearHQ(rc, alliedBots, nearByEnemies10))
-                        {
-                            rc.setIndicatorString(1, "Enemy HQ pastr");
-                        }
-                        else if (runFromEnemyHQ(rc))
-                        {
+                }
+                /**
+                 * We can see enemies in the distance
+                 */
+                else if (nearByEnemies3.length > 0)
+                {
 
-                        }
-                        else if (splitUpEnemy(rc, enemyBotLoc, alliedBots))
-                        {
-                            rc.setIndicatorString(1, "Split Up Enemy");
-                        }
-                        else if (advanceToTarget(rc, enemyBotLoc, endGoal))
-                        {
-                            rc.setIndicatorString(1, "Advance to Target Loc");
-                        }
-                        else if (rc.readBroadcast(takeDownEnemyPastr) == 1 && !alliesEngaged)
-                        {
-                            rc.setIndicatorString(1, "Take down enemy Pastr");
-                            MapLocation center = centerOfEnemies(enemyBotLoc);
-                            if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, center))
-                            {
-                                Movement.MoveDirection(rc, rc.getLocation().directionTo(center), false);
-                            }
-                        }
-                        else if (nearByEnemies3.length == 1 && (numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > 1 || rc.getHealth() > rc.senseRobotInfo(nearByEnemies2[0]).health))
-                        {
-                            rc.setIndicatorString(1, "0");
-                            moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
-                        }
-                        // if our brethern are in the field of action we must join them!
-                        else if (alliesEngaged && (enemyBotLoc.length <= (alliedBots.length + 1)) && numbOfRobotsAttackingTarget(rc, rc.getLocation().add(dir), enemyBotLoc, alliedBots) < 2)
-                        {
-                            rc.setIndicatorString(1, "1");
-                            moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
-                            //Movement.MoveDirection(rc, dir, false);
-                        }/*
-                    else if (nearByEnemies3.length >= 4)
+                    MapLocation target = rc.senseLocationOf(nearByEnemies3[0]);
+                    if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
                     {
-                        rc.setIndicatorString(1, "Flanking");
-                        AttackFlank(rc, enemyBotLoc, alliedBots);
-                    }*/
-                        else if ((numbOfAlliesOneSpaceAwayFromAttacking(rc, enemyBotLoc, alliedBots) > (nearByEnemies3.length)) && ourHealthAdvantage(rc, nearByAllies5, nearByEnemies3) > 50)
-                        {
-                            rc.setIndicatorString(1, "2");
-                            moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
-                            //Movement.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
-                        }
-                        else if (nearByAllies2 != null && nearByAllies2.length > 0)
-                        {
-                            rc.setIndicatorString(1, "3");
-                            // if a nearby ally has high health we will join him
-                            if (rc.senseRobotInfo(nearByAllies2[0]).health > 75)
-                            {
-                                MapLocation target = rc.senseLocationOf(nearByAllies2[0]);
-                                Direction dir2 = rc.getLocation().directionTo(target);
-
-                                if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, rc.getLocation().add(dir2)))
-                                {
-                                    if (rc.canMove(dir2))
-                                    {
-                                        if (rc.isActive())
-                                        {
-                                            rc.move(dir2);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Movement.fire(rc, nearByEnemies10, alliedBots);
-                                    }
-                                }
-                            }
-                        }
-                        else if (nearByEnemies2.length == 1 && rc.getHealth() > (rc.senseRobotInfo(nearByEnemies2[0]).health + 10) && nearByEnemies3.length == 1)
-                        {
-                            rc.setIndicatorString(1, "4");
-                            moveToBestAdvanceLoc(rc, enemyBotLoc, alliedBots);
-                            //Movement.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
-                        }
-                        else
-                        {
-                            rc.setIndicatorString(1, "5");
-                            if (nearByEnemies4.length > 0)
-                            {
-                                Robot[] nearByEnemies5 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
-                                if (nearByEnemies5.length > 0)
-                                {
-                                    MapLocation spot = rc.senseLocationOf(nearByEnemies5[0]);
-                                    if (Utilities.MapLocationOutOfRangeOfEnemies(rc, enemyBotLoc, spot))
-                                    {
-                                        if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, spot))
-                                        {
-                                            Movement.MoveDirection(rc, rc.getLocation().directionTo(spot), false);
-                                        }
-                                        else
-                                        {
-                                            Movement.fire(rc, nearByEnemies10, alliedBots);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Movement.fire(rc, nearByEnemies10, alliedBots);
-                                    }
-                                }
-                                else
-                                {
-                                    Movement.fire(rc, nearByEnemies10, alliedBots);
-                                }
-                            }
-                        }
                     }
-                    /**
-                     * We can see enemies in the distance
-                     */
-                    else if (nearByEnemies3.length > 0)
+                    else if (nearByEnemies4.length > 0)
+                    {
+                        Movement.fire(rc, nearByEnemies10, alliedBots);
+                    }
+                    else if (runFromEnemyHQ(rc))
                     {
 
-                        MapLocation target = rc.senseLocationOf(nearByEnemies3[0]);
-                        if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
-                        {
-                        }
-                        else if (nearByEnemies4.length > 0)
-                        {
-                            Movement.fire(rc, nearByEnemies10, alliedBots);
-                        }
-                        else if (runFromEnemyHQ(rc))
-                        {
+                    }
+                    else if (advanceToTarget(rc, enemyBotLoc, endGoal))
+                    {
+                        rc.setIndicatorString(1, "Advance to target Loc");
+                    }
+                    else if (takeDownPastrNearHQ(rc, alliedBots, nearByEnemies10))
+                    {
 
-                        }
-                        else if (advanceToTarget(rc, enemyBotLoc, endGoal))
-                        {
-                            rc.setIndicatorString(1, "Advance to target Loc");
-                        }
-                        else if (takeDownPastrNearHQ(rc, alliedBots, nearByEnemies10))
-                        {
-
-                        }
-                        // if we have friends ahead then we must join them
-                        else if (Utilities.AlliesAhead(rc, nearByAllies, target) > 0)
-                        {
+                    }
+                    // if we have friends ahead then we must join them
+                    else if (Utilities2.AlliesAhead(rc, nearByAllies, target) > 0)
+                    {
                         /*if (!MapLocationInRangeOfEnemyHQ(rc, target))
                         {*/
-                            if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, target))
-                            {
-                                Movement.MoveDirection(rc, rc.getLocation().directionTo(target), false);
-                            }
+                    	if (!Utilities2.MapLocationInRangeOfEnemyHQ(rc, target))
+                    	{
+                    		Movement.MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                    	}
                         /*}
                         else
                         {
                             fire(rc);
                         }*/
-                        }
-                        else if (nearByEnemies4.length > 0)
-                        {
-                            Movement.fire(rc, nearByEnemies10, alliedBots);
-                        }
-                        else if (rc.senseNearbyGameObjects(Robot.class,  target, 10, rc.getTeam()).length > 0)
-                        {
-                            if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, target))
-                            {
-                                Movement.MoveDirection(rc, rc.getLocation().directionTo(target), false);
-                            }
-                        }
-                        // if there are allies coming up then wait for them
-                        else if (Utilities.AlliesBehindUs(rc, nearByAllies, target) > 0)
-                        {
-                            Movement.fire(rc, nearByEnemies3, alliedBots);
-                        }
-                        // if our enemies have higher health than us also wait
-                        else if (rc.senseRobotInfo(nearByEnemies3[0]).health > rc.getHealth())
-                        {
-                            Movement.fire(rc, nearByEnemies3, alliedBots);
-                        }
-                        // otherwise advance to death or glory
-                        else
-                        {
-                            if (!Utilities.MapLocationInRangeOfEnemyHQ(rc, target))
-                            {
-                                Movement.MoveDirection(rc, rc.getLocation().directionTo(target), false);
-                            }
-                            else
-                            {
-                                Movement.fire(rc, nearByEnemies3, alliedBots);
-                            }
-                        }
                     }
-                    return true;
-                }
-                // here we deal with none soldier enemies like pastrs and noise towers
-                else if (nearByEnemies4.length > 0)
-                {
-                    nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-                    nearByAllies = findSoldiers(rc, nearByAllies);
-                    MapLocation[] alliedBots = locationOfBots(rc, nearByAllies);
-
-                    MapLocation target2 = rc.senseLocationOf(nearByEnemies4[0]);
-                    if (rc.getLocation().distanceSquaredTo(target2) > 10)
+                    else if (nearByEnemies4.length > 0)
                     {
-                        Movement.MoveDirection(rc, rc.getLocation().directionTo(target2), false);
+                        Movement.fire(rc, nearByEnemies10, alliedBots);
                     }
+                    else if (rc.senseNearbyGameObjects(Robot.class,  target, 10, rc.getTeam()).length > 0)
+                    {
+                    	if (!Utilities2.MapLocationInRangeOfEnemyHQ(rc, target))
+                    	{
+                    		Movement.MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                    	}
+                    }
+                    // if there are allies coming up then wait for them
+                    else if (Utilities2.AlliesBehindUs(rc, nearByAllies, target) > 0)
+                    {
+                        Movement.fire(rc, nearByEnemies3, alliedBots);
+                    }
+                    // if our enemies have higher health than us also wait
+                    else if (rc.senseRobotInfo(nearByEnemies3[0]).health > rc.getHealth())
+                    {
+                        Movement.fire(rc, nearByEnemies3, alliedBots);
+                    }
+                    // otherwise advance to death or glory
                     else
                     {
-                        Movement.fire(rc, nearByEnemies4, alliedBots);
+                        if (!Utilities2.MapLocationInRangeOfEnemyHQ(rc, target))
+                        {
+                            Movement.MoveDirection(rc, rc.getLocation().directionTo(target), false);
+                        }
+                        else
+                        {
+                            Movement.fire(rc, nearByEnemies3, alliedBots);
+                        }
                     }
-                    return true;
                 }
-                else if (rc.getLocation().distanceSquaredTo(Movement.convertIntToMapLocation(rc.readBroadcast(enemyHQ))) <= 35)
-                {
-                    runFromEnemyHQ(rc);
+                return true;
+            }
+            // here we deal with none soldier enemies like pastrs and noise towers
+            else if (nearByEnemies4.length > 0)
+            {
+                nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                nearByAllies = findSoldiers(rc, nearByAllies);
+                MapLocation[] alliedBots = locationOfBots(rc, nearByAllies);
 
-                    return true;
+                MapLocation target2 = rc.senseLocationOf(nearByEnemies4[0]);
+                if (rc.getLocation().distanceSquaredTo(target2) > 10)
+                {
+                    Movement.MoveDirection(rc, rc.getLocation().directionTo(target2), false);
                 }
                 else
                 {
-                    return false;
+                    Movement.fire(rc, nearByEnemies4, alliedBots);
                 }
+                return true;
+            }
+            else if (rc.getLocation().distanceSquaredTo(Movement.convertIntToMapLocation(rc.readBroadcast(enemyHQ))) <= 35)
+            {
+                runFromEnemyHQ(rc);
+
+                return true;
             }
             else
             {
-                Robot[] nearByEnemies;
-                int[] AllEnemyNoiseTowers;
-                int[] AllEnemyBots;
-
-                nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-
-                if (nearByEnemies.length > 0)
-                {
-                    AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                    AllEnemyNoiseTowers = null;
-
-                    FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
-
-                }
-                return true;
+                return false;
             }
 
         } catch(Exception e)
