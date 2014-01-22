@@ -156,6 +156,8 @@ public class HQFunctions
 		} catch (Exception e) {}
 	}
 
+
+
     public static boolean setTargetLocation(RobotController rc, boolean wentForPastr)
     {
         boolean goingForPastr = false;

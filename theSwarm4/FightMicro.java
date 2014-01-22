@@ -1749,11 +1749,11 @@ public class FightMicro
             if (enemyBots.length > 0)
             {
                 boolean enemiesInOurWay = false;
-                int ourDistToDefenseLoc = rc.getLocation().distanceSquaredTo(defenseLoc);
+                //int ourDistToDefenseLoc = rc.getLocation().distanceSquaredTo(defenseLoc);
                 for (int i = enemyBots.length; --i>=0;)
                 {
                     int enemyDistToDefenseLoc = enemyBots[i].distanceSquaredTo(defenseLoc);
-                    if (ourDistToDefenseLoc >= enemyDistToDefenseLoc)
+                    if (10 >= enemyDistToDefenseLoc)
                     {
                         i = -1;
                         enemiesInOurWay = true;
@@ -1785,54 +1785,59 @@ public class FightMicro
      */
     public static boolean defenseMicro(RobotController rc, MapLocation defenseLoc)
     {
+        rc.setIndicatorString(1, "Defensive fight micro");
+        rc.setIndicatorString(2, ""+defenseLoc);
     	if (rc.isActive())
     	{
-    		Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-    		if (allVisibleEnemies.length > 0)
-    		{
-    			Robot[] inRangeEnemies = findSoldiers(rc, allVisibleEnemies);
-    			Robot[] allVisibleAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-    			Robot[] allVisibleAlliedSoldiers = findSoldiers(rc, allVisibleAllies);
-    			MapLocation[] enemyBotLoc = locationOfBots(rc, allVisibleEnemies);
-                MapLocation[] alliedBots = locationOfBots(rc, allVisibleAllies);
-
-    			// if there are
-    			if (inRangeEnemies.length > 0)
-    			{
-    				// if a bunch of enemies have positioned themselves to just attack us and we have friends then we should retreat
-    				if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1 && allVisibleAlliedSoldiers.length > 1)
-    				{
-    					if (retreatToAllies(rc, inRangeEnemies, enemyBotLoc, alliedBots))
-    					{
-    					}
-    					else
-    					{
-    						Movement.fire(rc, inRangeEnemies, alliedBots);
-    					}
-    				}
-    				else
-    				{
-    					Movement.fire(rc, inRangeEnemies, alliedBots);
-    				}
-    			}
-                else if (allVisibleEnemies.length > 0)
+            if (rc.getLocation().distanceSquaredTo(defenseLoc) < 35)
+            {
+                Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+                if (allVisibleEnemies.length > 0)
                 {
-                    // ideally we move toward our allies to strengthen our position
-                    if (retreatToAllies(rc, allVisibleEnemies, enemyBotLoc, alliedBots))
-                    {
+                    Robot[] inRangeEnemies = findSoldiers(rc, allVisibleEnemies);
+                    inRangeEnemies = findSoldiersAtDistance(rc, inRangeEnemies, 10);
+                    Robot[] allVisibleAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                    Robot[] allVisibleAlliedSoldiers = findSoldiers(rc, allVisibleAllies);
+                    MapLocation[] enemyBotLoc = locationOfBots(rc, allVisibleEnemies);
+                    MapLocation[] alliedBots = locationOfBots(rc, allVisibleAllies);
 
-                    }
-                    else if (enemyInfiltration(rc, enemyBotLoc, alliedBots, inRangeEnemies, defenseLoc))
+                    if (enemyInfiltration(rc, enemyBotLoc, alliedBots, inRangeEnemies, defenseLoc))
                     {
+                    }
+                    else if (inRangeEnemies.length > 0)
+                    {
+                        // if a bunch of enemies have positioned themselves to just attack us and we have friends then we should retreat
+                        if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1 && allVisibleAlliedSoldiers.length > 1)
+                        {
+                            if (retreatToAllies(rc, inRangeEnemies, enemyBotLoc, alliedBots))
+                            {
+                            }
+                            else
+                            {
+                                Movement.fire(rc, inRangeEnemies, alliedBots);
+                            }
+                        }
+                        else
+                        {
+                            Movement.fire(rc, inRangeEnemies, alliedBots);
+                        }
+                    }
+                    else if (allVisibleEnemies.length > 0)
+                    {
+                        // ideally we move toward our allies to strengthen our position
+                        if (retreatToAllies(rc, allVisibleEnemies, enemyBotLoc, alliedBots))
+                        {
 
+                        }
+
+                        else
+                        {
+                            Movement.fire(rc, allVisibleEnemies, alliedBots);
+                        }
                     }
-                    else
-                    {
-                        Movement.fire(rc, allVisibleEnemies, alliedBots);
-                    }
+                    return true;
                 }
-                return true;
-    		}
+            }
     	}
     	else
     	{

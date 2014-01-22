@@ -181,21 +181,27 @@ public class Movement
 
                     dir = rc.getLocation().directionTo(target);
                     newDir = Direction.NONE;
-                    nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+                    //nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
+                    /*
                     if (alliedBots.length == 0)
                     {
                         alliedBots = FightMicro.AllAlliedBotsInfo(rc);
                     }
                     if (AllEnemyBots.length == 0 && nearByEnemies.length > 0)
                     {
-                        FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
-                        AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                        //FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
+                        //AllEnemyBots = FightMicro.AllEnemyBots(rc);
                     }
+                    */
 
                     rc.setIndicatorString(2, "Not Running fight micro 2");
 
-                    if (FightMicro.fightMode(rc, target))
+                    if ((rc.readBroadcast(defendPastr) == 1) && FightMicro.defenseMicro(rc, Utilities.convertIntToMapLocation(rc.readBroadcast(pastLoc))))
+                    {
+
+                    }
+                    else if (FightMicro.fightMode(rc, target))
                     {
                         rc.setIndicatorString(2, "Running fight micro 2");
                     	//fire(rc);
@@ -301,7 +307,11 @@ public class Movement
 
 
                                         boolean ranFight = false;
-                                        if (FightMicro.fightMode(rc, target))
+                                        if ((rc.readBroadcast(defendPastr) == 1) && FightMicro.defenseMicro(rc, Utilities.convertIntToMapLocation(rc.readBroadcast(pastLoc))))
+                                        {
+                                            ranFight = true;
+                                        }
+                                        else if (FightMicro.fightMode(rc, target))
                                         {
                                             ranFight = true;
                                             rc.setIndicatorString(2, "Running fight micro 3");

@@ -16,6 +16,7 @@ public class Drone {
 
     public Drone(RobotController rc, int type)
     {
+        rc.setIndicatorString(0, "Drone");
         this.rc = rc;
         this.type = type;
         pastrSpot = TowerUtil.bestSpot3(rc);

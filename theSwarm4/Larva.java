@@ -26,6 +26,7 @@ public class Larva {
     static final int enemyPastrInRangeOfHQ = 7;
     static final int rallyPoint2 = 8;
     static final int defendPastr = 9;
+    static final int pastLoc = 10;
 	
 	public Larva(RobotController rc)
 	{
@@ -74,7 +75,7 @@ public class Larva {
 					rc.setIndicatorString(1, "Target:" + target);
                     rc.setIndicatorString(2, "Not Running fight micro 1");
                     MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
-                    if (ourPastrs.length > 0 && FightMicro.defenseMicro(rc, ourPastrs[0]))
+                    if ((rc.readBroadcast(defendPastr) == 1) && FightMicro.defenseMicro(rc, Utilities.convertIntToMapLocation(rc.readBroadcast(pastLoc))))
                     {
 
                     }
