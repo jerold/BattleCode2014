@@ -613,9 +613,13 @@ public class TowerUtil
 				{
 					total -= 2;
 				}
+				else if((k - (scope/2)) + t >= 0 && (a - (scope / 2)) + i >= 0)
+				{
+					total += (int)cows[(k - (scope / 2)) + t][(a - (scope / 2)) + i];
+				}
 				else
 				{
-					total += (int)cows[k - scope / 2 + t][a - scope / 2 + i];
+					total = total;
 				}
 			}
     	}

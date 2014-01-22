@@ -2068,5 +2068,12 @@ public class Utilities
     		return false;
     	}
     }
+    /*public static long checkSamePastrLoc(RobotController rc, MapLocation firstPastr){
+    	long[] pastrInfo = new long[30];
+    	MapLocation[] pastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+    	if(pastrs[0] != null){
+    		
+    	}
+    }*/
 }
 
