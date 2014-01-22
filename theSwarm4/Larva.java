@@ -1,6 +1,10 @@
-package team104;
+package theSwarm4;
 
-import battlecode.common.*;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.Robot;
+import battlecode.common.RobotController;
+import sun.util.logging.resources.logging;
 
 public class Larva {
 	RobotController rc;
@@ -18,6 +22,10 @@ public class Larva {
     static final int rallyPoint = 3;
     static final int needNoiseTower = 4;
     static final int needPastr = 5;
+    static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
+    static final int rallyPoint2 = 8;
+    static final int defendPastr = 9;
 	
 	public Larva(RobotController rc)
 	{
@@ -44,22 +52,17 @@ public class Larva {
 				if (rc.isActive())
 				{
 
-
-                    if (rc.senseTeamMilkQuantity(rc.getTeam()) > 9000000)
-                    {
-                        rc.wearHat();
-                    }
-
+					int k = rc.readBroadcast(needPastr);
                     if (rc.readBroadcast(needNoiseTower) == 1)
                     {
                         rc.broadcast(needNoiseTower, 0);
                         Extractor extractor = new Extractor(rc);
                         extractor.run();
                     }
-                    else if (rc.readBroadcast(needPastr) == 1)
+                    else if (k != 0)
                     {
                         rc.broadcast(needPastr, 0);
-                        Drone drone = new Drone(rc);
+                        Drone drone = new Drone(rc, k);
                         drone.run();
                     }
 
@@ -70,11 +73,15 @@ public class Larva {
 
 					rc.setIndicatorString(1, "Target:" + target);
                     rc.setIndicatorString(2, "Not Running fight micro 1");
-                    if (FightMicro.fightMode(rc, target))
+                    MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
+                    if (ourPastrs.length > 0 && FightMicro.defenseMicro(rc, ourPastrs[0]))
+                    {
+
+                    }
+                    else if (FightMicro.fightMode(rc, target))
                     {
                         rc.setIndicatorString(2, "Running fight micro");
                     }
-
 					else
 					{
                         MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
@@ -86,7 +93,7 @@ public class Larva {
                                 target = Movement.convertIntToMapLocation(location);
                             }
                         }
-						Movement.MoveMapLocation(rc, target, false);
+						Movement.MoveMapLocation(rc, target, false, true);
 					}
 				}
                 else

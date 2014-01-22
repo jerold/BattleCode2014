@@ -1,4 +1,4 @@
-package towerbot;
+package UED;
 
 import battlecode.common.*;
 

@@ -1,4 +1,4 @@
-package theSwarm3;
+package theSwarm4;
 
 import battlecode.common.*;
 
@@ -71,20 +71,21 @@ public class Baneling {
 
                 if (rc.isActive())
                 {
+
                     Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                     // if we see no enemy soldiers morph back into larva
-                    if (allVisibleEnemies.length == 0 || (allVisibleEnemies.length == 1 && rc.senseRobotInfo(allVisibleEnemies[0]).health < 50))
+                    if (allVisibleEnemies.length == 0)
                     {
                         Larva larva = new Larva(rc);
                         larva.run();
                     }
-
                     MapLocation[] enemies = FightMicro.locationOfBots(rc, allVisibleEnemies);
 
                     MapLocation center = FightMicro.centerOfEnemies(enemies);
 
                     Movement.MoveDirection(rc, rc.getLocation().directionTo(center), false);
+
                 }
             } catch (Exception e) {}
             rc.yield();
