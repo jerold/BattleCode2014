@@ -49,6 +49,18 @@ public class Hatchery {
                     HQFunctions.SpawnSoldiers(rc);
                 }
 
+                if (Clock.getRoundNum() % 50 == 0)
+                {
+                    System.out.println();
+                    System.out.println("Enemy Bots: ");
+                    int[] AllEnemies = FightMicro.AllEnemyBots(rc);
+                    for (int i = 0; i<AllEnemies.length; i++)
+                    {
+                        System.out.print(FightMicro.getBotLocation(AllEnemies[i]));
+                    }
+                    System.out.println();
+                }
+
                 int broadcast = rc.readBroadcast(rallyPoint2);
                 if (broadcast != 0)
                 {

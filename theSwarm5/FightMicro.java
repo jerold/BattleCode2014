@@ -60,6 +60,7 @@ public class FightMicro
 		return allEnemies;
 	}
 
+
     /**
      * This function reads all of the enemy Noise Towers off the messaging board and returns them as an array of ints
      */
@@ -171,9 +172,12 @@ public class FightMicro
      * new information
      */
     public static void recordEnemyNoiseTower(RobotController rc, int[] AllEnemyNoiseTowers, int noiseTower)
-    {
+    {/*
         try
         {
+
+
+
             int botID =  getBotID(noiseTower); //noiseTower % IDOffset;
             boolean foundInList = false;
             int index = 0;
@@ -200,7 +204,7 @@ public class FightMicro
 
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     /**
@@ -275,7 +279,7 @@ public class FightMicro
     {
         try
         {
-            for (int i = index; i < (enemyRobots.length+1); i++)
+            for (int i = index; i < (enemyRobots.length-1); i++)
             {
                 rc.broadcast(i+StartEnemyChannel, enemyRobots[i+1]); //ConvertLongToBits(enemyRobots[i+1]));
             }
@@ -880,7 +884,6 @@ public class FightMicro
                         int nextDist = next.distanceSquaredTo(target);
                         if (nextDist <= 10 && !Utilities.MapLocationInRangeOfEnemyHQ(rc, next))
                         {
-                            System.out.print("" + next + ", ");
                             spotsOpen[i] = next;
                             numbOfSpots++;
                         }
@@ -926,21 +929,14 @@ public class FightMicro
                         MapLocation[] leftLocs = new MapLocation[numbOfSpots];
                         int index = 0;
 
-                        if (Clock.getRoundNum() < 250)
-                        {
-                            System.out.println();
-                            System.out.println("Locations available");
-                        }
                         for (int i = 8; --i >= 0;)
                         {
                             if (spotsOpen[i] != null && !Utilities.MapLocationInRangeOfEnemyHQ(rc, spotsOpen[i]))
                             {
                                 leftLocs[index] = spotsOpen[i];
-                                System.out.print("Index: " + index + " (" + leftLocs[index] + "), ");
                                 index++;
                             }
                         }
-                        System.out.println();
 
                         for (int i = numbOfSpots; --i>=0;)
                         {
@@ -1916,10 +1912,6 @@ public class FightMicro
             {
                 if (nearByEnemies3.length > 0)
                 {
-                    if (Clock.getRoundNum() % 3 == 0)
-                    {
-                        rc.broadcast(rallyPoint2, Movement.convertMapLocationToInt(rc.getLocation()));
-                    }
                     nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
                     nearByAllies = findSoldiers(rc, nearByAllies);
                     nearbyEnemies = findSoldiersAtDistance(rc, nearByEnemies3, 10);

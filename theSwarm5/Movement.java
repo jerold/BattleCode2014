@@ -760,27 +760,20 @@ public class Movement
 
                 if(target != null)
                 {
-                    if (rc.senseRobotInfo(target).health <= 10)
-                    {
-                        if (rc.senseRobotInfo(target).type == RobotType.SOLDIER)
-                        {
-                            int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                            FightMicro.recordEnemyBotKilled(rc, AllEnemyBots, target);
-
-                        }
-                        else if (rc.senseRobotInfo(target).type == RobotType.NOISETOWER)
-                        {
-                            int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
-                            FightMicro.recordEnemyBotKilled(rc, AllEnemyNoiseTowers, target);
-                        }
-                    }
                     if (rc.canSenseObject(target))
                     {
                     	if (rc.canAttackSquare(rc.senseRobotInfo(target).location))
                     	{
                     		rc.attackSquare(rc.senseRobotInfo(target).location);
+                            if (rc.senseRobotInfo(target).health <= 10)
+                            {
+                                int[] enemyRobots = FightMicro.AllEnemyBots(rc);
+                                FightMicro.recordEnemyBotKilled(rc, enemyRobots, target);
+                            }
                     	}
                     }
+
+
                     
                 }
             }
