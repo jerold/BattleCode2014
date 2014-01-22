@@ -220,6 +220,7 @@ public class HQFunctions
             MapLocation target = Movement.convertIntToMapLocation(rc.readBroadcast(rallyPoint));
             Direction dir = directions[rand.nextInt(8)];
             MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+            int[] AllEnemies = FightMicro.AllEnemyBots(rc);
             MapLocation closestPastr = null;
             int closestDist = 1000000;
             boolean initialRally = false;
@@ -253,6 +254,10 @@ public class HQFunctions
                 {
                     rc.broadcast(enemyPastrInRangeOfHQ, 0);
                 }
+            }
+            else if (AllEnemies.length > 0 && AllEnemies[0] != 0)
+            {
+                target = FightMicro.getBotLocation(AllEnemies[0]);
             }
             else
             {

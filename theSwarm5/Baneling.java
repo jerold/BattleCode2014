@@ -33,6 +33,7 @@ public class Baneling {
                 Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam().opponent());
                 Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam());
                 Robot[] enemiesInRange = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
+                int[] allEnemies = FightMicro.AllEnemyBots(rc);
 
                 double totalDamage = 0;
 
@@ -64,10 +65,24 @@ public class Baneling {
 
                 if (totalDamage > rc.getHealth() + 80)
                 {
+                    for (int i = nearByEnemies.length; --i>=0;)
+                    {
+                        if (rc.senseRobotInfo(nearByEnemies[i]).health <= 40 +rc.getHealth()/2)
+                        {
+                            FightMicro.recordEnemyBotKilled(rc, allEnemies, nearByEnemies[i]);
+                        }
+                    }
                     rc.selfDestruct();
                 }
                 else if ((enemiesInRange.length * 10 >= (int) rc.getHealth()) && totalDamage > 50)
                 {
+                    for (int i = nearByEnemies.length; --i>=0;)
+                    {
+                        if (rc.senseRobotInfo(nearByEnemies[i]).health <= 40 +rc.getHealth()/2)
+                        {
+                            FightMicro.recordEnemyBotKilled(rc, allEnemies, nearByEnemies[i]);
+                        }
+                    }
                     rc.selfDestruct();
                 }
 
