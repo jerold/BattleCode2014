@@ -175,7 +175,7 @@ public class RoadMap {
         return new MapLocation((nodeId/nodesInLine) * nodeSpacing + nodePadding, (nodeId%nodesInLine) * nodeSpacing + nodePadding);
     }
 
-    private int oppositeNodeId(int nodeId) {
+    public int oppositeNodeId(int nodeId) {
         //System.out.println(nodeId + "< - >" + (nodeCount - nodeId - 1));
         return nodeId == NO_PATH_EXISTS ? NO_PATH_EXISTS : nodeCount - nodeId - 1;
     }
@@ -190,23 +190,27 @@ public class RoadMap {
      */
     public int idForNearestNode(MapLocation loc) throws GameActionException
     {
-        int nodeId = NO_PATH_EXISTS;
-        int nodeDist = TILE_VOID;
-        for (int i=0;i<nodeCount;i++) {
-            MapLocation nodeLoc = locationForNode(i);
-            if (!locationIsVoid(nodeLoc)) {
-                int dist = (int)Utilities.distanceBetweenTwoPoints(loc, nodeLoc);
-                if (dist < nodeDist) {
-                    MapLocation[] path = Path.getSimplePath(this, loc, nodeLoc);
-                    if (path != null && path.length < nodeDist) {
-                        nodeDist = path.length;
-                        nodeId = i;
-                    }
-                }
-            }
-        }
-        System.out.println(loc.x+","+loc.y+" near node["+nodeId+"] ("+nodeDist+") "+locationForNode(nodeId).x+", "+locationForNode(nodeId).y);
-        return nodeId;
+        int nodeX = (loc.x-nodePadding)/(MAP_WIDTH/nodesInLine);
+        int nodeY = (loc.y-nodePadding)/(MAP_HEIGHT/nodesInLine);
+        return nodeX*nodesInLine+nodeY;
+
+//        int nodeId = NO_PATH_EXISTS;
+//        int nodeDist = TILE_VOID;
+//        for (int i=0;i<nodeCount;i++) {
+//            MapLocation nodeLoc = locationForNode(i);
+//            if (!locationIsVoid(nodeLoc)) {
+//                int dist = (int)Utilities.distanceBetweenTwoPoints(loc, nodeLoc);
+//                if (dist < nodeDist) {
+//                    MapLocation[] path = Path.getSimplePath(this, loc, nodeLoc);
+//                    if (path != null && path.length < nodeDist) {
+//                        nodeDist = path.length;
+//                        nodeId = i;
+//                    }
+//                }
+//            }
+//        }
+//        System.out.println(loc.x+","+loc.y+" near node["+nodeId+"] ("+nodeDist+") "+locationForNode(nodeId).x+", "+locationForNode(nodeId).y+", guess="+(nodeX*nodesInLine+nodeY));
+//        return nodeId;
     }
 
     private void calibrateNodeStructure()
@@ -407,6 +411,7 @@ public class RoadMap {
 
         if (macroPathingUploaded) {
             pathingStrat = PathingStrategy.MacroPath;
+
 //            rc.setIndicatorString(1, "Pulling Macro");
 //
 //            for (int originId=0; originId<nodeCount/2;originId++) {
@@ -414,11 +419,12 @@ public class RoadMap {
 //                for (int destinationId=0; destinationId<nodeCount;destinationId++) {
 //                    int channel = Utilities.startMacroChannels + originId*nodeCount+destinationId;
 //                    MapLocation signal = VectorFunctions.intToLoc(rc.readBroadcast(channel));
-//                    setMacroInfoForNode(originId, destinationId, signal.x == TILE_VOID ? NO_PATH_EXISTS : signal.x, signal.y);
+//                    System.out.println("Node [" + originId + "][" + destinationId + "]  ->  ["+(signal.x == TILE_VOID ? NO_PATH_EXISTS : signal.x)+","+signal.y+"]  ");
+////                    setMacroInfoForNode(originId, destinationId, signal.x == TILE_VOID ? NO_PATH_EXISTS : signal.x, signal.y);
 //                    if (signal.y != TILE_VOID)
 //                        usable = true;
 //                }
-//                setMacroInfoForNode(originId, usable);
+////                setMacroInfoForNode(originId, usable);
 //            }
 //
 ////            for (int originId=0; originId<nodeCount;originId++) {
@@ -431,6 +437,8 @@ public class RoadMap {
 //
 ////            System.out.println("SOLDIER FINISHED READING MACRO");
 //            rc.setIndicatorString(1, "Finished Pulling Macro");
+
+
             if (observingNavigator != null)
                 observingNavigator.pathingStrategyChanged();
         }
