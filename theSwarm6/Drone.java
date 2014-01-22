@@ -32,6 +32,7 @@ public class Drone {
             rc.broadcast(pastLoc, Utilities.convertMapLocationToInt(pastrSpot));
         } catch (Exception e) {}
         
+        rc.setIndicatorString(0, "Drone");
     }
 
     public void run()
@@ -51,14 +52,14 @@ public class Drone {
                     	}
                     	else if(type == 3)
                     	{
-                    		while(rc.sensePastrLocations(rc.getTeam()).length == 0){rc.yield();}
+                    		for(int k = 0; k < 200 && rc.sensePastrLocations(rc.getTeam()).length == 0; k++){rc.yield();}
                     	}
                     	else
                     	{
                     		while(!towerNear(rc)){rc.yield();}
                     		for(int k = 0; k < type; k++){rc.yield();}
                     	}
-                    	//while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){rc.yield();}
+                    	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){rc.yield();}
                         rc.construct(RobotType.PASTR);
                     }
                     else

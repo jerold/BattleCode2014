@@ -879,7 +879,7 @@ public class FightMicro
                         int nextDist = next.distanceSquaredTo(target);
                         if (nextDist <= 10 && !Utilities.MapLocationInRangeOfEnemyHQ(rc, next))
                         {
-                            System.out.print("" + next + ", ");
+                            //System.out.print("" + next + ", ");
                             spotsOpen[i] = next;
                             numbOfSpots++;
                         }
@@ -927,19 +927,19 @@ public class FightMicro
 
                         if (Clock.getRoundNum() < 250)
                         {
-                            System.out.println();
-                            System.out.println("Locations available");
+                            //System.out.println();
+                            //System.out.println("Locations available");
                         }
                         for (int i = 8; --i >= 0;)
                         {
                             if (spotsOpen[i] != null && !Utilities.MapLocationInRangeOfEnemyHQ(rc, spotsOpen[i]))
                             {
                                 leftLocs[index] = spotsOpen[i];
-                                System.out.print("Index: " + index + " (" + leftLocs[index] + "), ");
+                                //System.out.print("Index: " + index + " (" + leftLocs[index] + "), ");
                                 index++;
                             }
                         }
-                        System.out.println();
+                        //System.out.println();
 
                         for (int i = numbOfSpots; --i>=0;)
                         {

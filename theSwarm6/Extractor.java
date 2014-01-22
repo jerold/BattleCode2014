@@ -20,6 +20,8 @@ public class Extractor {
         {
         	towerSpot = TowerUtil.getOppositeSpot(rc, towerSpot);
         }
+        
+        rc.setIndicatorString(0, "Extractor");
     }
 
     public void run()

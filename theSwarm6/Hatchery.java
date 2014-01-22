@@ -54,6 +54,12 @@ public class Hatchery {
 
 			}
 			
+			if(Clock.getRoundNum() % 500 == 0 && rc.sensePastrLocations(rc.getTeam()).length == 0)
+			{
+				build = true;
+				build2 = true;
+			}
+			
 			try
 			{
 				if(build && rc.readBroadcast(4) == 0 && rc.readBroadcast(5) == 0)
