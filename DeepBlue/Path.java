@@ -65,6 +65,8 @@ public class Path {
             nextNode = map.nextStep(nextNode, finalNode);
             roughPath.add(map.locationForNode(nextNode));
         }
+        System.out.print(" -> "+nextNode);
+        roughPath.add(map.locationForNode(nextNode));
         roughPath.add(destination);
         System.out.println("");
 

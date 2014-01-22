@@ -27,6 +27,7 @@ public class UnitCache {
     MapLocation MY_HQ;
     MapLocation ENEMY_HQ;
     double DISTANCE_BETWEEN_HQS;
+    RobotType rcType;
 
     UnitCache(RobotController rc)
     {
@@ -35,6 +36,7 @@ public class UnitCache {
         ENEMY_HQ = rc.senseEnemyHQLocation();
         SLOPE = (double)(MY_HQ.y - ENEMY_HQ.y) / (MY_HQ.x - ENEMY_HQ.x);
         DISTANCE_BETWEEN_HQS = Utilities.distanceBetweenTwoPoints(MY_HQ, ENEMY_HQ);
+        rcType = rc.getType();
 
     }
 
