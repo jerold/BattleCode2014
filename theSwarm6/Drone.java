@@ -52,6 +52,7 @@ public class Drone {
                     	}
                     	else if(type == 3)
                     	{
+                    		while(!towerNear(rc)){rc.yield();}
                     		for(int k = 0; k < 200 && rc.sensePastrLocations(rc.getTeam()).length == 0; k++){rc.yield();}
                     	}
                     	else
