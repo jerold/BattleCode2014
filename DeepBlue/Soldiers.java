@@ -23,7 +23,7 @@ public class Soldiers {
         nav = new Navigator(rc,cache, map);
 
         // Temp THIS IS NOT A GOOD IDEA
-        nav.setDestination(rc.senseEnemyHQLocation());
+        nav.setDestination(cache.ENEMY_HQ);
 
         while (true) {
             if (!rc.isActive()) { rc.yield(); continue; }
@@ -32,10 +32,10 @@ public class Soldiers {
             map.checkForUpdates();
 
             // Do unit strategy picker
-            // stragegy picks destinations and performs special tasks
+            // strategy picks destinations and performs special tasks
 
             if (nav.engaging())
-                nav.adjustFire(false); // Micro Movements based on enemy contact
+                nav.adjustFire(true); // Micro Movements based on enemy contact
             else
                 nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
 

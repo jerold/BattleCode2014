@@ -20,6 +20,10 @@ public class Headquarter {
         cache = new UnitCache(rc);
         map = new RoadMap(rc, cache);
 
+        if(rc.canMove(Direction.EAST)){
+            rc.spawn(Direction.EAST);
+        }
+
         while (true) {
             if (!rc.isActive()) { rc.yield(); continue; }
 
@@ -33,14 +37,14 @@ public class Headquarter {
     }
 
     public static void tryToSpawn() throws GameActionException {
-        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){
-            for(int i=0;i<8;i++){
-                Direction trialDir = allDirections[i];
-                if(rc.canMove(trialDir)){
-                    rc.spawn(trialDir);
-                    break;
-                }
-            }
-        }
+//        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){ // if(rc.isActive()&&rc.senseRobotCount()<2){
+//            for(int i=0;i<8;i++){
+//                Direction trialDir = allDirections[i];
+//                if(rc.canMove(trialDir)){
+//                    rc.spawn(trialDir);
+//                    break;
+//                }
+//            }
+//        }
     }
 }

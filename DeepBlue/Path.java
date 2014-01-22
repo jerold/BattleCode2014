@@ -36,7 +36,43 @@ public class Path {
 
     public static MapLocation[] getMacroPath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
     {
-        return null;
+        if (map.pathingStrat != RoadMap.PathingStrategy.MacroPath || map.locationIsVoid(origin) || map.locationIsVoid(destination))
+            return null;
+
+        System.out.print("Macro Path:");
+        int nextNode = map.idForNearestNode(origin);
+        int finalNode = map.idForNearestNode(destination);
+
+
+        MapLocation[] simplePath = getSimplePath(map, origin, destination);
+        if (simplePath != null && simplePath.length > 0) {
+            System.out.println(" -> " + finalNode);
+            return new MapLocation[]{destination};
+        }
+
+        if (map.nextStep(nextNode, finalNode) == RoadMap.NO_PATH_EXISTS) {
+            System.out.println(" [Cannot Path from " + nextNode + " to " + finalNode + "]");
+            return null;
+        }
+
+        ArrayList<MapLocation> roughPath = new ArrayList<MapLocation>();
+        roughPath.add(origin);
+        roughPath.add(map.locationForNode(nextNode));
+        while (nextNode != finalNode) {
+            System.out.print(" -> "+nextNode);
+            if (nextNode >= map.nodeCount)
+                return null;
+            nextNode = map.nextStep(nextNode, finalNode);
+            roughPath.add(map.locationForNode(nextNode));
+        }
+        roughPath.add(destination);
+        System.out.println("");
+
+        MapLocation[] returnPath = new MapLocation[roughPath.size()];
+        for (int i=0; i<roughPath.size();i++)
+            returnPath[i] = roughPath.get(i);
+
+        return returnPath;
     }
 
 //    public static MapLocation[] compoundPath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
@@ -157,30 +193,29 @@ public class Path {
 
     public static void printPath(MapLocation[] path, RoadMap map)
     {
-        if (path == null || path.length < 1)
-            return;
-
-        System.out.println("Printing Path");
-        boolean pathTile;
-        for (int y=0; y<map.MAP_HEIGHT;y++) {
-            for (int x=0; x<map.MAP_WIDTH;x++) {
-                pathTile = false;
-                for (MapLocation loc:path) {
-                    if (loc.x == x && loc.y == y)
-                        pathTile = true;
-                }
-                if (pathTile) {
-                    if (map.roadMap[x][y] == map.TILE_VOID)
-                        System.out.print("XX");
+        if (path != null && path.length > 0) {
+            System.out.println("Macro Path");
+            boolean pathTile;
+            for (int y=0; y<map.MAP_HEIGHT;y++) {
+                for (int x=0; x<map.MAP_WIDTH;x++) {
+                    pathTile = false;
+                    for (MapLocation loc:path) {
+                        if (loc.x == x && loc.y == y)
+                            pathTile = true;
+                    }
+                    if (pathTile) {
+                        if (map.roadMap[x][y] == map.TILE_VOID)
+                            System.out.print("XX");
+                        else
+                            System.out.print("++");
+                    } else if (map.roadMap[x][y] == map.TILE_VOID)
+                        System.out.print("[]");
                     else
-                        System.out.print("++");
-                } else if (map.roadMap[x][y] == map.TILE_VOID)
-                    System.out.print("[]");
-                else
-                    System.out.print("  ");
+                        System.out.print("  ");
+                }
+                System.out.println("");
             }
             System.out.println("");
         }
-        System.out.println("");
     }
 }
