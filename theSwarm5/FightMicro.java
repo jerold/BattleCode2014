@@ -1632,20 +1632,54 @@ public class FightMicro
         {
             if (target != null)
             {
+                boolean straight = true;
+                boolean right = true;
+                boolean left = true;
                 rc.setIndicatorString(2, "Moving toward Target");
                 Direction dir = rc.getLocation().directionTo(target);
+                Direction rightDir = dir.rotateRight();
+                Direction leftDir = dir.rotateLeft();
                 MapLocation goal = rc.getLocation().add(dir);
+                MapLocation goalRight = rc.getLocation().add(rightDir);
+                MapLocation goalLeft = rc.getLocation().add(leftDir);
                 for (int i = enemyBots.length; --i >=0; )
                 {
-                    if (enemyBots[i].distanceSquaredTo(goal) <= 10 && rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(enemyBots[i])).type != RobotType.PASTR)
+                    boolean pastr = rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(enemyBots[i])).type != RobotType.PASTR;
+                    if (pastr)
+                    {
+                        if (enemyBots[i].distanceSquaredTo(goal) <= 10)
+                        {
+                            straight =  false;
+                        }
+                        if (enemyBots[i].distanceSquaredTo(goalRight) <= 10)
+                        {
+                            right = false;
+                        }
+                        if (enemyBots[i].distanceSquaredTo(goalLeft) <= 10)
+                        {
+                            left = false;
+                        }
+                    }
+
+                    if (!right && !left && !straight)
                     {
                         return false;
                     }
                 }
 
-                if (rc.canMove(dir))
+                if (straight && rc.canMove(dir))
                 {
                     rc.move(dir);
+                    return true;
+                }
+                else if (right && rc.canMove(rightDir))
+                {
+                    rc.move(rightDir);
+                    return true;
+                }
+                else if (left && rc.canMove(leftDir))
+                {
+                    rc.move(leftDir);
                     return true;
                 }
             }
@@ -1680,6 +1714,14 @@ public class FightMicro
                         else if (rc.canMove(direction.rotateRight()))
                         {
                             rc.move(direction.rotateRight());
+                        }
+                        else if (rc.canMove(direction.rotateLeft().rotateLeft()))
+                        {
+                            rc.move(direction.rotateLeft().rotateLeft());
+                        }
+                        else if (rc.canMove(direction.rotateRight().rotateRight()))
+                        {
+                            rc.canMove(direction.rotateRight().rotateRight());
                         }
                         else
                         {
