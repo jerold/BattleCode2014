@@ -161,45 +161,51 @@ public class HQFunctions
     {
         MapLocation target = null;
         int time = Clock.getRoundNum() % 1000;
-        if (time < 100)
+
+        target = rc.getLocation();
+        while ((target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 50 || target.distanceSquaredTo(rc.getLocation()) < 50))
         {
-            target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
-        }
-        else if (time < 200)
-        {
-            target = new MapLocation(rc.getMapWidth()/10, rc.getMapHeight()/10);
-        }
-        else if (time < 300)
-        {
-            target = new MapLocation(rc.getMapWidth()/10, rc.getMapHeight()/2);
-        }
-        else if (time < 400)
-        {
-            target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight() - 5);
-        }
-        else if (time < 500)
-        {
-            target = new MapLocation(rc.getMapWidth()-5, rc.getMapHeight()/2);
-        }
-        else if (time < 600)
-        {
-            target = new MapLocation(rc.getMapWidth()-5, rc.getMapHeight()/10);
-        }
-        else if (time < 700)
-        {
-            target = new MapLocation(rc.getMapWidth()/2, 10);
-        }
-        else if (time < 800)
-        {
-            target = new MapLocation(rc.getMapWidth() - 5, rc.getMapHeight() - 5);
-        }
-        else if (time < 900)
-        {
-            target = new MapLocation(5, rc.getMapHeight() - 5);
-        }
-        else if (time < 1001)
-        {
-            target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+            if (time < 100)
+            {
+                target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+            }
+            else if (time < 200)
+            {
+                target = new MapLocation(rc.getMapWidth()/10, rc.getMapHeight()/10);
+            }
+            else if (time < 300)
+            {
+                target = new MapLocation(rc.getMapWidth()/10, rc.getMapHeight()/2);
+            }
+            else if (time < 400)
+            {
+                target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight() - 5);
+            }
+            else if (time < 500)
+            {
+                target = new MapLocation(rc.getMapWidth()-5, rc.getMapHeight()/2);
+            }
+            else if (time < 600)
+            {
+                target = new MapLocation(rc.getMapWidth()-5, rc.getMapHeight()/10);
+            }
+            else if (time < 700)
+            {
+                target = new MapLocation(rc.getMapWidth()/2, 10);
+            }
+            else if (time < 800)
+            {
+                target = new MapLocation(rc.getMapWidth() - 5, rc.getMapHeight() - 5);
+            }
+            else if (time < 900)
+            {
+                target = new MapLocation(5, rc.getMapHeight() - 5);
+            }
+            else if (time < 1001)
+            {
+                target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+            }
+            time += 100;
         }
 
         return target;
@@ -284,7 +290,11 @@ public class HQFunctions
             if (!initialRally)
             {
                 rc.broadcast(rallyPoint, Movement.convertMapLocationToInt(target));
-                rc.broadcast(rallyPoint2, Movement.convertMapLocationToInt(target));
+                if (Clock.getRoundNum() < 10)
+                {
+                    rc.broadcast(rallyPoint2, Movement.convertMapLocationToInt(target));
+                }
+
             }
 
         } catch (Exception e) {}
