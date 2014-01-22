@@ -15,6 +15,8 @@ public class Movement
     static final int takeDownEnemyPastr = 6;
     static final int enemyPastrInRangeOfHQ = 7;
     static final int rallyPoint2 = 8;
+    static final int defendPastr = 9;
+    static final int pastLoc = 10;
 
 	static Random rand;
 	
@@ -24,6 +26,10 @@ public class Movement
         int counter = 1;
         try
         {
+            if (rc.readBroadcast(defendPastr) == 1)
+            {
+                sneak = true;
+            }
             // here we do some checks to make sure that we don't throw any exceptions
             if (rc.isActive())
             {
@@ -147,9 +153,14 @@ public class Movement
         while (!rc.getLocation().equals(target) || rc.getLocation().isAdjacentTo(target))
         {
 
+
             // we put the try block inside of the while loop so an exception won't terminate the method
             try
             {
+                if (rc.readBroadcast(defendPastr) == 1)
+                {
+                    sneak = true;
+                }
                 if (larva)
                 {
                     int point = rc.readBroadcast(rallyPoint);
@@ -278,6 +289,10 @@ public class Movement
 
                                 try
                                 {
+                                    if (rc.readBroadcast(defendPastr) == 1)
+                                    {
+                                        sneak = true;
+                                    }
                                     if (rc.isActive())
                                     {
                                         dir2 = rc.getLocation().directionTo(target);

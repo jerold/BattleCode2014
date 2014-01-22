@@ -19,6 +19,11 @@ public class Drone {
         this.rc = rc;
         this.type = type;
         pastrSpot = TowerUtil.bestSpot3(rc);
+
+        try
+        {
+            rc.broadcast(pastLoc, Utilities.convertMapLocationToInt(pastrSpot));
+        } catch (Exception e) {}
         
     }
 
@@ -28,7 +33,7 @@ public class Drone {
         {
             try
             {
-            	rc.broadcast(pastLoc, Utilities.convertMapLocationToInt(pastrSpot));
+
                 if (rc.isActive())
                 {
                     if (rc.getLocation().x == pastrSpot.x && rc.getLocation().y == pastrSpot.y)

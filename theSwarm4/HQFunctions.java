@@ -1,5 +1,6 @@
 package theSwarm4;
 
+import UED.*;
 import battlecode.common.*;
 import java.util.Random;
 
@@ -199,20 +200,19 @@ public class HQFunctions
                 }
                 rc.broadcast(defendPastr, 0);
             }
-            else if (ourPastrs.length > 0)
+            else if (rc.readBroadcast(pastLoc) != 0)
             {
-                target = ourPastrs[0];
-                Direction direction = target.directionTo(rc.senseEnemyHQLocation());
-
-
-                for (int i = 0; i < 8; i++)
+                target = Utilities.convertIntToMapLocation(rc.readBroadcast(pastLoc));
+                if (ourPastrs.length > 0)
                 {
-                    target = target.add(direction);
+                    for (int i = 0; i < 5; i++)
+                    {
+                        target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
+                    }
                 }
                 rc.broadcast(defendPastr, 1);
                 rc.broadcast(takeDownEnemyPastr, 0);
                 rc.broadcast(enemyPastrInRangeOfHQ, 0);
-
             }
             else
             {
