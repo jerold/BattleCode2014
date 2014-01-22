@@ -15,7 +15,9 @@ public class Navigator {
     RoadMap map;
 
     MapLocation destination;
-    double directions[];
+    MapLocation[] pathToDestination;
+    int pathProgress;
+
     Direction heading;
     double stayPut;
     RoadMap.PathingStrategy pathStrat;
@@ -32,7 +34,9 @@ public class Navigator {
         map.observingNavigator = this;
 
         destination = rc.getLocation();
-        directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+        pathToDestination = new MapLocation[0];
+        pathProgress = 0;
+
         stayPut = 999;
         pathStrat = RoadMap.PathingStrategy.DefaultBug;
         bugging = false;
@@ -53,9 +57,7 @@ public class Navigator {
         if (passive) {
             maneuver();
             return;
-        } else
-            directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-
+        }
         // Movement while in range of enemies
     }
 
@@ -64,25 +66,78 @@ public class Navigator {
      */
     public void maneuver() throws GameActionException
     {
-        rc.setIndicatorString(0, "Near Node "+map.idForNearestNode(rc.getLocation()));
-
         if (map.pathingStrat == RoadMap.PathingStrategy.DefaultBug)
             defaultMovement();
         else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
             smartMovement();
         else
-            smartMovement();
+            macroMovement();
     }
+
+
+
+
+    //================================================================================
+    // Set and Check Destination Methods
+    //================================================================================
 
     public void pathingStrategyChanged() throws GameActionException
     {
-        System.out.println("New Path to Destination ["+map.pathingStrat+"]");
+        if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
+            setDestination(destination);
+        }
     }
 
     public void setDestination(MapLocation location) throws GameActionException
     {
         destination = location;
+        if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
+            pathProgress = 0;
+            MapLocation[] newPath = Path.getMacroPath(map, rc.getLocation(), destination);
+            if (newPath != null)
+                pathToDestination = newPath;
+        }
     }
+
+    public MapLocation nextStep() throws GameActionException
+    {
+        if (atFinalDestination())
+            return destination;
+        return pathToDestination[pathProgress];
+    }
+
+    private void clearPassedWaypoints()
+    {
+        if (pathProgress < pathToDestination.length && rc.getLocation().isAdjacentTo(pathToDestination[pathProgress])) {
+            pathProgress++;
+            if (pathProgress == pathToDestination.length) {
+                pathToDestination = new MapLocation[0];
+                pathProgress = 0;
+            }
+        }
+    }
+
+    private boolean atFinalDestination() throws GameActionException
+    {
+        clearPassedWaypoints();
+        if (pathToDestination.length == 0)
+            return true;
+        return false;
+    }
+
+//    public void addWaypoint(MapLocation location) throws GameActionException
+//    {
+//        destination = location;
+//        if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
+//            MapLocation[] extension = Path.getMacroPath(map, pathToDestination[pathToDestination.length-1], destination);
+//            MapLocation[] fullPath = new MapLocation[pathToDestination.length - 1 + extension.length];
+//            for(int i=0; i<pathToDestination.length-1;i++)
+//                fullPath[i] = pathToDestination[i];
+//            for(int i=0; i<extension.length;i++)
+//                fullPath[pathToDestination.length-1+i] = pathToDestination[i];
+//            pathToDestination = fullPath;
+//        }
+//    }
 
     private void bugMove() throws GameActionException
     {
@@ -120,14 +175,14 @@ public class Navigator {
     public void defaultMovement() throws GameActionException
     {
         if (!bugging) {
-            heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc);
+            heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc); // Heading set with slime tail avoidance
             if(rc.canMove(heading)) {
                 if (!rc.isActive()) rc.yield();
                     rc.move(heading);
             } else {
                 bugging = true;
                 bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
-                bugLeft = !bugLeft;
+                bugLeft = !bugLeft; // bugging direction is a basic flip-flop
             }
         } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
             bugging = false;
@@ -145,21 +200,8 @@ public class Navigator {
 
     public void smartMovement() throws GameActionException
     {
-//        directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-//        MapLocation myLoc = rc.getLocation();
-//        int[] costs = map.ordinalDirectionCosts(myLoc);
-//
-//        // Weight for snail trail direction
-//        directions[map.directionTo(myLoc, destination).ordinal()] += DIRECTION_WEIGHT_TRAIL;
-//
-//        // Add cost for each space
-//        for (int i=0;i<8;i++) {
-//            directions[i] += costs[i];
-//        }
-//
-
         if (!bugging) {
-            heading = map.directionTo(rc.getLocation(), destination);
+            heading = map.directionTo(rc.getLocation(), destination); // Heading set by the map to avoid void space
 
             if(rc.canMove(heading)) {
                 if (!rc.isActive()) rc.yield();
@@ -167,7 +209,7 @@ public class Navigator {
             } else {
                 bugging = true;
                 bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
-                bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination);
+                bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination); // Bugging is pre-simulated to pick the shortest direction
             }
         } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
             bugging = false;
@@ -183,13 +225,23 @@ public class Navigator {
     // Macro Methods
     //================================================================================
 
-    public void macroDirectionAssessment() throws GameActionException
+    public void macroMovement() throws GameActionException
     {
-        directions = new double[]{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-        MapLocation myLoc = rc.getLocation();
+        if (!bugging) {
+            heading = map.directionTo(rc.getLocation(), nextStep()); // Heading is either a straight shot or a path built from the pre-computed breadth-first node paths
 
-        // Weight for snail trail direction
-        directions[MicroPathing.getNextDirection(myLoc.directionTo(destination), true, rc).ordinal()] += DIRECTION_WEIGHT_TRAIL;
-        directions[map.directionTo(myLoc, destination).ordinal()] += DIRECTION_WEIGHT_TRAIL;
+            if(rc.canMove(heading)) {
+                if (!rc.isActive()) rc.yield();
+                rc.move(heading);
+            } else {
+                bugging = true;
+                bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
+                bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination); // Bugging is pre-simulated to pick the shortest direction
+            }
+        } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
+            bugging = false;
+
+        if (bugging)
+            bugMove();
     }
 }
