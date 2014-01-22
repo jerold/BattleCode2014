@@ -622,14 +622,16 @@ public class Movement
             // In this case we are a soldier
             else
             {
-                if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) > 50)
-                {
-                    rc.broadcast(rallyPoint2, convertMapLocationToInt(rc.getLocation()));
-                }
+
                 radius = 10;
                 //Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
                 enemies = FightMicro.findSoldiersAtDistance(rc, enemies, radius);
                 Robot target = null;
+
+                if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) > 50 && enemies.length > 0)
+                {
+                    rc.broadcast(rallyPoint2, convertMapLocationToInt(rc.getLocation()));
+                }
 
 
                 if (enemies != null && allyBots != null)

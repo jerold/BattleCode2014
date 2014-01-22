@@ -206,6 +206,7 @@ public class HQFunctions
                 target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
             }
             time += 100;
+            time %= 1000;
         }
 
         return target;
