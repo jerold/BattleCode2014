@@ -584,7 +584,7 @@ public class TowerUtil
     		}
     	}
     	
-    	if(rc.getLocation().distanceSquaredTo(target) > rc.getLocation().distanceSquaredTo(getOppositeSpot(rc, target)))
+    	if(rc.senseHQLocation().distanceSquaredTo(target) > rc.senseHQLocation().distanceSquaredTo(getOppositeSpot(rc, target)))
     	{
     		target = new MapLocation(width - target.x, height - target.y);
     	}

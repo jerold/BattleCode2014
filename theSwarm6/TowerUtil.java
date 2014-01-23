@@ -699,4 +699,162 @@ public class TowerUtil
     	
     	return spokes;
     }
+    
+  //finds best corner to collect milk where the return is an int as follows:
+    //1  2
+    //3  4
+    public static int findBestCorner(RobotController rc)
+    {
+        double[][] pasture = rc.senseCowGrowth();
+        
+        double[] voids = new double[4];
+        double[] cows = new double[4];
+        double[] distances = new double[4];
+
+        double max = -1000;
+        int corner = 0;
+        double total = 0;
+        MapLocation target = null;
+        MapLocation current = rc.senseHQLocation();
+        
+        for(int k = 1; k <= 4; k++)
+        {
+        	switch(k)
+            {
+                case 1:
+                    target = new MapLocation(5, 5);
+                    break;
+                case 2:
+                    target = new MapLocation(rc.getMapWidth() - 6, 5);
+                    break;
+                case 3:
+                    target = new MapLocation(5, rc.getMapHeight() - 6);
+                    break;
+                default:
+                    target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
+                    break;
+            }
+        	
+        	while(target.x != current.x || target.y != current.y)
+        	{
+        		if(rc.senseTerrainTile(current) == TerrainTile.VOID)
+        		{
+        			total++;
+        		}
+        		current = current.add(current.directionTo(target));
+        	}
+        	
+        	voids[k - 1] = total;
+        	distances[k - 1] = rc.senseHQLocation().distanceSquaredTo(target);
+        	
+        	total = 0;
+        	current = rc.senseHQLocation();
+        }
+
+        //top left corner
+        for(int k = 0; k < 10; k++)
+        {
+            for(int a = 0; a < 10; a++)
+            {
+                total += pasture[k][a];
+            }
+        }
+        cows[0] = total;
+            
+        total = 0;
+
+        //top right corner
+        for(int k = rc.getMapWidth() - 11; k < rc.getMapWidth(); k++)
+        {
+            for(int a = 0; a < 10; a++)
+            {
+                total += pasture[k][a];
+            }
+        }
+        cows[1] = total;
+        
+        total = 0;
+
+        //bottom left corner
+        for(int k = 0; k < 10; k++)
+        {
+            for(int a = rc.getMapHeight() - 11; a < rc.getMapHeight(); a++)
+            {
+                total += pasture[k][a];
+            }
+        }
+        cows[2] = total;
+        
+        total = 0;
+
+        //bottom right corner
+        for(int k = rc.getMapWidth() - 11; k < rc.getMapWidth(); k++)
+        {
+            for(int a = rc.getMapHeight() - 11; a < rc.getMapHeight(); a++)
+            {
+                total += pasture[k][a];
+            }
+        }
+        cows[3] = total;
+        
+        for(int k = 0; k < 4; k++)
+        {
+        	total = cows[k] * 1 - voids[k] * 50 - distances[k] * .001;
+        	
+        	if(total > max)
+        	{
+        		max = total;
+        		corner = k + 1;
+        	}
+        }
+
+        return corner;
+    }
+    
+    public static boolean isGoodCorner(RobotController rc, int corner)
+    {
+    	int startX, startY;
+    	int scope = 10;
+    	int score = 0;
+    	double[][] cows = rc.senseCowGrowth();
+    	
+    	switch(corner)
+    	{
+    		case 1:
+    			startX = 0; 
+    			startY = 0;
+    			break;
+    		case 2:
+    			startX = rc.getMapWidth() - scope;
+    			startY = 0;
+    			break;
+    		case 3:
+    			startX = 0;
+    			startY = rc.getMapHeight() - scope;
+    			break;
+    		default:
+    			startX = rc.getMapWidth() - scope;
+    			startY = rc.getMapHeight() - scope;
+    			break;
+    	}
+    	
+    	for(int k = startX; k < startX + scope; k++)
+    	{
+    		for(int a = startY; k < startY + scope; k++)
+    		{
+    			if(rc.senseTerrainTile(new MapLocation(k, a)) != TerrainTile.VOID)
+    			{
+    				score += (int)cows[k][a];
+    			}
+    		}
+    	}
+    	
+    	rc.setIndicatorString(0, "" + score);
+    	if(score > 0)
+    	{
+    		return true;
+    	}
+    	
+    	return false;
+    }
 }
