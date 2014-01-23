@@ -125,6 +125,15 @@ public class QueenOfBlades {
                     build = true;
                 }
 
+                int towerSpot = rc.readBroadcast(towerLoc);
+                int pastrSpot = rc.readBroadcast(pastLoc);
+
+                if (Movement.convertIntToMapLocation(towerSpot).distanceSquaredTo(Movement.convertIntToMapLocation(pastrSpot)) > 50)
+                {
+                    MapLocation spot = TowerUtil.getOppositeSpot(rc, Movement.convertIntToMapLocation(towerSpot));
+                    rc.broadcast(towerLoc, Movement.convertMapLocationToInt(spot));
+                }
+
 
 
                 if (build)
