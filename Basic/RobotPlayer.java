@@ -29,7 +29,11 @@ public class RobotPlayer {
 	static boolean initializeRoads = false;
 	static MapLocation cRoad;
 	static int roadsIndex = 0;
+	static int allIndex = 0;
 	static boolean onRoad = false;
+	static MapLocation[] allPastrs = new MapLocation[100];
+	static MapLocation[] currentPastrs;
+	static MapLocation[] previousPastrs;
 	
 	
 	
@@ -41,17 +45,57 @@ public class RobotPlayer {
 				if(rc.getType() == RobotType.HQ){
 					MapLocation test = Basic.TowerUtil.bestSpot3(rc);
 					MapLocation testOpposite = Basic.TowerUtil.getOppositeSpot(rc, test);
+					MapLocation[] currentPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+					
 					//all Headquarters methods
 					/*if(Basic.Utilities.checkRush(rc) == true){
 						System.out.println("RUSH!");
 					}else{
 						System.out.println("Dont rush");
-					}*/
+					}
+					*/
 					if(Basic.Utilities.checkDoublePastr(rc, test, testOpposite) == true){
 						System.out.println("Double Pastr: Best spot: " + test.x + ", " + test.y);
 					} else {
 						System.out.println("no pastr: Best spot: " + test.x + ", " + test.y);
 					}
+					int score = Basic.TowerUtil.getSpotScore(rc, rc.senseHQLocation());
+					if(Basic.Utilities.checkHQTower(rc) == true){
+						System.out.println("HQ tower");
+					} else {
+						System.out.println("no HQ tower, score = " + score);
+					}
+					//PASTR finder
+					if(currentPastrs.length > 0 && currentPastrs.length > previousPastrs.length){
+						if(previousPastrs.length == 0){
+							for(int k = 0; k < currentPastrs.length; k++){
+								allPastrs[allIndex] = currentPastrs[k];
+								allIndex++;
+							}
+							previousPastrs = currentPastrs;
+						} else {
+							for(int i = currentPastrs.length - previousPastrs.length; i < currentPastrs.length; i++){
+								allPastrs[allIndex] = currentPastrs[i];
+								allIndex++;
+							}
+							previousPastrs = currentPastrs;
+						}		
+					} else {
+						previousPastrs = currentPastrs;
+					}
+					
+					if(Clock.getRoundNum() > 1998){
+						for(int j = 0; j < allIndex; j++){
+							MapLocation search = allPastrs[j];
+							for(int n = 0; n < allIndex; n++){
+								if(search.equals(allPastrs[n]) && j != n){
+									System.out.println("Found same pastr loc @: " + search.x + ", " + search.y);
+								}
+							}
+						}
+					}
+					//end PASTR finder
+					
 					tryToShoot();
 					tryToSpawn();
 					

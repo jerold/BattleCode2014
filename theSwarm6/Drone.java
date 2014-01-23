@@ -11,7 +11,25 @@ import battlecode.common.*;
  * A corresponding negative number will go to the opposite corner.
  */
 public class Drone {
-	static final int pastLoc = 10;
+    // these are the channels that we will use to communicate to our bots
+    static final int enemyHQ = 1;
+    static final int ourHQ = 2;
+    static final int rallyPoint = 3;
+    static final int needNoiseTower = 4;
+    static final int needPastr = 5;
+    static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
+    static final int rallyPoint2 = 8;
+    static final int defendPastr = 9;
+    static final int pastLoc = 10;
+    static final int morphZergling = 11;
+    static final int morphHydralisk = 12;
+    static final int hydraliskCount = 13;
+    static final int towerLoc = 14;
+    static final int towerBuilt = 15;
+    static final int pastrBuilt = 16;
+    static final int morphRoach = 17;
+
     RobotController rc;
     MapLocation pastrSpot;
     int type;
@@ -30,6 +48,7 @@ public class Drone {
         try
         {
             rc.broadcast(pastLoc, Utilities.convertMapLocationToInt(pastrSpot));
+
         } catch (Exception e) {}
         
         rc.setIndicatorString(0, "Drone");
@@ -52,6 +71,7 @@ public class Drone {
                     	}
                     	else if(type == 3)
                     	{
+                    		while(!towerNear(rc)){rc.yield();}
                     		for(int k = 0; k < 200 && rc.sensePastrLocations(rc.getTeam()).length == 0; k++){rc.yield();}
                     	}
                     	else

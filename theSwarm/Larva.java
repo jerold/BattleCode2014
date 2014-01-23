@@ -18,6 +18,18 @@ public class Larva {
     static final int rallyPoint = 3;
     static final int needNoiseTower = 4;
     static final int needPastr = 5;
+    static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
+    static final int rallyPoint2 = 8;
+    static final int defendPastr = 9;
+    static final int pastLoc = 10;
+    static final int morphZergling = 11;
+    static final int morphHydralisk = 12;
+    static final int hydraliskCount = 13;
+    static final int towerLoc = 14;
+    static final int towerBuilt = 15;
+    static final int pastrBuilt = 16;
+    static final int morphRoach = 17;
 	
 	public Larva(RobotController rc)
 	{
@@ -28,12 +40,8 @@ public class Larva {
 			e.printStackTrace();
 		}
 		rc.setIndicatorString(0, "Larva");
-        ourIndex = FightMicro.ourSlotInMessaging(rc);
+        //ourIndex = FightMicro.ourSlotInMessaging(rc);
 
-        AllEnemyBots = FightMicro.AllEnemyBots(rc);
-        AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
-        nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-        AllAlliedBots = FightMicro.AllAlliedBotsInfo(rc);
 
 	}
 	
@@ -45,55 +53,74 @@ public class Larva {
 			{
                 //System.out.println("Hello world");
 				// we will only do stuff if we are active
-				if (rc.isActive())
+                if (FightMicro.fightMode(rc, target))
+                {
+                    rc.setIndicatorString(2, "Running fight micro");
+                }
+				else if (rc.isActive())
 				{
 
+                    if (Clock.getRoundNum() % 10 == 0)
+                    {
+                        //HQFunctions.setTargetLocation(rc, true);
+                    }
+                    int noiseTowerBroadcast = rc.readBroadcast(needNoiseTower);
+                    int pastrBroadcast = rc.readBroadcast(needPastr);
 
-                    if (rc.readBroadcast(needNoiseTower) == 1)
+                    if (noiseTowerBroadcast != 0)
                     {
                         rc.broadcast(needNoiseTower, 0);
-                        Extractor extractor = new Extractor(rc);
+                        Extractor extractor = new Extractor(rc, noiseTowerBroadcast);
                         extractor.run();
                     }
-                    else if (rc.readBroadcast(needPastr) == 1)
+                    else if (pastrBroadcast != 0)
                     {
                         rc.broadcast(needPastr, 0);
-                        Drone drone = new Drone(rc);
+                        Drone drone = new Drone(rc, pastrBroadcast);
                         drone.run();
+                    }
+                    else if (rc.readBroadcast(morphHydralisk) == 1)
+                    {
+                        rc.broadcast(morphHydralisk, 0);
+                        Hydralisk hydralisk = new Hydralisk(rc);
+                        hydralisk.run();
+                    }
+                    else if (rc.readBroadcast(morphZergling) == 1)
+                    {
+                        rc.broadcast(morphZergling, 0);
+                        Zergling zergling = new Zergling(rc);
+                        zergling.run();
+                    }
+                    else if (rc.readBroadcast(morphRoach) == 1)
+                    {
+                        rc.broadcast(morphRoach, 0);
+                        Roach roach = new Roach(rc);
+                        roach.run();
+                    }
+
+                    if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
+                    {
+                        target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
                     }
 
 					rc.setIndicatorString(1, "Target:" + target);
-                    if (FightMicro.offensiveFightMicro(rc, nearByEnemies, true, AllEnemyBots, AllAlliedBots))
+                    rc.setIndicatorString(2, "Not Running fight micro 1");
+
+                    MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                    if (enemyPastrs.length == 0)
                     {
-                        rc.setIndicatorString(2, "Running fight micro");
+                        int location = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
+                        if (location != 0)
+                        {
+                            target = Movement.convertIntToMapLocation(location);
+                        }
                     }
-					else if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
-					{
-						target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
-					}
-					else
-					{
-						Movement.MoveMapLocation(rc, target, false);
-					}
+                    Movement.MoveMapLocation(rc, target, false, true);
+
 				}
                 else
                 {
-                    AllAlliedBots = FightMicro.AllAlliedBotsInfo(rc);
-                    FightMicro.PostOurInfoToWall(rc, ourIndex);
-                    nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
-                    if (nearByEnemies.length > 0)
-                    {
-                        AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                        AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
-
-                        FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
-
-                        if (rc.getHealth() < nearByEnemies.length * 5)
-                        {
-                            FightMicro.removeOurSelvesFromBoard(rc, FightMicro.AllAlliedBotsInfo(rc), ourIndex);
-                        }
-                    }
                 }
 				
 			} catch (Exception e)

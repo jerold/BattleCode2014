@@ -1,5 +1,6 @@
 package ultraGreedy;
 
+import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
@@ -11,7 +12,7 @@ public class RobotPlayer
     static final int MARAUDER = 3;
     static int numbOfSoldiers = 0;
 
-    public static void run(RobotController rc)
+    public static void run(RobotController rc) throws GameActionException
     {
         while(true) {
             if (rc.getType() == RobotType.HQ)
@@ -71,6 +72,7 @@ public class RobotPlayer
             
             if (rc.getType() == RobotType.PASTR)
             {
+            	rc.selfDestruct();
             	if (rc.getHealth() < 30)
             	{
             		divideByZero();

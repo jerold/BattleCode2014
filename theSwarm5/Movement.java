@@ -153,7 +153,24 @@ public class Movement
                 if (FightMicro.fightMode(rc, target))
                 {
                     rc.setIndicatorString(2, "Running fight micro 2");
-                    //fire(rc);
+
+                    if (rc.isActive())
+                    {
+                        Robot[] nearByEnemies33;
+                        int[] AllEnemyNoiseTowers33;
+                        int[] AllEnemyBots33;
+
+                        nearByEnemies33 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+
+                        if (nearByEnemies33.length > 0)
+                        {
+                            AllEnemyBots33 = FightMicro.AllEnemyBots(rc);
+                            AllEnemyNoiseTowers33 = null;
+
+                            FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies33, AllEnemyBots33, AllEnemyNoiseTowers33);
+
+                        }
+                    }
                 }
                 else if (rc.isActive())
                 {
@@ -276,6 +293,24 @@ public class Movement
                                     {
                                         ranFight = true;
                                         rc.setIndicatorString(2, "Running fight micro 3");
+
+                                        if (rc.isActive())
+                                        {
+                                            Robot[] nearByEnemies33;
+                                            int[] AllEnemyNoiseTowers33;
+                                            int[] AllEnemyBots33;
+
+                                            nearByEnemies33 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+
+                                            if (nearByEnemies33.length > 0)
+                                            {
+                                                AllEnemyBots33 = FightMicro.AllEnemyBots(rc);
+                                                AllEnemyNoiseTowers33 = null;
+
+                                                FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies33, AllEnemyBots33, AllEnemyNoiseTowers33);
+
+                                            }
+                                        }
                                     }
                                     else if (rc.isActive())
                                     {
@@ -760,27 +795,20 @@ public class Movement
 
                 if(target != null)
                 {
-                    if (rc.senseRobotInfo(target).health <= 10)
-                    {
-                        if (rc.senseRobotInfo(target).type == RobotType.SOLDIER)
-                        {
-                            int[] AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                            FightMicro.recordEnemyBotKilled(rc, AllEnemyBots, target);
-
-                        }
-                        else if (rc.senseRobotInfo(target).type == RobotType.NOISETOWER)
-                        {
-                            int[] AllEnemyNoiseTowers = FightMicro.AllEnemyNoiseTowers(rc);
-                            FightMicro.recordEnemyBotKilled(rc, AllEnemyNoiseTowers, target);
-                        }
-                    }
                     if (rc.canSenseObject(target))
                     {
                     	if (rc.canAttackSquare(rc.senseRobotInfo(target).location))
                     	{
                     		rc.attackSquare(rc.senseRobotInfo(target).location);
+                            if (rc.senseRobotInfo(target).health <= 10)
+                            {
+                                int[] enemyRobots = FightMicro.AllEnemyBots(rc);
+                                FightMicro.recordEnemyBotKilled(rc, enemyRobots, target);
+                            }
                     	}
                     }
+
+
                     
                 }
             }

@@ -1,4 +1,4 @@
-package theSwarm5;
+package theSwarm;
 
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
@@ -16,7 +16,7 @@ import battlecode.common.RobotController;
 public class Baneling {
      RobotController rc;
 
-    public Baneling (RobotController rc)
+    public Baneling(RobotController rc)
     {
         this.rc = rc;
         rc.setIndicatorString(0, "Baneling");

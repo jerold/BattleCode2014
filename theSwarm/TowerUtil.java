@@ -1,4 +1,4 @@
-package Basic;
+package theSwarm;
 
 import battlecode.common.*;
 
@@ -46,7 +46,7 @@ public class TowerUtil
         for(int k = 0; k < directions.length; k++)
         {
         	int numVoids = 8;
-        	int distAway = 25;
+        	int distAway = 36;
             int voids = 0;
             MapLocation toFire = center;
             for(int a = 0; a < radius && voids < numVoids; a++)
@@ -426,7 +426,7 @@ public class TowerUtil
     	{
     	if(rc.readBroadcast(bestLocChannel) != 0)
     	{
-    		return Utilities.convertIntToMapLocation(rc.readBroadcast(bestLocChannel));
+    		return Movement.convertIntToMapLocation(rc.readBroadcast(bestLocChannel));
     	}
     	}
     	catch(Exception e){}
@@ -495,7 +495,7 @@ public class TowerUtil
     	
     	try
     	{
-			rc.broadcast(bestLocChannel, Utilities.convertMapLocationToInt(target));
+			rc.broadcast(bestLocChannel, Movement.convertMapLocationToInt(target));
 		}
     	catch (Exception e){}
     	
@@ -508,7 +508,7 @@ public class TowerUtil
     	{
     	if(rc.readBroadcast(bestLocChannel) != 0)
     	{
-    		return Utilities.convertIntToMapLocation(rc.readBroadcast(bestLocChannel));
+    		return Movement.convertIntToMapLocation(rc.readBroadcast(bestLocChannel));
     	}
     	}
     	catch(Exception e){}
@@ -579,7 +579,7 @@ public class TowerUtil
     			{
     				total = score;
     				target = new MapLocation(k, a);
-    				rc.setIndicatorString(1, target.toString());
+    				rc.setIndicatorString(1, "Calculating:"+target.toString());
     			}
     		}
     	}
@@ -591,7 +591,7 @@ public class TowerUtil
     	
     	try
     	{
-			rc.broadcast(bestLocChannel, Utilities.convertMapLocationToInt(target));
+			rc.broadcast(bestLocChannel, Movement.convertMapLocationToInt(target));
 		}
     	catch (Exception e){}
     	
@@ -613,13 +613,9 @@ public class TowerUtil
 				{
 					total -= 2;
 				}
-				else if((k - (scope/2)) + t >= 0 && (a - (scope / 2)) + i >= 0)
-				{
-					total += (int)cows[(k - (scope / 2)) + t][(a - (scope / 2)) + i];
-				}
 				else
 				{
-					total = total;
+					total += (int)cows[k - scope / 2 + t][a - scope / 2 + i];
 				}
 			}
     	}
