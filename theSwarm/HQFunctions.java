@@ -1,18 +1,30 @@
 package theSwarm;
 
-import java.util.Random;
-
 import battlecode.common.*;
+
+import java.util.Random;
 
 public class HQFunctions 
 {
-	
-	// these are the channels that we will use to communicate to our bots
+
+    // these are the channels that we will use to communicate to our bots
     static final int enemyHQ = 1;
     static final int ourHQ = 2;
     static final int rallyPoint = 3;
     static final int needNoiseTower = 4;
     static final int needPastr = 5;
+    static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
+    static final int rallyPoint2 = 8;
+    static final int defendPastr = 9;
+    static final int pastLoc = 10;
+    static final int morphZergling = 11;
+    static final int morphHydralisk = 12;
+    static final int hydraliskCount = 13;
+    static final int towerLoc = 14;
+    static final int towerBuilt = 15;
+    static final int pastrBuilt = 16;
+
     static Random rand = new Random();
     static Direction[] directions = Direction.values();
 	
@@ -23,9 +35,10 @@ public class HQFunctions
             if (rc.isActive() && rc.getType() == RobotType.HQ && (rc.senseRobotCount() < 25))
             {
                 Direction toEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-                if (rc.senseObjectAtLocation(rc.getLocation().add(toEnemy)) == null) {}
-                else
+                while (!rc.canMove(toEnemy))
                 {
+                    toEnemy = toEnemy.rotateLeft();
+                    /*
                     for (int i = 0; i < 7; i++)
                     {
                         toEnemy = toEnemy.rotateLeft();
@@ -38,7 +51,7 @@ public class HQFunctions
                         {
                             toEnemy = Direction.NONE;
                         }
-                    }
+                    }*/
                 }
 
                 if (toEnemy != Direction.NONE)
@@ -77,46 +90,53 @@ public class HQFunctions
 				target = target.add(target.directionTo(enemyHQSpot));
 			}
 
+            //target = rc.senseEnemyHQLocation();
+
 			rc.broadcast(rallyPoint, Movement.convertMapLocationToInt(target));
-			
+
 		} catch (Exception e) {}
 	}
-	
+
 	public static void InitialLocationBroadcasts(RobotController rc)
 	{
 		try
 		{
 			MapLocation ourHQSpot = rc.getLocation();
-			
+
 			rc.broadcast(ourHQ, Movement.convertMapLocationToInt(ourHQSpot));
-			
+
 			MapLocation enemyHQSpot = rc.senseEnemyHQLocation();
-			
+
 			rc.broadcast(enemyHQ, Movement.convertMapLocationToInt(enemyHQSpot));
-			
+
 		} catch (Exception e)
         {
             e.printStackTrace();
             System.out.println("RobotPlayer Exception");
         }
-		
+
 	}
-	
+
 	// methods to give robots channels
 	public static int enemyHQChannel()
 	{
 		return enemyHQ;
 	}
-	
+
 	public static int ourHQChannel()
 	{
 		return ourHQ;
 	}
-	
+
 	public static int rallyPointChannel()
 	{
 		return rallyPoint;
 	}
+
+    public static int rallyPoint2Channel()
+    {
+        return rallyPoint2;
+    }
 
 	public static void moveTargetLocationRandomly(RobotController rc)
 	{
@@ -125,7 +145,7 @@ public class HQFunctions
 			MapLocation target = Movement.convertIntToMapLocation(rc.readBroadcast(rallyPoint));
 			Direction dir = directions[rand.nextInt(8)];
 			MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
-			
+
 			if (enemyPastrs.length > 0)
 			{
 				target = enemyPastrs[0];
@@ -137,11 +157,69 @@ public class HQFunctions
 					target = target.add(dir);
 				}
 			}
-			
+
 			rc.broadcast(rallyPoint, Movement.convertMapLocationToInt(target));
-			
+
 		} catch (Exception e) {}
 	}
+
+    /**
+     * This method returns the current target location for scouring the map in search of enemy pastrs
+     */
+    public static MapLocation newTarget(RobotController rc)
+    {
+        MapLocation target = null;
+        int time = Clock.getRoundNum() % 750;
+
+        target = rc.getLocation();
+        while ((target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 50 || target.distanceSquaredTo(rc.getLocation()) < 50))
+        {
+            if (time < 75)
+            {
+                target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+            }
+            else if (time < 150)
+            {
+                target = new MapLocation(rc.getMapWidth()/10, rc.getMapHeight()/10);
+            }
+            else if (time < 225)
+            {
+                target = new MapLocation(rc.getMapWidth()/10, rc.getMapHeight()/2);
+            }
+            else if (time < 300)
+            {
+                target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight() - 5);
+            }
+            else if (time < 375)
+            {
+                target = new MapLocation(rc.getMapWidth()-5, rc.getMapHeight()/2);
+            }
+            else if (time < 450)
+            {
+                target = new MapLocation(rc.getMapWidth()-5, rc.getMapHeight()/10);
+            }
+            else if (time < 525)
+            {
+                target = new MapLocation(rc.getMapWidth()/2, 10);
+            }
+            else if (time < 600)
+            {
+                target = new MapLocation(rc.getMapWidth() - 5, rc.getMapHeight() - 5);
+            }
+            else if (time < 675)
+            {
+                target = new MapLocation(5, rc.getMapHeight() - 5);
+            }
+            else if (time < 750)
+            {
+                target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+            }
+            time += 75;
+            time %= 750;
+        }
+
+        return target;
+    }
 
     public static boolean setTargetLocation(RobotController rc, boolean wentForPastr)
     {
@@ -149,11 +227,15 @@ public class HQFunctions
         try
         {
             MapLocation target = Movement.convertIntToMapLocation(rc.readBroadcast(rallyPoint));
+            MapLocation target2 = rc.getLocation();
             Direction dir = directions[rand.nextInt(8)];
             MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+            MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
+            int[] AllEnemies = FightMicro.AllEnemyBots(rc);
             MapLocation closestPastr = null;
             int closestDist = 1000000;
             boolean initialRally = false;
+            boolean setTarget2 = false;
 
             for (int i = 0; i < enemyPastrs.length; i++)
             {
@@ -166,6 +248,16 @@ public class HQFunctions
                 }
             }
 
+            if (ourPastrs.length > 0)
+            {
+                rc.broadcast(defendPastr, 1);
+            }
+            else
+            {
+                rc.broadcast(pastrBuilt, 0);
+            }
+
+
             if (enemyPastrs.length > 0 && closestPastr != null)
             {
                 target = target.add(target.directionTo(closestPastr), 3);
@@ -174,28 +266,73 @@ public class HQFunctions
                 {
                     target = target.add(target.directionTo(closestPastr));
                 }
+                rc.broadcast(takeDownEnemyPastr, 1);
+
+                if (closestPastr.distanceSquaredTo(rc.senseEnemyHQLocation()) < 10)
+                {
+                    rc.broadcast(enemyPastrInRangeOfHQ, 1);
+                }
+                else
+                {
+                    rc.broadcast(enemyPastrInRangeOfHQ, 0);
+                }
+            }
+            else if (rc.readBroadcast(pastLoc) != 0)
+            {
+                target = Movement.convertIntToMapLocation(rc.readBroadcast(pastLoc));
+                if (ourPastrs.length > 0)
+                {
+                    target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
+                    target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
+                    target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
+                }
+
+                rc.broadcast(takeDownEnemyPastr, 0);
+                rc.broadcast(enemyPastrInRangeOfHQ, 0);
             }
             else
             {
-                if (Clock.getRoundNum() > 500 && rc.senseRobotCount() > 10 && rc.sensePastrLocations(rc.getTeam()).length == 0 && !wentForPastr)
-                {
-                    target = spotOfPastr(rc, true);
-                    rc.broadcast(needNoiseTower, 1);
-                    rc.broadcast(needPastr, 1);
-                    target = target.add(target.directionTo(rc.senseEnemyHQLocation()), 3);
-                    goingForPastr = true;
-                }
-                else
+                if (Clock.getRoundNum() < 10000)
                 {
                     findInitialRally(rc);
                     initialRally = true;
                 }
+                else
+                {
+                }
+                rc.broadcast(takeDownEnemyPastr, 0);
+                rc.broadcast(enemyPastrInRangeOfHQ, 0);
             }
 
             if (!initialRally)
             {
                 rc.broadcast(rallyPoint, Movement.convertMapLocationToInt(target));
             }
+
+            for (int i = 0; i < enemyPastrs.length; i++)
+            {
+                int dist = target2.distanceSquaredTo(enemyPastrs[i]);
+                int distToEnemyHQ = enemyPastrs[i].distanceSquaredTo(rc.senseEnemyHQLocation());
+                if (dist < closestDist && distToEnemyHQ > 0)
+                {
+                    closestDist = dist;
+                    closestPastr = enemyPastrs[i];
+                }
+            }
+
+            if (enemyPastrs.length > 0 && closestPastr != null)
+            {
+                target2 = closestPastr;
+            }
+            else if (AllEnemies.length > 0 && AllEnemies[0] != 0)
+            {
+                target2 = FightMicro.getBotLocation(AllEnemies[0]);
+            }
+            else
+            {
+                target2 = newTarget(rc);
+            }
+            rc.broadcast(rallyPoint2, Movement.convertMapLocationToInt(target2));
 
         } catch (Exception e) {}
         return goingForPastr;

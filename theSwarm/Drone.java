@@ -1,18 +1,68 @@
 package theSwarm;
 
-import battlecode.common.*;
+import battlecode.common.MapLocation;
+import battlecode.common.Robot;
+import battlecode.common.RobotController;
+import battlecode.common.RobotType;
 
 /**
- * Created by fredkneeland on 1/16/14.
+ * Different types correspond to different times to turn into pastures
+ * 1 means that it will turn immediately into a pasture when it reaches a destination
+ * 2 means it will turn into a pasture once it is next to a noise tower
+ * 3 means the bot waits for another pasture to be created before starting construction
+ * Any other number, that is how long the bot will wait before beginning construction of a pasture
+ * A corresponding negative number will go to the opposite corner.
  */
 public class Drone {
+    // these are the channels that we will use to communicate to our bots
+    static final int enemyHQ = 1;
+    static final int ourHQ = 2;
+    static final int rallyPoint = 3;
+    static final int needNoiseTower = 4;
+    static final int needPastr = 5;
+    static final int takeDownEnemyPastr = 6;
+    static final int enemyPastrInRangeOfHQ = 7;
+    static final int rallyPoint2 = 8;
+    static final int defendPastr = 9;
+    static final int pastLoc = 10;
+    static final int morphZergling = 11;
+    static final int morphHydralisk = 12;
+    static final int hydraliskCount = 13;
+    static final int towerLoc = 14;
+    static final int towerBuilt = 15;
+    static final int pastrBuilt = 16;
+
     RobotController rc;
     MapLocation pastrSpot;
+    int type;
 
-    public Drone(RobotController rc)
+    public Drone(RobotController rc, int type)
     {
         this.rc = rc;
-        pastrSpot = HQFunctions.spotOfPastr(rc, true);
+        this.type = type;
+
+
+        try
+        {
+            int loc = rc.readBroadcast(pastLoc);
+            if (loc == 0)
+            {
+                pastrSpot = TowerUtil.bestSpot3(rc);
+            }
+            else
+            {
+                pastrSpot = Movement.convertIntToMapLocation(loc);
+            }
+            if(this.type < 0)
+            {
+                pastrSpot = TowerUtil.getOppositeSpot(rc, pastrSpot);
+                this.type *= -1;
+            }
+
+            rc.broadcast(pastLoc, Movement.convertMapLocationToInt(pastrSpot));
+        } catch (Exception e) {}
+        
+        rc.setIndicatorString(0, "Drone");
     }
 
     public void run()
@@ -21,19 +71,57 @@ public class Drone {
         {
             try
             {
+
                 if (rc.isActive())
                 {
-                    if (rc.getLocation().equals(pastrSpot) || (rc.getLocation().isAdjacentTo(pastrSpot) && !rc.canMove(rc.getLocation().directionTo(pastrSpot))))
+                    if (rc.readBroadcast(pastrBuilt) == 1)
                     {
+                        Hydralisk hydralisk = new Hydralisk(rc);
+                        hydralisk.run();
+                    }
+                    else if (rc.getLocation().x == pastrSpot.x && rc.getLocation().y == pastrSpot.y)
+                    {
+                    	if(type == 2)
+                    	{
+                    		while(!towerNear(rc)){rc.yield();}
+                    	}
+                    	else if(type == 3)
+                    	{
+                    		for(int k = 0; k < 200 && rc.sensePastrLocations(rc.getTeam()).length == 0; k++){rc.yield();}
+                    	}
+                    	else
+                    	{
+                    		while(!towerNear(rc)){rc.yield();}
+                    		for(int k = 0; k < type; k++){rc.yield();}
+                    	}
+                    	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){rc.yield();}
                         rc.construct(RobotType.PASTR);
                     }
                     else
                     {
-                        Movement.MoveMapLocation(rc, pastrSpot, false);
+                        Movement.MoveMapLocation(rc, pastrSpot, false, false);
                     }
                 }
 
             } catch (Exception e) {}
         }
+    }
+    
+    private boolean towerNear(RobotController rc)
+    {
+    	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam());
+    	for(Robot bot : bots)
+    	{
+    		try
+    		{
+	    		if(rc.senseRobotInfo(bot).type == RobotType.NOISETOWER)
+	    		{
+	    			return true;
+	    		}
+    		}
+    		catch(Exception e){}
+    	}
+    	
+    	return false;
     }
 }
