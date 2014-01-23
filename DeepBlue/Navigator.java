@@ -168,25 +168,60 @@ public class Navigator {
 
     private void bugMove() throws GameActionException
     {
+        MapLocation rcLoc = rc.getLocation();
         if (bugLeft) {
-            // If we run into a wall
-            while (!rc.canMove(heading))
-                heading = heading.rotateRight();
-
-            // keep in contact with left wall
-            if (rc.canMove(heading.rotateLeft()))
+            if (map.valueForLocation(rcLoc.add(heading.rotateLeft().rotateLeft().rotateLeft())) != RoadMap.TILE_VOID)
+                heading = heading.rotateLeft().rotateLeft().rotateLeft();
+            if (map.valueForLocation(rcLoc.add(heading.rotateLeft().rotateLeft())) != RoadMap.TILE_VOID)
+                heading = heading.rotateLeft().rotateLeft();
+            if (map.valueForLocation(rcLoc.add(heading.rotateLeft())) != RoadMap.TILE_VOID)
                 heading = heading.rotateLeft();
+            if (map.valueForLocation(rcLoc.add(heading)) != RoadMap.TILE_VOID)
+                heading = heading;
+            if (map.valueForLocation(rcLoc.add(heading.rotateRight())) != RoadMap.TILE_VOID)
+                heading = heading.rotateRight();
+            if (map.valueForLocation(rcLoc.add(heading.rotateRight().rotateRight())) != RoadMap.TILE_VOID)
+                heading = heading.rotateRight().rotateRight();
+            if (map.valueForLocation(rcLoc.add(heading.rotateRight().rotateRight().rotateRight())) != RoadMap.TILE_VOID)
+                heading = heading.rotateRight().rotateRight().rotateRight();
+            else
+                heading = heading.opposite();
+
+//            // If we run into a wall
+//            while (!rc.canMove(heading))
+//                heading = heading.rotateRight();
+//
+//            // keep in contact with left wall
+//            if (rc.canMove(heading.rotateLeft()))
+//                heading = heading.rotateLeft();
 
             if (!rc.isActive()) rc.yield();
             rc.move(heading);
         } else {
-            // If we run into a wall
-            while (!rc.canMove(heading))
-                heading = heading.rotateLeft();
-
-            // keep in contact with left wall
-            if (rc.canMove(heading.rotateRight()))
+            if (map.valueForLocation(rcLoc.add(heading.rotateRight().rotateRight().rotateRight())) != RoadMap.TILE_VOID)
+                heading = heading.rotateRight().rotateRight().rotateRight();
+            if (map.valueForLocation(rcLoc.add(heading.rotateRight().rotateRight())) != RoadMap.TILE_VOID)
+                heading = heading.rotateRight().rotateRight();
+            if (map.valueForLocation(rcLoc.add(heading.rotateRight())) != RoadMap.TILE_VOID)
                 heading = heading.rotateRight();
+            if (map.valueForLocation(rcLoc.add(heading)) != RoadMap.TILE_VOID)
+                heading = heading;
+            if (map.valueForLocation(rcLoc.add(heading.rotateLeft())) != RoadMap.TILE_VOID)
+                heading = heading.rotateLeft();
+            if (map.valueForLocation(rcLoc.add(heading.rotateLeft().rotateLeft())) != RoadMap.TILE_VOID)
+                heading = heading.rotateLeft().rotateLeft();
+            if (map.valueForLocation(rcLoc.add(heading.rotateLeft().rotateLeft().rotateLeft())) != RoadMap.TILE_VOID)
+                heading = heading.rotateLeft().rotateLeft().rotateLeft();
+            else
+                heading = heading.opposite();
+
+//            // If we run into a wall
+//            while (!rc.canMove(heading))
+//                heading = heading.rotateLeft();
+//
+//            // keep in contact with left wall
+//            if (rc.canMove(heading.rotateRight()))
+//                heading = heading.rotateRight();
 
             if (!rc.isActive()) rc.yield();
             rc.move(heading);
@@ -204,7 +239,8 @@ public class Navigator {
     {
         if (!atFinalDestination()) {
             if (!bugging) {
-                heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc); // Heading set with slime tail avoidance
+//                heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc); // Heading set with slime tail avoidance
+                heading = rc.getLocation().directionTo(destination);
                 if(rc.canMove(heading)) {
                     if (!rc.isActive()) rc.yield();
                         rc.move(heading);
