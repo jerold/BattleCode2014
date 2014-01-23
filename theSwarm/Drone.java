@@ -130,7 +130,22 @@ public class Drone {
                                 }
                             }
                         }
-                        rc.construct(RobotType.PASTR);
+
+                        Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                        for (int i = nearByAllies.length; --i>=0;)
+                        {
+                            if (rc.senseRobotInfo(nearByAllies[i]).isConstructing)
+                            {
+                                Hydralisk hydralisk = new Hydralisk(rc);
+                                hydralisk.run();
+                            }
+                        }
+
+                        if (rc.getLocation().equals(pastrSpot))
+                        {
+                            rc.construct(RobotType.PASTR);
+                        }
+                        
                     }
                     else
                     {
