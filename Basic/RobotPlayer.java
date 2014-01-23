@@ -65,7 +65,7 @@ public class RobotPlayer {
 					} else {
 						System.out.println("no HQ tower, score = " + score);
 					}
-					
+					//PASTR finder
 					if(currentPastrs.length > 0 && currentPastrs.length > previousPastrs.length){
 						if(previousPastrs.length == 0){
 							for(int k = 0; k < currentPastrs.length; k++){
@@ -89,11 +89,12 @@ public class RobotPlayer {
 							MapLocation search = allPastrs[j];
 							for(int n = 0; n < allIndex; n++){
 								if(search.equals(allPastrs[n]) && j != n){
-									System.out.println("Found same @: " + search.x + ", " + search.y);
+									System.out.println("Found same pastr loc @: " + search.x + ", " + search.y);
 								}
 							}
 						}
 					}
+					//end PASTR finder
 					
 					tryToShoot();
 					tryToSpawn();

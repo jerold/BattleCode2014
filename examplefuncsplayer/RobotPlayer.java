@@ -15,6 +15,11 @@ public class RobotPlayer {
 		Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
 		
 		while(true) {
+			MapLocation rally = rc.getLocation();
+			Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
+			for(int i = 0; i < 5; i++){
+				rally = rally.add(dir);
+			}
 			if (rc.getType() == RobotType.HQ) {
 				try {					
 					//Check if a robot is spawnable and spawn one if it is
@@ -31,8 +36,18 @@ public class RobotPlayer {
 			
 			if (rc.getType() == RobotType.SOLDIER) {
 				try {
+					
+					dir = rc.getLocation().directionTo(rally);
 					if (rc.isActive()) {
-						int action = (rc.getRobot().getID()*rand.nextInt(101) + 50)%101;
+						
+						if(rc.getLocation().equals(rally)){
+							rc.construct(RobotType.PASTR);
+						}
+						if(rc.canMove(dir)){
+							rc.move(dir);
+						}
+						
+						/*int action = (rc.getRobot().getID()*rand.nextInt(101) + 50)%101;
 						//Construct a PASTR
 						if (action < 1 && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) > 2) {
 							rc.construct(RobotType.PASTR);
@@ -56,6 +71,7 @@ public class RobotPlayer {
 								rc.sneak(toEnemy);
 							}
 						}
+						*/
 					}
 				} catch (Exception e) {
 					System.out.println("Soldier Exception");
