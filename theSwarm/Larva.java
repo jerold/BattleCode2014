@@ -59,6 +59,12 @@ public class Larva {
                 }
 				else if (rc.isActive())
 				{
+                    if (Clock.getRoundNum() < 20)
+                    {
+                        MapLocation pastrSpot;
+                        pastrSpot = TowerUtil.bestSpot3(rc);
+                        rc.broadcast(pastLoc, Movement.convertMapLocationToInt(pastrSpot));
+                    }
 
                     if (Clock.getRoundNum() % 10 == 0)
                     {

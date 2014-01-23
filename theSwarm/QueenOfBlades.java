@@ -111,7 +111,7 @@ public class QueenOfBlades {
                 }
 
                 int robotCount = rc.senseRobotCount();
-                if ((robotCount > 10) && (enemyPastrs.length == 0) && !build)
+                if ((robotCount > 12) && (enemyPastrs.length == 0) && !build)
                 {
                     build = true;
                 }

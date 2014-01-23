@@ -15,6 +15,8 @@ public class Kerrigan {
     boolean build = false;
     boolean build2 = false;
     int roundBuilt = 0;
+    boolean offense = false;
+    boolean twoPastrs = false;
 
     // these are the channels that we will use to communicate to our bots
     static final int enemyHQ = 1;
@@ -53,8 +55,8 @@ public class Kerrigan {
         while (true)
         {
             rc.setIndicatorString(0, "Mengsk will suffer!");
-            rc.setIndicatorString(1, "But I am not alone,");
-            rc.setIndicatorString(2, "For I am the Swarm");
+            //rc.setIndicatorString(1, "But I am not alone,");
+            //rc.setIndicatorString(2, "For I am the Swarm");
 
             try
             {
@@ -69,7 +71,18 @@ public class Kerrigan {
                     Movement.fire(rc, enemies, null);
                     HQFunctions.SpawnSoldiers(rc);
                     numbOfSoldiers++;
-                    if (rc.getMapHeight() > 50)
+                    if (offense)
+                    {
+                        if (numbOfSoldiers > 5)
+                        {
+                            rc.broadcast(morphHydralisk, 1);
+                        }
+                        else
+                        {
+                            rc.broadcast(morphZergling, 1);
+                        }
+                    }
+                    else if (rc.getMapHeight() > 50)
                     {
                         if (rc.readBroadcast(pastLoc) == 0)
                         {
