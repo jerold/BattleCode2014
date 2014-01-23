@@ -13,14 +13,20 @@ public class Utilities
     static Direction[] directions = Direction.values();
 
     // channels for communication
-    static final int startMapChannels = 0;
-    static final int mapUploadedChannel = 10000;
-    static final int macroUploadedChannel = 10001;
-    static final int macroExpectChannel = 10002;
-    static final int startMacroChannels = 10003;
+    static final public int startMapChannels = 0;
+    static final public int mapUploadedChannel = 10000;
+    static final public int macroUploadedChannel = 10001;
+    static final public int macroExpectChannel = 10002;
+    static final public int startMacroChannels = 10003;
 
-    static final int startPastrChannels = 30002;
-    static final int PastrDetailCount = 5; // [LastActiveRound, DefenderCount, EnemyCount, CowCount, PastrLocation]
+    static final public int unitNeededChannel = 20000;
+    static final public int rallyPointChannel1 = 20001;
+    static final public int rallyPointChannel2 = 20002;
+    static final public int bestPastrLocationChannel1 = 20003;
+    static final public int bestPastrLocationChannel2 = 20004;
+
+    static final public int startPastrChannels = 30002;
+    static final public int PastrDetailCount = 5; // [LastActiveRound, DefenderCount, EnemyCount, CowCount, PastrLocation]
 
 
 

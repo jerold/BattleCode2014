@@ -12,16 +12,15 @@ public class RoadMap {
     RobotController rc;
     UnitCache cache;
 
-    static final int TILE_VOID = 999;
-
-    int MAP_WIDTH;
-    int MAP_HEIGHT;
+    public int MAP_WIDTH;
+    public int MAP_HEIGHT;
     int[][] roadMap;
     double[][] cgMap;
     int[][] cowGrowthMap;
 
-    static final double MACRO_PATH_MAX_VOID_DENSITY = .75;
-    static final int NO_PATH_EXISTS = -1;
+    static final double MACRO_PATH_MAX_VOID_DENSITY = .45;
+    public static final int TILE_VOID = 999;
+    public static final int NO_PATH_EXISTS = -1;
     static final int MIN_NODE_SPACING = 6;
     static final int MAX_NODES_IN_LINE = 8;
 
@@ -34,7 +33,7 @@ public class RoadMap {
     boolean[] macroUsableNode;
     int[][] macroPathDistance;
 
-    public enum PathingStrategy {
+    public static enum PathingStrategy {
         DefaultBug,
         SmartBug,
         MacroPath
@@ -94,12 +93,12 @@ public class RoadMap {
         if (cache.rcType == RobotType.HQ) {
             if (!mapUploaded)
                 assessMap();
-            if (mapUploaded && expectMacroPathing && !macroPathingUploaded)
+            else if (expectMacroPathing && !macroPathingUploaded)
                 assessMacroPathing();
         } else {
             if (!mapUploaded)
                 readBroadcastMap();
-            if (mapUploaded && expectMacroPathing && !macroPathingUploaded)
+            else if (expectMacroPathing && !macroPathingUploaded)
                 readBroadcastMacro();
         }
     }
@@ -110,38 +109,21 @@ public class RoadMap {
         broadcastMacroFlag();
     }
 
-    public int valueForLocation(MapLocation loc) throws GameActionException
+    public int valueForLocation(MapLocation loc)
     {
         if (loc.y < MAP_HEIGHT && loc.y > 0 && loc.x < MAP_WIDTH && loc.x > 0)
             return roadMap[loc.x][loc.y];
         return TILE_VOID;
     }
 
-//    public int[] ordinalDirectionCosts(MapLocation origin) throws GameActionException
-//    {
-//        int[] costs = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
-//        costs[0] = valueForLocation(origin.add(origin.x, origin.y+1));
-//        costs[1] = valueForLocation(origin.add(origin.x+1, origin.y+1));
-//        costs[2] = valueForLocation(origin.add(origin.x+1, origin.y));
-//        costs[3] = valueForLocation(origin.add(origin.x+1, origin.y-1));
-//        costs[4] = valueForLocation(origin.add(origin.x, origin.y-1));
-//        costs[5] = valueForLocation(origin.add(origin.x-1, origin.y-1));
-//        costs[6] = valueForLocation(origin.add(origin.x-1, origin.y));
-//        costs[7] = valueForLocation(origin.add(origin.x-1, origin.y+1));
-////        System.out.println("x:"+origin.x+", y:"+origin.y+", ["+costs[0]+"]["+costs[1]+"]["+costs[2]+"]["+costs[3]+"]["+costs[4]+"]["+costs[5]+"]["+costs[6]+"]["+costs[7]+"]");
-//        return costs;
-//    }
-
     public Direction directionTo(MapLocation origin, MapLocation destination) throws GameActionException
     {
-        int ordinalDir = origin.directionTo(destination).ordinal();
-        if (valueForLocation(origin.add(Utilities.directionByOrdinal[ordinalDir])) != TILE_VOID) return Utilities.directionByOrdinal[ordinalDir];
-
-        Direction[] dirs = Utilities.directionByOrdinal;
+        Direction dir = origin.directionTo(destination);
+        if (valueForLocation(origin.add(dir)) != TILE_VOID) return dir;
 
         // Rotate 1 Left and Right, 3 Checked
-        Direction dirLeft = dirs[ordinalDir].rotateLeft();
-        Direction dirRight = dirs[ordinalDir].rotateRight();
+        Direction dirLeft = dir.rotateLeft();
+        Direction dirRight = dir.rotateRight();
         if (valueForLocation(origin.add(dirLeft)) != TILE_VOID) {
             if (valueForLocation(origin.add(dirRight)) != TILE_VOID && valueForLocation(origin.add(dirRight)) < valueForLocation(origin.add(dirLeft))) return dirRight;
             else return dirLeft;
@@ -163,7 +145,7 @@ public class RoadMap {
             else return dirLeft;
         } else if (valueForLocation(origin.add(dirRight)) != TILE_VOID) return dirRight;
 
-        return dirs[ordinalDir].opposite();
+        return dir.opposite();
     }
 
 
@@ -180,14 +162,6 @@ public class RoadMap {
         return nodeId == NO_PATH_EXISTS ? NO_PATH_EXISTS : nodeCount - nodeId - 1;
     }
 
-//    private int nodeForLocation(MapLocation loc) {
-//        int nodeId = ((loc.x - nodePadding)/nodeSpacing) * nodesInLine; // THIS ISN'T FINISHED
-//        return nodeId;
-//    }
-
-    /*
-    This is an expensive method, only called when we construct a new path, costly as it has to simulate a path to surrounding nodes to make sure it is reachable
-     */
     public int idForNearestNode(MapLocation loc) throws GameActionException
     {
         int nodeX = (loc.x-nodePadding)/(MAP_WIDTH/nodesInLine);
@@ -456,8 +430,11 @@ public class RoadMap {
             }
         }
 
+        // TEST RALLY POINT
+        Headquarter.setRallyPoint(cache.ENEMY_HQ);
+
         rc.setIndicatorString(1, "Finished Broadcasting Macro");
-        broadcastMacroFlag();
+        broadcastFlags();
     }
 
     public void broadcastMacroFlag() throws GameActionException
@@ -483,10 +460,10 @@ public class RoadMap {
         for (int x=0; x<=MAP_WIDTH/2;x++) {
             for (int y=0; y<MAP_HEIGHT;y++) {
                 int ordValue = rc.senseTerrainTile(new MapLocation(x,y)).ordinal();//0 NORMAL, 1 ROAD, 2 VOID, 3 OFF_MAP
-                roadMap[x][y] = ordValue;
+                roadMap[x][y] = 1-ordValue; // Roads become 0, normals become 1 (higher gets TILE_VOID below
                 cowGrowthMap[x][y] = (int)cgMap[x][y];
 
-                roadMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = ordValue;
+                roadMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = 1-ordValue;
                 cowGrowthMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1] = (int)cgMap[MAP_WIDTH-x-1][MAP_HEIGHT-y-1];
 
                 if (ordValue > 1) {
@@ -502,8 +479,11 @@ public class RoadMap {
             Headquarter.tryToSpawn();
         }
 
-        voidDensity/=(MAP_HEIGHT*MAP_WIDTH);
+        voidDensity=(voidDensity*2)/(MAP_HEIGHT*MAP_WIDTH);
         System.out.println("Void Density: " + voidDensity);
+
+        if (voidDensity > MACRO_PATH_MAX_VOID_DENSITY)
+            expectMacroPathing = false;
 
         System.out.println("FINISH MAP ASSESSMENT");
         rc.setIndicatorString(1, "Done with Map");
@@ -547,7 +527,7 @@ public class RoadMap {
             }
         }
         rc.setIndicatorString(1, "Finished Broadcasting Map");
-        broadcastMapFlag();
+        broadcastFlags();
     }
 
     public void broadcastMapFlag() throws GameActionException

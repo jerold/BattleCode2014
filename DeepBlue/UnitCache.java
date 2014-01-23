@@ -24,10 +24,10 @@ public class UnitCache {
     RobotController rc;
 
     double SLOPE;
-    MapLocation MY_HQ;
-    MapLocation ENEMY_HQ;
+    public MapLocation MY_HQ;
+    public MapLocation ENEMY_HQ;
     double DISTANCE_BETWEEN_HQS;
-    RobotType rcType;
+    public RobotType rcType;
 
     UnitCache(RobotController rc)
     {

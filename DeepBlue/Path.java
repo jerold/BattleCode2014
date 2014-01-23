@@ -138,8 +138,11 @@ public class Path {
         if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
             return false;
         MapLocation bugEnd = origin.add(origin.directionTo(destination));
-        while (map.roadMap[bugEnd.x][bugEnd.y] == RoadMap.TILE_VOID)
+
+        while (map.roadMap[bugEnd.x][bugEnd.y] == RoadMap.TILE_VOID) {
             bugEnd = bugEnd.add(bugEnd.directionTo(destination));
+
+        }
 
         MapLocation[] bugLeft = getBugPath(map, origin, bugEnd, true);
         MapLocation[] bugRight = getBugPath(map, origin, bugEnd, false);
@@ -157,8 +160,9 @@ public class Path {
         MapLocation stepLocation = origin;
         roughPath.add(stepLocation);
         Direction direction = stepLocation.directionTo(destination);
-        while (!(stepLocation.x == destination.x && stepLocation.y == destination.y)) {
-
+        int failIn = 30;
+        while (failIn>0 && !(stepLocation.x == destination.x && stepLocation.y == destination.y)) {
+//            System.out.print("VOID "+failIn);
             if (leftWall) {
                 // If we run into a wall
                 while (!validMove(map, stepLocation, direction))
@@ -179,6 +183,7 @@ public class Path {
 
             stepLocation = stepLocation.add(direction);
             roughPath.add(stepLocation);
+            failIn--;
         }
 
         MapLocation[] returnPath = new MapLocation[roughPath.size()];

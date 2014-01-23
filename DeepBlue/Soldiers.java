@@ -1,22 +1,37 @@
 package DeepBlue;
 
+import DeepBlue.Strategies.UnitStratFrontLiner;
+import DeepBlue.Strategies.UnitStratReinforcement;
 import battlecode.common.*;
-import java.util.Random;
 
 /**
  * Created by Jerold Albertson on 1/12/14.
  *
  */
 public class Soldiers {
-    static RobotController rc;
-    static UnitCache cache;
-    static RoadMap map;
-    static Navigator nav;
-    static MapLocation destination;
-    static Random rand = new Random();
+    static public RobotController rc;
+    static public UnitCache cache;
+    static public RoadMap map;
+    static public Navigator nav;
+    static public UnitStrategyType strategy;
 
-    static Direction allDirections[] = Direction.values();
-    static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
+    public static enum UnitStrategyType {
+        NoType(0),
+        Reinforcement(1),
+        FrontLiner(2),
+        PastrDefense(3),
+        Constructor(4),
+        Defector(5);
+
+        private final int value;
+        private UnitStrategyType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
 
     public static void run(RobotController inRc) throws GameActionException
     {
@@ -24,17 +39,15 @@ public class Soldiers {
         cache = new UnitCache(rc);
         map = new RoadMap(rc, cache);
         nav = new Navigator(rc,cache, map);
-
-        // Temp THIS IS NOT A GOOD IDEA
-        nav.setDestination(cache.ENEMY_HQ);
+        changeStrategy(UnitStrategyType.Reinforcement);
 
         while (true) {
             if (!rc.isActive()) { rc.yield(); continue; }
 
+            updateStrategy();
+
             cache.reset();
             map.checkForUpdates();
-
-
 
             // Do unit strategy picker
             // strategy picks destinations and performs special tasks
@@ -48,5 +61,28 @@ public class Soldiers {
         }
     }
 
+    public static void changeStrategy(UnitStrategyType newStrategy)
+    {
+        strategy = newStrategy;
+    }
 
+    public static void updateStrategy() throws GameActionException
+    {
+        rc.setIndicatorString(2, "Strategy ["+strategy+"]");
+        switch (strategy) {
+            case Reinforcement:
+                UnitStratReinforcement.update();
+                break;
+            case FrontLiner:
+                UnitStratFrontLiner.update();
+                UnitStratFrontLiner.run();
+                break;
+            case PastrDefense:
+                break;
+            case Constructor:
+                break;
+            case Defector:
+                break;
+        }
+    }
 }

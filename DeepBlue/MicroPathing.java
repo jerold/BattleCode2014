@@ -8,12 +8,41 @@ import battlecode.common.*;
  */
 public class MicroPathing {
 
-    static int MAX_TRAIL_LENGTH = 4;
+    static int MAX_TRAIL_LENGTH = 6;
     static MapLocation[] trail = new MapLocation[MAX_TRAIL_LENGTH];
     static int headIndex = 0;
     static int trailLength = 0;
     static Direction allDirections[] = Direction.values();
     static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
+
+    public static boolean canMove(MapLocation origin, Direction dir)
+    {
+        MapLocation resultingLocation = origin.add(dir);
+        for(int i=0;i<trailLength;i++){
+            MapLocation m = getLocationFromTrail(i);
+            if(!m.equals(origin)){
+                if(resultingLocation.equals(m)){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static Direction getNextDirection(MapLocation origin, Direction chosenDirection, RoadMap map)
+    {
+        while(trailLength<2)
+            addLocationToTrail(new MapLocation(-1, -1));
+        addLocationToTrail(origin);
+        for(int directionalOffset:directionalLooks){
+            int forwardInt = chosenDirection.ordinal();
+            Direction trialDir = allDirections[(forwardInt+directionalOffset+8)%8];
+            if(canMove(origin, trialDir) && map.valueForLocation(origin.add(trialDir)) != RoadMap.TILE_VOID){
+                return trialDir;
+            }
+        }
+        return Direction.NONE;
+    }
 
     public static boolean canMove(Direction dir, boolean selfAvoiding,RobotController rc){
         //include both rc.canMove and the snail Trail requirements
@@ -22,7 +51,7 @@ public class MicroPathing {
             for(int i=0;i<trailLength;i++){
                 MapLocation m = getLocationFromTrail(i);
                 if(!m.equals(rc.getLocation())){
-                    if(resultingLocation.isAdjacentTo(m)||resultingLocation.equals(m)){
+                    if(resultingLocation.equals(m)){
                         return false;
                     }
                 }

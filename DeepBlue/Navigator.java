@@ -14,6 +14,9 @@ public class Navigator {
     UnitCache cache;
     RoadMap map;
 
+    MapLocation dog;
+    Direction dogHeading;
+
     MapLocation destination;
     int destinationNodeId;
     MapLocation nextStep;
@@ -91,13 +94,13 @@ public class Navigator {
     public void pathingStrategyChanged() throws GameActionException
     {
         if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
-            bugging = false;
-            setDestination(cache.MY_HQ);
+            setDestination(destination);
         }
     }
 
     public void setDestination(MapLocation location) throws GameActionException
     {
+        bugging = false;
         destination = location;
         depart();
     }
@@ -141,10 +144,17 @@ public class Navigator {
     {
         if (atFinalDestination())
             return destination;
-        if (rc.getLocation().isAdjacentTo(nextStep))
+
+        if (dog.isAdjacentTo(nextStep))
             readBroadcastNextStep();
-        if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), nextStep) < Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination))
+        if (Utilities.distanceBetweenTwoPoints(dog, nextStep) < Utilities.distanceBetweenTwoPoints(dog, destination))
             return nextStep;
+
+//            if (rc.getLocation().isAdjacentTo(nextStep))
+//            readBroadcastNextStep();
+//        if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), nextStep) < Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination))
+//            return nextStep;
+
         return destination;
     }
 
@@ -202,6 +212,7 @@ public class Navigator {
 
 
 
+
     //================================================================================
     // Default Methods
     //================================================================================
@@ -233,28 +244,125 @@ public class Navigator {
     //================================================================================
     // Smart Methods
     //================================================================================
+//
+//    private Direction smartDirection() throws GameActionException
+//    {
+//        Direction dir = rc.getLocation().directionTo(dog);
+//        if (map.valueForLocation(rc.getLocation().add(dir)) != map.TILE_VOID && rc.canMove(dir))
+//            return dir;
+//
+//        // 45
+//        Direction dirLeft = dir.rotateLeft();
+//        Direction dirRight = dir.rotateRight();
+//        if (map.valueForLocation(rc.getLocation().add(dirLeft)) != map.TILE_VOID && rc.canMove(dirLeft)) {
+//            if (map.valueForLocation(rc.getLocation().add(dirRight)) != map.TILE_VOID && rc.canMove(dirRight)) {
+//                if (Utilities.distanceBetweenTwoPoints(rc.getLocation().add(dirLeft), destination) < Utilities.distanceBetweenTwoPoints(rc.getLocation().add(dirRight), destination))
+//                    return dirLeft;
+//                else
+//                    return dirRight;
+//            } else {
+//                return dirLeft;
+//            }
+//        } else if (map.valueForLocation(rc.getLocation().add(dirRight)) != map.TILE_VOID && rc.canMove(dirRight)) {
+//            return dirRight;
+//        }
+//
+//        // 90
+//        dirLeft = dirLeft.rotateLeft();
+//        dirRight = dirRight.rotateRight();
+//        if (map.valueForLocation(rc.getLocation().add(dirLeft)) != map.TILE_VOID && rc.canMove(dirLeft)) {
+//            if (map.valueForLocation(rc.getLocation().add(dirRight)) != map.TILE_VOID && rc.canMove(dirRight)) {
+//                if (Utilities.distanceBetweenTwoPoints(rc.getLocation().add(dirLeft), destination) < Utilities.distanceBetweenTwoPoints(rc.getLocation().add(dirRight), destination))
+//                    return dirLeft;
+//                else
+//                    return dirRight;
+//            } else {
+//                return dirLeft;
+//            }
+//        } else if (map.valueForLocation(rc.getLocation().add(dirRight)) != RoadMap.TILE_VOID && rc.canMove(dirRight)) {
+//            return dirRight;
+//        }
+//
+//        // Give the pup some space
+//        return Direction.NONE;
+//    }
+
+//    private MapLocation sniffOutNextStep(Direction dogHead, MapLocation dogLoc)
+//    {
+//        if (bugLeft) {
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateLeft().rotateLeft().rotateLeft())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateLeft().rotateLeft().rotateLeft());
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateLeft().rotateLeft())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateLeft().rotateLeft());
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateLeft())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateLeft());
+//            if (map.valueForLocation(dogLoc.add(dogHead)) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead);
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateRight())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateRight());
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateRight().rotateRight())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateRight().rotateRight());
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateRight().rotateRight().rotateRight())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateRight().rotateRight().rotateRight());
+//            return dogLoc.add(dogHead.opposite());
+//        } else {
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateRight().rotateRight().rotateRight())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateRight().rotateRight().rotateRight());
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateRight().rotateRight())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateRight().rotateRight());
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateRight())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateRight());
+//            if (map.valueForLocation(dogLoc.add(dogHead)) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead);
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateLeft())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateLeft());
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateLeft().rotateLeft())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateLeft().rotateLeft());
+//            if (map.valueForLocation(dogLoc.add(dogHead.rotateLeft().rotateLeft().rotateLeft())) != RoadMap.TILE_VOID)
+//                return dogLoc.add(dogHead.rotateLeft().rotateLeft().rotateLeft());
+//            return dogLoc.add(dogHead.opposite());
+//        }
+//    }
 
     public void smartMovement() throws GameActionException
     {
         if (!atFinalDestination()) {
-            if (!bugging) {
-                MicroPathing.addLocationToTrail(rc.getLocation()); // Snail Trail
-                heading = map.directionTo(rc.getLocation(), destination); // Heading set by the map to avoid void space
 
-                if(MicroPathing.canMove(heading, true, rc) && rc.canMove(heading)) {
-                    if (!rc.isActive()) rc.yield();
-                    rc.move(heading);
-                } else {
-                    heading = rc.getLocation().directionTo(destination);
-                    bugging = true;
-                    bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
-                    bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination); // Bugging is pre-simulated to pick the shortest direction
-                }
-            } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
-                bugging = false;
+            heading = MicroPathing.getNextDirection(map.directionTo(rc.getLocation(), destination), true, rc);
+            if (!rc.isActive()) rc.yield();
+            rc.move(heading);
 
-            if (bugging)
-                bugMove();
+//
+//            if (!bugging) {
+//                dog = rc.getLocation().add(map.directionTo(rc.getLocation(), destination)); // Heading set by the map to avoid void space
+//
+//                if (map.valueForLocation(dog.add(dog.directionTo(destination))) == RoadMap.TILE_VOID) { // Dog appears to be stuck!
+//                    dogHeading = dog.directionTo(destination);
+//                    bugging = true;
+//                    bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
+//                    bugLeft = Path.shouldBugLeft(map, dog, destination); // Bugging is pre-simulated to pick the shortest direction
+//                }
+//            } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
+//                bugging = false;
+//
+//            if (bugging) {
+//                if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), dog) < 2) {
+//                    MapLocation step1 = sniffOutNextStep(dogHeading, dog);
+//                    MapLocation step2 = sniffOutNextStep(dog.directionTo(step1), step1);
+//                    MapLocation step3 = sniffOutNextStep(step1.directionTo(step2), step2);
+//                    dog = new MapLocation((step1.x+step2.x+step3.x)/3,(step1.y+step2.y+step3.y)/3);
+//                }
+//            }
+//
+//            rc.setIndicatorString(2, "Dog: "+dog.x+","+dog.y+" Bug["+bugging+"] dist: "+Utilities.distanceBetweenTwoPoints(rc.getLocation(), dog));
+//
+//            heading = smartDirection(); // We follow the dog, and the dog does the bugging when needed.
+//            if(rc.canMove(heading)) {
+//                if (!rc.isActive()) rc.yield();
+//                rc.move(heading);
+//            } else {
+//                System.out.println("I R Stuck");
+//            }
         }
     }
 
@@ -268,39 +376,19 @@ public class Navigator {
     public void macroMovement() throws GameActionException
     {
         if (!atFinalDestination()) {
-            MicroPathing.addLocationToTrail(rc.getLocation()); // Snail Trail
-            heading = map.directionTo(rc.getLocation(), getNextStep()); // Heading is either a straight shot or a path built from the pre-computed breadth-first node paths
+            dog = rc.getLocation();
 
+            MapLocation nextStep = getNextStep();
+            int stepCount = 3;
+            for (int i=0; i<stepCount; i++) {
+                dog = dog.add(map.directionTo(dog, nextStep));
+            }
+
+            heading = MicroPathing.getNextDirection(map.directionTo(rc.getLocation(), dog), true, rc); // Heading is either a straight shot or a path built from the pre-computed breadth-first node paths
             if(rc.canMove(heading)) {
                 if (!rc.isActive()) rc.yield();
                 rc.move(heading);
             }
-
-//            if (!bugging) {
-//                MicroPathing.addLocationToTrail(rc.getLocation()); // Snail Trail
-//                heading = map.directionTo(rc.getLocation(), getNextStep()); // Heading is either a straight shot or a path built from the pre-computed breadth-first node paths
-//
-//                System.out.println("MACRO MOVE 2");
-//
-//                if(MicroPathing.canMove(heading, true, rc) && rc.canMove(heading)) {
-//                    if (!rc.isActive()) rc.yield();
-//                    rc.move(heading);
-//                } else {
-//                    heading = rc.getLocation().directionTo(destination);
-//                    bugging = true;
-//                    bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
-//                    bugLeft = Path.shouldBugLeft(map, rc.getLocation(), destination); // Bugging is pre-simulated to pick the shortest direction
-//                }
-//
-//                System.out.println("MACRO MOVE 3");
-//
-//            } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
-//                bugging = false;
-//
-//            System.out.println("MACRO MOVE 4");
-//
-//            if (bugging)
-//                bugMove();
         }
     }
 }
