@@ -1,9 +1,11 @@
 package theSwarm;
 
+import battlecode.common.Direction;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
+import battlecode.common.TerrainTile;
 
 /**
  * Created by fredkneeland on 1/16/14.
@@ -40,7 +42,15 @@ public class Extractor
             if (loc == 0)
             {
                 towerSpot = TowerUtil.bestSpot3(rc);
-                towerSpot = towerSpot.add(towerSpot.directionTo(rc.senseHQLocation()));
+                Direction[] dirs = Direction.values();
+                for(int k = 0; k < dirs.length; k++)
+                {
+                	if(rc.senseTerrainTile(towerSpot.add(dirs[k])) != TerrainTile.VOID)
+                	{
+                		towerSpot = towerSpot.add(dirs[k]);
+                		break;
+                	}
+                }
             }
             else
             {
