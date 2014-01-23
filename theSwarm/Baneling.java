@@ -63,7 +63,7 @@ public class Baneling {
                     }
                 }
 
-                if (totalDamage > rc.getHealth() + 80)
+                if (totalDamage > 40+rc.getHealth())
                 {
                     for (int i = nearByEnemies.length; --i>=0;)
                     {
@@ -74,6 +74,7 @@ public class Baneling {
                     }
                     rc.selfDestruct();
                 }
+
                 else if ((enemiesInRange.length * 10 >= (int) rc.getHealth()) && totalDamage > 50)
                 {
                     for (int i = nearByEnemies.length; --i>=0;)

@@ -1,6 +1,7 @@
 package theSwarm;
 
 import battlecode.common.MapLocation;
+import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
@@ -50,7 +51,13 @@ public class Extractor
             {
                 towerSpot = TowerUtil.getOppositeSpot(rc, towerSpot);
             }
-            rc.broadcast(towerLoc, Movement.convertMapLocationToInt(towerSpot));
+
+            if (rc.readBroadcast(towerLoc) == 0)
+            {
+                rc.broadcast(towerLoc, Movement.convertMapLocationToInt(towerSpot));
+            }
+
+
             rc.broadcast(needNoiseTower, 0);
         } catch (Exception e) {}
         
@@ -65,12 +72,17 @@ public class Extractor
             {
                 if (rc.isActive())
                 {
-                    if (rc.readBroadcast(towerBuilt) == 1)
+                    if (rc.canSenseSquare(towerSpot))
                     {
-                        Hydralisk hydralisk = new Hydralisk(rc);
-                        hydralisk.run();
+                        Robot bot = (Robot) rc.senseObjectAtLocation(towerSpot);
+                        if (bot != null && rc.senseRobotInfo(bot).team == rc.getTeam() && rc.senseRobotInfo(bot).isConstructing)
+                        {
+                            Hydralisk hydralisk = new Hydralisk(rc);
+                            hydralisk.run();
+                        }
                     }
-                    else if (rc.getLocation().distanceSquaredTo(towerSpot) < 1)
+
+                    if (rc.getLocation().distanceSquaredTo(towerSpot) < 1)
                     {
                         rc.construct(RobotType.NOISETOWER);
                     }

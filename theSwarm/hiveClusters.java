@@ -43,11 +43,7 @@ public class hiveClusters {
                     if (rc.getHealth() < 30)
                     {
                         rc.broadcast(pastrBuilt, 0);
-                    }/*
-                    else if (rc.readBroadcast(pastrBuilt) == 0)
-                    {
-                        rc.broadcast(pastrBuilt, 1);
-                    }*/
+                    }
                 }
                 else if (rc.getType() == RobotType.NOISETOWER)
                 {
