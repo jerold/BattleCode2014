@@ -84,6 +84,31 @@ public class Hydralisk {
                 //System.out.println("Hello world");
                 // we will only do stuff if we are active
 
+                if (rc.readBroadcast(needPastr) == 1)
+                {
+                    rc.broadcast(needPastr, 0);
+                    Drone drone = new Drone(rc, 1);
+                    drone.run();
+                }
+                else if (rc.readBroadcast(needPastr) == -1)
+                {
+                    rc.broadcast(needPastr, 0);
+                    Drone drone = new Drone(rc, -1);
+                    drone.run();
+                }
+                else if (rc.readBroadcast(needNoiseTower) == 1)
+                {
+                    rc.broadcast(needNoiseTower, 0);
+                    Extractor extractor = new Extractor(rc, 1);
+                    extractor.run();
+                }
+                else if (rc.readBroadcast(needNoiseTower) == -1)
+                {
+                    rc.broadcast(needNoiseTower, 0);
+                    Extractor extractor = new Extractor(rc, -1);
+                    extractor.run();
+                }
+
                 if (pastrLoc != 0 && rc.getLocation().equals(Movement.convertIntToMapLocation(pastrLoc)))
                 {
                     //rc.broadcast(pastrBuilt, 1);
@@ -92,7 +117,7 @@ public class Hydralisk {
                 }
                 else if (towerLocation != 0 && rc.getLocation().equals(Movement.convertIntToMapLocation(towerLocation)))
                 {
-                    //rc.broadcast(towerBuilt, 1);
+                    rc.setIndicatorString(2, ""+towerLocation);
                     Extractor extractor = new Extractor(rc, 1);
                     extractor.run();
                 }
@@ -119,7 +144,7 @@ public class Hydralisk {
                         }
                     }
 
-                    if (rc.senseCowsAtLocation(rc.getLocation()) > 500)
+                    if (rc.senseCowsAtLocation(rc.getLocation()) > 500 && rc.sensePastrLocations(rc.getTeam()).length > 0)
                     {
                         Direction dir = directions[rand.nextInt(8)];
                         Movement.MoveDirection(rc, dir, true);

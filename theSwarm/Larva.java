@@ -64,17 +64,19 @@ public class Larva {
                     {
                         //HQFunctions.setTargetLocation(rc, true);
                     }
+                    int noiseTowerBroadcast = rc.readBroadcast(needNoiseTower);
+                    int pastrBroadcast = rc.readBroadcast(needPastr);
 
-                    if (rc.readBroadcast(needNoiseTower) == 1)
+                    if (noiseTowerBroadcast != 0)
                     {
                         rc.broadcast(needNoiseTower, 0);
-                        Extractor extractor = new Extractor(rc, 2);
+                        Extractor extractor = new Extractor(rc, noiseTowerBroadcast);
                         extractor.run();
                     }
-                    else if (rc.readBroadcast(needPastr) == 1)
+                    else if (pastrBroadcast != 0)
                     {
                         rc.broadcast(needPastr, 0);
-                        Drone drone = new Drone(rc, 2);
+                        Drone drone = new Drone(rc, pastrBroadcast);
                         drone.run();
                     }
                     else if (rc.readBroadcast(morphHydralisk) == 1)

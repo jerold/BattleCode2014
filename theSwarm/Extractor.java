@@ -39,17 +39,19 @@ public class Extractor
             if (loc == 0)
             {
                 towerSpot = TowerUtil.bestSpot3(rc);
+                towerSpot = towerSpot.add(towerSpot.directionTo(rc.senseHQLocation()));
             }
             else
             {
                 towerSpot = Movement.convertIntToMapLocation(loc);
             }
-            towerSpot = towerSpot.add(towerSpot.directionTo(rc.senseHQLocation()));
+
             if(type < 0)
             {
                 towerSpot = TowerUtil.getOppositeSpot(rc, towerSpot);
             }
             rc.broadcast(towerLoc, Movement.convertMapLocationToInt(towerSpot));
+            rc.broadcast(needNoiseTower, 0);
         } catch (Exception e) {}
         
         rc.setIndicatorString(0, "Extractor");
@@ -68,7 +70,7 @@ public class Extractor
                         Hydralisk hydralisk = new Hydralisk(rc);
                         hydralisk.run();
                     }
-                    else if (rc.getLocation().x == towerSpot.x && rc.getLocation().y == towerSpot.y)
+                    else if (rc.getLocation().distanceSquaredTo(towerSpot) < 1)
                     {
                         rc.construct(RobotType.NOISETOWER);
                     }

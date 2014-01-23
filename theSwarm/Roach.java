@@ -71,13 +71,13 @@ public class Roach {
 
                 if (pastrLoc != 0 && rc.getLocation().equals(Movement.convertIntToMapLocation(pastrLoc)))
                 {
-                    rc.broadcast(pastrBuilt, 1);
+                    //rc.broadcast(pastrBuilt, 1);
                     Drone drone = new Drone(rc, 1);
                     drone.run();
                 }
                 else if (towerLocation != 0 && rc.getLocation().equals(Movement.convertIntToMapLocation(towerLocation)))
                 {
-                    rc.broadcast(towerBuilt, 1);
+                    //rc.broadcast(towerBuilt, 1);
                     Extractor extractor = new Extractor(rc, 1);
                     extractor.run();
                 }

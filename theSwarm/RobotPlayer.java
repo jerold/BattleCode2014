@@ -18,8 +18,16 @@ public class RobotPlayer
 			{
 				if (rc.getType() == RobotType.HQ)
 				{
-                    Kerrigan Sarah = new Kerrigan(rc);
-                    Sarah.run();
+                    if (rc.getMapHeight() <= 30)
+                    {
+                        QueenOfBlades queenOfBlades = new QueenOfBlades(rc);
+                        queenOfBlades.run();
+                    }
+                    else
+                    {
+                        Kerrigan Sarah = new Kerrigan(rc);
+                        Sarah.run();
+                    }
 					//Hatchery hatchery = new Hatchery(rc);
 					//hatchery.run();
 				}

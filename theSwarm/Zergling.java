@@ -53,6 +53,7 @@ public class Zergling {
         {
             try
             {
+
                 if (rc.readBroadcast(pastLoc) != 0)
                 {
                     Roach roach = new Roach(rc);
@@ -67,17 +68,24 @@ public class Zergling {
 
                     if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
                     {
-                        target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPoint2Channel()));
+                        int channel = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
+                        if (channel > 5)
+                        {
+                            rc.setIndicatorString(2, ""+channel);
+                            target = Movement.convertIntToMapLocation(channel);
+                        }
                     }
 
 
-                    Movement.MoveMapLocation(rc, target, false, true);
+                    Movement.MoveMapLocation(rc, target, false, false);
 
                 }
                 else
                 {
 
                 }
+
+                rc.setIndicatorString(1, ""+target);
 
             } catch (Exception e)
             {

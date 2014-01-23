@@ -1,11 +1,15 @@
 package theSwarm;
 
-import battlecode.common.*;
+import battlecode.common.Clock;
+import battlecode.common.MapLocation;
+import battlecode.common.Robot;
+import battlecode.common.RobotController;
 
 /**
  * Created by fredkneeland on 1/22/14.
  */
-public class Kerrigan {
+public class QueenOfBlades {
+
     RobotController rc;
     MapLocation target;
     boolean goneForPastr = false;
@@ -13,7 +17,6 @@ public class Kerrigan {
     int fightZone;
     int roundSet = 0;
     boolean build = false;
-    boolean build2 = false;
     int roundBuilt = 0;
 
     // these are the channels that we will use to communicate to our bots
@@ -37,7 +40,7 @@ public class Kerrigan {
 
     static int numbOfSoldiers = 0;
 
-    public Kerrigan(RobotController rc)
+    public QueenOfBlades(RobotController rc)
     {
         this.rc = rc;
 
@@ -52,66 +55,20 @@ public class Kerrigan {
     {
         while (true)
         {
-            rc.setIndicatorString(0, "Mengsk will suffer!");
-            //rc.setIndicatorString(1, "But I am not alone,");
-            //rc.setIndicatorString(2, "For I am the Swarm");
+            rc.setIndicatorString(0, "Armies will be shattered.");
+            rc.setIndicatorString(1, "Worlds will burn.");
+            rc.setIndicatorString(2, "For I am the Queen of Blades.");
 
             try
             {
                 Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-                if (Clock.getRoundNum() % 2 == 0)
-                {
-                    HQFunctions.setTargetLocation(rc, true);
-                }
 
                 if (rc.isActive())
                 {
                     Movement.fire(rc, enemies, null);
                     HQFunctions.SpawnSoldiers(rc);
                     numbOfSoldiers++;
-                    if (rc.getMapHeight() > 50)
-                    {
-                        if (rc.readBroadcast(pastLoc) == 0)
-                        {
-                            rc.broadcast(morphHydralisk, 1);
-                        }
-                        else
-                        {
-                            if (numbOfSoldiers % 3 == 0)
-                            {
-                                rc.broadcast(morphHydralisk, 1);
-                            }
-                            else
-                            {
-                                rc.broadcast(morphRoach, 1);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (rc.readBroadcast(pastLoc) == 0)
-                        {
-                            if (numbOfSoldiers % 2 == 0)
-                            {
-                                rc.broadcast(morphHydralisk, 1);
-                            }
-                            else
-                            {
-                                rc.broadcast(morphZergling, 1);
-                            }
-                        }
-                        else
-                        {
-                            if (numbOfSoldiers % 3 == 0)
-                            {
-                                rc.broadcast(morphHydralisk, 1);
-                            }
-                            else
-                            {
-                                rc.broadcast(morphRoach, 1);
-                            }
-                        }
-                    }
+                    rc.broadcast(morphHydralisk, 1);
                 }
 
                 if (Clock.getRoundNum() % 50 == 0)
@@ -142,7 +99,7 @@ public class Kerrigan {
                     }
                 }
 
-                if ((rc.readBroadcast(hydraliskCount) > 6) && (rc.sensePastrLocations(rc.getTeam().opponent()).length == 0) && !build)
+                if ((rc.senseRobotCount() > 10) && (rc.sensePastrLocations(rc.getTeam().opponent()).length == 0) && !build)
                 {
                     rc.broadcast(needNoiseTower, 1);
                     rc.broadcast(needPastr, 1);
@@ -152,13 +109,18 @@ public class Kerrigan {
                     roundBuilt = Clock.getRoundNum();
                 }
 
-                if (build && ((Clock.getRoundNum()-roundBuilt) > 5) && rc.getMapHeight() > 50 && !build2)
+                /*
+                if (build && ((roundBuilt-Clock.getRoundNum()) > 150) && (rc.sensePastrLocations(rc.getTeam()).length == 0))
                 {
-                    rc.broadcast(needNoiseTower, -1);
-                    rc.broadcast(needPastr, -1);
-                    build2 = true;
-                }
+                    rc.setIndicatorString(2, "creating new pastr");
+                    build = false;
+                }*/
 
+
+                if (Clock.getRoundNum() % 2 == 0 && Clock.getRoundNum() > 0)
+                {
+                    HQFunctions.setTargetLocation(rc, true);
+                }
             } catch (Exception e) {}
             rc.yield();
         }

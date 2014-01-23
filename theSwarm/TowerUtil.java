@@ -579,7 +579,7 @@ public class TowerUtil
     			{
     				total = score;
     				target = new MapLocation(k, a);
-    				rc.setIndicatorString(1, target.toString());
+    				rc.setIndicatorString(1, "Calculating:"+target.toString());
     			}
     		}
     	}

@@ -1,9 +1,6 @@
 package theSwarm;
 
-import battlecode.common.MapLocation;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 /**
  * Different types correspond to different times to turn into pastures
@@ -41,9 +38,10 @@ public class Drone {
         this.rc = rc;
         this.type = type;
 
-
         try
         {
+            //rc.setIndicatorString(0, ""+ Clock.getRoundNum());
+            rc.setIndicatorString(2, ""+type);
             int loc = rc.readBroadcast(pastLoc);
             if (loc == 0)
             {
@@ -51,18 +49,23 @@ public class Drone {
             }
             else
             {
+                //pastrSpot = TowerUtil.bestSpot3(rc);
                 pastrSpot = Movement.convertIntToMapLocation(loc);
             }
+            rc.setIndicatorString(0, "First try: "+pastrSpot);
             if(this.type < 0)
             {
                 pastrSpot = TowerUtil.getOppositeSpot(rc, pastrSpot);
                 this.type *= -1;
             }
 
+
+            rc.broadcast(needPastr, 0);
             rc.broadcast(pastLoc, Movement.convertMapLocationToInt(pastrSpot));
-        } catch (Exception e) {}
+            rc.setIndicatorString(1, "Pastr Spot:"+pastrSpot);
+        } catch (Exception e) { rc.setIndicatorString(0, "Error");}
         
-        rc.setIndicatorString(0, "Drone");
+        //rc.setIndicatorString(0, "Drone");
     }
 
     public void run()
@@ -109,7 +112,7 @@ public class Drone {
     
     private boolean towerNear(RobotController rc)
     {
-    	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam());
+    	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam());
     	for(Robot bot : bots)
     	{
     		try
