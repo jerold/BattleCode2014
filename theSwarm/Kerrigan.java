@@ -159,6 +159,26 @@ public class Kerrigan {
                     build2 = true;
                 }
 
+                else if (build && ((Clock.getRoundNum() - roundBuilt) > 250) && (rc.getMapHeight() > 50) && rc.sensePastrLocations(rc.getTeam().opponent()).length == 0)
+                {
+                    build = false;
+                    int towerSpot = rc.readBroadcast(towerLoc);
+                    MapLocation spot = TowerUtil.getOppositeSpot(rc, Movement.convertIntToMapLocation(towerSpot));
+                    rc.broadcast(towerLoc, Movement.convertMapLocationToInt(spot));
+                    int pastrSpot = rc.readBroadcast(pastLoc);
+                    spot = TowerUtil.getOppositeSpot(rc, Movement.convertIntToMapLocation(pastrSpot));
+                    rc.broadcast(pastLoc, Movement.convertMapLocationToInt(spot));
+                }
+
+                int towerSpot = rc.readBroadcast(towerLoc);
+                int pastrSpot = rc.readBroadcast(pastLoc);
+
+                if (Movement.convertIntToMapLocation(towerSpot).distanceSquaredTo(Movement.convertIntToMapLocation(pastrSpot)) > 50)
+                {
+                    MapLocation spot = TowerUtil.getOppositeSpot(rc, Movement.convertIntToMapLocation(towerSpot));
+                    rc.broadcast(towerLoc, Movement.convertMapLocationToInt(spot));
+                }
+
             } catch (Exception e) {}
             rc.yield();
         }

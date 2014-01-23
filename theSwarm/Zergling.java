@@ -61,7 +61,6 @@ public class Zergling {
                 }
                 else if (FightMicro.fightMode(rc, target))
                 {
-                    //rc.setIndicatorString(2, "Running fight micro");
                 }
                 else if (rc.isActive())
                 {
@@ -71,7 +70,6 @@ public class Zergling {
                         int channel = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
                         if (channel > 5)
                         {
-                            rc.setIndicatorString(2, ""+channel);
                             target = Movement.convertIntToMapLocation(channel);
                         }
                     }

@@ -152,7 +152,6 @@ public class Movement
             {
                 if (FightMicro.fightMode(rc, target))
                 {
-                    rc.setIndicatorString(2, "Running fight micro 2");
 
                     if (rc.isActive())
                     {
@@ -195,8 +194,6 @@ public class Movement
                         FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
                         AllEnemyBots = FightMicro.AllEnemyBots(rc);
                     }
-
-                    rc.setIndicatorString(2, "Not Running fight micro 2");
 
 
                     if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
@@ -296,8 +293,6 @@ public class Movement
                             // we will go hugging one side of obstacle until we get back on our original line
                             while (!rc.getLocation().equals(next) && !rc.getLocation().equals(target) && !rc.getLocation().isAdjacentTo(target))// && rc.canMove(dir2))
                             {
-                                rc.setIndicatorString(1, "Next: "+next);
-                                rc.setIndicatorString(0, "Target: "+target);
                                 try
                                 {
                                     boolean ranFight = false;
@@ -361,7 +356,6 @@ public class Movement
                                             {
                                                 dir2 = dir2.rotateRight();
                                             }
-                                            rc.setIndicatorString(2, "dir2: "+dir2);
                                         }
 
 
@@ -505,9 +499,6 @@ public class Movement
 
                                 rc.yield();
                             }
-                            rc.setIndicatorString(0, "");
-                            rc.setIndicatorString(1, "");
-                            rc.setIndicatorString(2, "");
                         }
                     }
 
@@ -530,12 +521,12 @@ public class Movement
                     MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                     if (enemyPastrs.length == 0)
                     {
-                        int location = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
+                        /*int location = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
                         if (location != 0)
                         {
                             target = Movement.convertIntToMapLocation(location);
                         }
-                        else if (larva)
+                        else*/ if (larva)
                         {
                             int point = rc.readBroadcast(rallyPoint);
                             if (!target.equals(convertIntToMapLocation(point)))
@@ -625,6 +616,7 @@ public class Movement
 
                     if (rc.isActive())
                     {
+
                         Robot[] nearByEnemies33;
                         int[] AllEnemyNoiseTowers33;
                         int[] AllEnemyBots33;
@@ -643,12 +635,7 @@ public class Movement
                 }
                 else if (rc.isActive())
                 {
-                    numb++;
 
-                    if (numb > 50)
-                    {
-                        MoveMapLocation2(rc, target, sneak, larva);
-                    }
 
                     if (rc.getLocation().isAdjacentTo(target))
                     {
@@ -893,12 +880,12 @@ public class Movement
                                         MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                                         if (enemyPastrs.length == 0)
                                         {
-                                            int location = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
+                                            /*int location = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
                                             if (location != 0)
                                             {
                                                 target = Movement.convertIntToMapLocation(location);
                                             }
-                                            else if (larva)
+                                            else*/ if (larva)
                                             {
                                                 int point = rc.readBroadcast(rallyPoint);
                                                 if (!target.equals(convertIntToMapLocation(point)))
@@ -951,12 +938,12 @@ public class Movement
                     MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                     if (enemyPastrs.length == 0)
                     {
-                        int location = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
+                        /*int location = rc.readBroadcast(HQFunctions.rallyPoint2Channel());
                         if (location != 0)
                         {
                             target = Movement.convertIntToMapLocation(location);
                         }
-                        else if (larva)
+                        else*/ if (larva)
                         {
                             int point = rc.readBroadcast(rallyPoint);
                             if (!target.equals(convertIntToMapLocation(point)))

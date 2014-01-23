@@ -72,7 +72,7 @@ public class HQFunctions
 			
 			distance = Math.sqrt(distance);
 			
-			int distanceInt = (int) (distance/5);
+			int distanceInt = (int) (distance/4);
 			
 			for (int i = 0; i < distanceInt; i++)
 			{
@@ -81,7 +81,7 @@ public class HQFunctions
 
             Direction dir34 = target.directionTo(rc.getLocation());
 
-            while (rc.senseTerrainTile(target).equals(TerrainTile.VOID) || target.equals(rc.getLocation()))
+            while (rc.senseTerrainTile(target).equals(TerrainTile.VOID) || target.equals(rc.getLocation()) || target.isAdjacentTo(rc.getLocation()))
             {
                 target = target.add(dir34);
             }

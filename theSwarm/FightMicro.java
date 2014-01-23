@@ -1820,7 +1820,7 @@ public class FightMicro
     {
         if (rc.isActive())
         {
-            if (rc.getLocation().distanceSquaredTo(defenseLoc) < 35)
+            if (rc.getLocation().distanceSquaredTo(defenseLoc) < 50)
             {
                 Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                 if (allVisibleEnemies.length > 0)
@@ -1840,17 +1840,17 @@ public class FightMicro
                         // if a bunch of enemies have positioned themselves to just attack us and we have friends then we should retreat
                         if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1 && allVisibleAlliedSoldiers.length > 1)
                         {
-                            if (retreatToAllies(rc, inRangeEnemies, enemyBotLoc, alliedBots))
+                            if (retreatToAllies(rc, allVisibleEnemies, enemyBotLoc, alliedBots))
                             {
                             }
                             else
                             {
-                                Movement.fire(rc, inRangeEnemies, alliedBots);
+                                Movement.fire(rc, allVisibleEnemies, alliedBots);
                             }
                         }
                         else
                         {
-                            Movement.fire(rc, inRangeEnemies, alliedBots);
+                            Movement.fire(rc, allVisibleEnemies, alliedBots);
                         }
                     }
                     else if (allVisibleEnemies.length > 0)
@@ -2307,6 +2307,15 @@ public class FightMicro
 
                     }
                     return true;
+                }
+            }
+            else if (nearByEnemies10.length > 0)
+            {
+                if (rc.isActive())
+                {
+                    nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                    MapLocation[] alliedBots = locationOfBots(rc, nearByAllies);
+                    Movement.fire(rc, nearByEnemies10, alliedBots);
                 }
             }
 

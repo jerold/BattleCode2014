@@ -77,8 +77,6 @@ public class Roach {
                 }
                 else if (rc.getLocation().equals(Movement.convertIntToMapLocation(towerLocation)))
                 {
-                    //rc.broadcast(towerBuilt, 1);
-                    rc.setIndicatorString(2, "Constructing tower");
                     Extractor extractor = new Extractor(rc, 1);
                     extractor.run();
                 }

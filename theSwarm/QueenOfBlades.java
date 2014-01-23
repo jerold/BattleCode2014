@@ -18,6 +18,8 @@ public class QueenOfBlades {
     int roundSet = 0;
     boolean build = false;
     int roundBuilt = 0;
+    boolean setUpPastr = false;
+    boolean enemySetUpPastr = false;
 
     // these are the channels that we will use to communicate to our bots
     static final int enemyHQ = 1;
@@ -61,6 +63,7 @@ public class QueenOfBlades {
 
             try
             {
+                MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                 Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
                 if (rc.isActive())
@@ -99,20 +102,44 @@ public class QueenOfBlades {
                     }
                 }
 
-                if ((rc.senseRobotCount() > 10) && (rc.sensePastrLocations(rc.getTeam().opponent()).length == 0) && !build)
+                if (!enemySetUpPastr)
+                {
+                    if (enemyPastrs.length > 0)
+                    {
+                        enemySetUpPastr = true;
+                    }
+                }
+
+                int robotCount = rc.senseRobotCount();
+                if ((robotCount > 10) && (enemyPastrs.length == 0) && !build)
+                {
+                    build = true;
+                }
+                // if our enemy has built a pastr which we have destroyed we will probably have a military advantage which we should utilize before we loose it
+                else if (enemySetUpPastr && enemyPastrs.length == 0 && robotCount > 5)
+                {
+                    build = true;
+                }
+                else if (enemyPastrs.length > 0 && enemyPastrs[0].distanceSquaredTo(rc.senseEnemyHQLocation()) < 10 && robotCount > 5)
+                {
+                    build = true;
+                }
+
+
+
+                if (build)
                 {
                     rc.broadcast(needNoiseTower, 1);
                     rc.broadcast(needPastr, 1);
                     rc.broadcast(pastrBuilt, 0);
                     rc.broadcast(towerBuilt, 0);
-                    build = true;
+                    build = false;
                     roundBuilt = Clock.getRoundNum();
                 }
 
                 /*
                 if (build && ((roundBuilt-Clock.getRoundNum()) > 150) && (rc.sensePastrLocations(rc.getTeam()).length == 0))
                 {
-                    rc.setIndicatorString(2, "creating new pastr");
                     build = false;
                 }*/
 

@@ -49,7 +49,6 @@ public class GenericTower
         
         while(!foundPastr)
         {
-            rc.setIndicatorString(1, "Looking");
         	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 8, rc.getTeam());
         	for(Robot bot : bots)
         	{
@@ -64,8 +63,6 @@ public class GenericTower
         		catch(Exception e){}
         	}
         }
-
-        rc.setIndicatorString(1, "Found");
         
         /*for(int k = target.x - 10; k < target.x + 10; k++)
         {

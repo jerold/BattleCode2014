@@ -40,8 +40,6 @@ public class Drone {
 
         try
         {
-            //rc.setIndicatorString(0, ""+ Clock.getRoundNum());
-            rc.setIndicatorString(2, ""+type);
             int loc = rc.readBroadcast(pastLoc);
             if (loc == 0)
             {
@@ -51,7 +49,6 @@ public class Drone {
             {
                 pastrSpot = Movement.convertIntToMapLocation(loc);
             }
-            rc.setIndicatorString(0, "First try: "+pastrSpot);
             if(this.type < 0)
             {
                 pastrSpot = TowerUtil.getOppositeSpot(rc, pastrSpot);
@@ -64,10 +61,9 @@ public class Drone {
             {
                 rc.broadcast(pastLoc, Movement.convertMapLocationToInt(pastrSpot));
             }
-            rc.setIndicatorString(1, "Pastr Spot:"+pastrSpot);
         } catch (Exception e) { rc.setIndicatorString(0, "Error");}
         
-        //rc.setIndicatorString(0, "Drone");
+        rc.setIndicatorString(0, "Drone");
     }
 
     public void run()
@@ -76,9 +72,23 @@ public class Drone {
         {
             try
             {
-
+                rc.setIndicatorString(2, ""+pastrSpot);
                 if (rc.isActive())
                 {
+
+                    MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
+                    if (ourPastrs != null)
+                    {
+                        for (int i = ourPastrs.length; --i>=0;)
+                        {
+                            if (pastrSpot.distanceSquaredTo(ourPastrs[i]) <= 50)
+                            {
+                                Hydralisk hydralisk = new Hydralisk(rc);
+                                hydralisk.run();
+                            }
+                        }
+                    }
+
                     if (rc.canSenseSquare(pastrSpot))
                     {
                         Robot bot = (Robot) rc.senseObjectAtLocation(pastrSpot);
@@ -88,6 +98,7 @@ public class Drone {
                             hydralisk.run();
                         }
                     }
+
                     if (rc.getLocation().equals(pastrSpot))
                     {
                     	if(type == 2)
@@ -106,6 +117,19 @@ public class Drone {
                     		for(int k = 0; k < type; k++){FightMicro.defenseMicro(rc, rc.getLocation());}
                     	}
                     	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){FightMicro.defenseMicro(rc, rc.getLocation());}
+
+                        ourPastrs = rc.sensePastrLocations(rc.getTeam());
+                        if (ourPastrs != null)
+                        {
+                            for (int i = ourPastrs.length; --i>=0;)
+                            {
+                                if (pastrSpot.distanceSquaredTo(ourPastrs[i]) <= 50)
+                                {
+                                    Hydralisk hydralisk = new Hydralisk(rc);
+                                    hydralisk.run();
+                                }
+                            }
+                        }
                         rc.construct(RobotType.PASTR);
                     }
                     else

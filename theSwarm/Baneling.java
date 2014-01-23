@@ -20,8 +20,6 @@ public class Baneling {
     {
         this.rc = rc;
         rc.setIndicatorString(0, "Baneling");
-        rc.setIndicatorString(1, "");
-        rc.setIndicatorString(2, "");
     }
 
     public  void run()
@@ -85,6 +83,17 @@ public class Baneling {
                         }
                     }
                     rc.selfDestruct();
+                }
+                else if (enemiesInRange.length == 1 && rc.senseRobotInfo(enemiesInRange[0]).health > rc.getHealth() && totalDamage > 0)
+                {
+                    rc.selfDestruct();
+                }
+                else if (enemiesInRange.length == 1 && rc.senseRobotInfo(enemiesInRange[0]).health <= rc.getHealth())
+                {
+                    Robot[] nearByAllies3 = null;
+                    nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                    MapLocation[] alliedLocs = FightMicro.locationOfBots(rc, nearByAllies3);
+                    Movement.fire(rc, enemiesInRange, alliedLocs);
                 }
 
                 if (rc.isActive())
