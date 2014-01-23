@@ -109,11 +109,12 @@ public class RoadMap {
         broadcastMacroFlag();
     }
 
-    public int valueForLocation(MapLocation loc)
+    public int valueForLocation(MapLocation loc) throws GameActionException
     {
-        if (loc.y < MAP_HEIGHT && loc.y > 0 && loc.x < MAP_WIDTH && loc.x > 0)
-            return roadMap[loc.x][loc.y];
-        return TILE_VOID;
+        if (loc.y < MAP_HEIGHT && loc.y > 0 && loc.x < MAP_WIDTH && loc.x > 0) {
+            if (mapUploaded) return roadMap[loc.x][loc.y];
+            else return rc.readBroadcast(Utilities.startMapChannels+loc.x*MAP_WIDTH+loc.y) > 1 ? TILE_VOID : 0;
+        } else return TILE_VOID;
     }
 
     public Direction directionTo(MapLocation origin, MapLocation destination) throws GameActionException
