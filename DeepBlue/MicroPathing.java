@@ -8,7 +8,7 @@ import battlecode.common.*;
  */
 public class MicroPathing {
 
-    static int MAX_TRAIL_LENGTH = 6;
+    static int MAX_TRAIL_LENGTH = 4;
     static MapLocation[] trail = new MapLocation[MAX_TRAIL_LENGTH];
     static int headIndex = 0;
     static int trailLength = 0;
@@ -29,7 +29,7 @@ public class MicroPathing {
         return true;
     }
 
-    public static Direction getNextDirection(MapLocation origin, Direction chosenDirection, RoadMap map)
+    public static Direction getNextDirection(MapLocation origin, Direction chosenDirection, RoadMap map) throws GameActionException
     {
         while(trailLength<2)
             addLocationToTrail(new MapLocation(-1, -1));
@@ -74,6 +74,11 @@ public class MicroPathing {
             }
         }
         return chosenDirection;
+    }
+
+    static boolean doubledBack()
+    {
+        return (headIndex>0 && trail[headIndex%MAX_TRAIL_LENGTH].isAdjacentTo(trail[(headIndex-(trailLength-1))%MAX_TRAIL_LENGTH]));
     }
 
     static MapLocation getLocationFromTrail(int index)

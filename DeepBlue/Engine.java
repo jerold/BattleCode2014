@@ -32,9 +32,17 @@ public class Engine {
     {
         // Go Felix!
         RobotInfo targetInfo = cache.nearbyEnemies()[0];
-        if (rc.canAttackSquare(targetInfo.location))
+        if (rc.canAttackSquare(targetInfo.location)) {
+            while (!rc.isActive())
+                rc.yield();
+
             rc.attackSquare(targetInfo.location);
-        else if (!rc.isActive()) rc.yield();
-        rc.move(rc.getLocation().directionTo(targetInfo.location));
+        }
+
+        while (!rc.isActive())
+            rc.yield();
+
+        if (rc.canMove(rc.getLocation().directionTo(targetInfo.location)))
+            rc.move(rc.getLocation().directionTo(targetInfo.location));
     }
 }
