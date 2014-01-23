@@ -51,23 +51,6 @@ public class Navigator {
         bugStartDistanceFromDestination = 0;
     }
 
-    public boolean engaging() throws GameActionException
-    {
-        return cache.nearbyEnemies().length > 0;
-    }
-
-    /*
-     * Micro Movements based on enemy contact
-     */
-    public void adjustFire(boolean passive) throws GameActionException
-    {
-        if (passive) {
-            maneuver();
-        } else {
-            // Movement while in range of enemies
-        }
-    }
-
     /*
      * Goes forward with Macro Pathing to destination, and getting closer to friendly units
      */
