@@ -53,8 +53,8 @@ public class Kerrigan {
         while (true)
         {
             rc.setIndicatorString(0, "Mengsk will suffer!");
-            //rc.setIndicatorString(1, "But I am not alone,");
-            //rc.setIndicatorString(2, "For I am the Swarm");
+            rc.setIndicatorString(1, "But I am not alone,");
+            rc.setIndicatorString(2, "For I am the Swarm");
 
             try
             {
@@ -146,13 +146,13 @@ public class Kerrigan {
                 {
                     rc.broadcast(needNoiseTower, 1);
                     rc.broadcast(needPastr, 1);
-                    rc.broadcast(pastrBuilt, 0);
-                    rc.broadcast(towerBuilt, 0);
+                    //rc.broadcast(pastrBuilt, 0);
+                    //rc.broadcast(towerBuilt, 0);
                     build = true;
                     roundBuilt = Clock.getRoundNum();
                 }
 
-                if (build && ((Clock.getRoundNum()-roundBuilt) > 5) && rc.getMapHeight() > 50 && !build2)
+                if (build && ((Clock.getRoundNum()-roundBuilt) > 30) && (rc.getMapHeight() > 50) && !build2)
                 {
                     rc.broadcast(needNoiseTower, -1);
                     rc.broadcast(needPastr, -1);

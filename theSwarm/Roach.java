@@ -69,15 +69,16 @@ public class Roach {
                 //System.out.println("Hello world");
                 // we will only do stuff if we are active
 
-                if (pastrLoc != 0 && rc.getLocation().equals(Movement.convertIntToMapLocation(pastrLoc)))
+                if (rc.getLocation().equals(Movement.convertIntToMapLocation(pastrLoc)))
                 {
                     //rc.broadcast(pastrBuilt, 1);
                     Drone drone = new Drone(rc, 1);
                     drone.run();
                 }
-                else if (towerLocation != 0 && rc.getLocation().equals(Movement.convertIntToMapLocation(towerLocation)))
+                else if (rc.getLocation().equals(Movement.convertIntToMapLocation(towerLocation)))
                 {
                     //rc.broadcast(towerBuilt, 1);
+                    rc.setIndicatorString(2, "Constructing tower");
                     Extractor extractor = new Extractor(rc, 1);
                     extractor.run();
                 }

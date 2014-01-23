@@ -35,26 +35,15 @@ public class HQFunctions
             if (rc.isActive() && rc.getType() == RobotType.HQ && (rc.senseRobotCount() < 25))
             {
                 Direction toEnemy = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-                while (!rc.canMove(toEnemy))
+                int numb = 0;
+                while (!rc.canMove(toEnemy) && numb < 10)
                 {
-                    toEnemy = toEnemy.rotateLeft();
-                    /*
-                    for (int i = 0; i < 7; i++)
-                    {
-                        toEnemy = toEnemy.rotateLeft();
+                   numb++;
+                    toEnemy = toEnemy.rotateRight();
 
-                        if (rc.canMove(toEnemy))
-                        {
-                            i = 47;
-                        }
-                        else if (i == 6)
-                        {
-                            toEnemy = Direction.NONE;
-                        }
-                    }*/
                 }
 
-                if (toEnemy != Direction.NONE)
+                if (toEnemy != Direction.NONE && rc.canMove(toEnemy))
                 {
                     if (rc.isActive())
                     {
@@ -83,14 +72,19 @@ public class HQFunctions
 			
 			distance = Math.sqrt(distance);
 			
-			int distanceInt = (int) (distance/3);
+			int distanceInt = (int) (distance/5);
 			
 			for (int i = 0; i < distanceInt; i++)
 			{
 				target = target.add(target.directionTo(enemyHQSpot));
 			}
 
-            //target = rc.senseEnemyHQLocation();
+            Direction dir34 = target.directionTo(rc.getLocation());
+
+            while (rc.senseTerrainTile(target).equals(TerrainTile.VOID) || target.equals(rc.getLocation()))
+            {
+                target = target.add(dir34);
+            }
 
 			rc.broadcast(rallyPoint, Movement.convertMapLocationToInt(target));
 

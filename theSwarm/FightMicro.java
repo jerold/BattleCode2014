@@ -1782,11 +1782,11 @@ public class FightMicro
             if (enemyBots.length > 0)
             {
                 boolean enemiesInOurWay = false;
-                int ourDistToDefenseLoc = rc.getLocation().distanceSquaredTo(defenseLoc);
+                //int ourDistToDefenseLoc = rc.getLocation().distanceSquaredTo(defenseLoc);
                 for (int i = enemyBots.length; --i>=0;)
                 {
                     int enemyDistToDefenseLoc = enemyBots[i].distanceSquaredTo(defenseLoc);
-                    if (ourDistToDefenseLoc >= enemyDistToDefenseLoc)
+                    if (15 >= enemyDistToDefenseLoc)
                     {
                         i = -1;
                         enemiesInOurWay = true;
@@ -1905,9 +1905,10 @@ public class FightMicro
 
             // here we only do necessary scans to reduce bitcode usage
 
-            if (rc.isActive())
+
+            if (nearByEnemies3.length > 0)
             {
-                if (nearByEnemies3.length > 0)
+                if (rc.isActive())
                 {
                     nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
                     nearByAllies = findSoldiers(rc, nearByAllies);
@@ -2183,6 +2184,7 @@ public class FightMicro
                                 }
                             }
                         }
+                        return true;
                     }
                     /**
                      * We can see enemies in the distance
@@ -2257,56 +2259,58 @@ public class FightMicro
                                 Movement.fire(rc, nearByEnemies3, alliedBots);
                             }
                         }
+                        return true;
                     }
-                    return true;
-                }
-                // here we deal with none soldier enemies like pastrs and noise towers
-                else if (nearByEnemies4.length > 0)
-                {
-                    nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-                    nearByAllies = findSoldiers(rc, nearByAllies);
-                    MapLocation[] alliedBots = locationOfBots(rc, nearByAllies);
-
-                    MapLocation target2 = rc.senseLocationOf(nearByEnemies4[0]);
-                    if (rc.getLocation().distanceSquaredTo(target2) > 10)
+                    // here we deal with none soldier enemies like pastrs and noise towers
+                    else if (nearByEnemies4.length > 0)
                     {
-                        Movement.MoveDirection(rc, rc.getLocation().directionTo(target2), false);
+                        nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                        nearByAllies = findSoldiers(rc, nearByAllies);
+                        alliedBots = locationOfBots(rc, nearByAllies);
+
+                        MapLocation target2 = rc.senseLocationOf(nearByEnemies4[0]);
+                        if (rc.getLocation().distanceSquaredTo(target2) > 10)
+                        {
+                            Movement.MoveDirection(rc, rc.getLocation().directionTo(target2), false);
+                        }
+                        else
+                        {
+                            Movement.fire(rc, nearByEnemies4, alliedBots);
+                        }
+                        return true;
+                    }
+                    else if (rc.getLocation().distanceSquaredTo(Movement.convertIntToMapLocation(rc.readBroadcast(enemyHQ))) <= 35)
+                    {
+                        runFromEnemyHQ(rc);
+
+                        return true;
                     }
                     else
                     {
-                        Movement.fire(rc, nearByEnemies4, alliedBots);
+                        return false;
                     }
-                    return true;
-                }
-                else if (rc.getLocation().distanceSquaredTo(Movement.convertIntToMapLocation(rc.readBroadcast(enemyHQ))) <= 35)
-                {
-                    runFromEnemyHQ(rc);
-
-                    return true;
                 }
                 else
                 {
-                    return false;
+                    Robot[] nearByEnemies;
+                    int[] AllEnemyNoiseTowers;
+                    int[] AllEnemyBots;
+
+                    nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+
+                    if (nearByEnemies.length > 0)
+                    {
+                        AllEnemyBots = FightMicro.AllEnemyBots(rc);
+                        AllEnemyNoiseTowers = null;
+
+                        FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
+
+                    }
+                    return true;
                 }
             }
-            else
-            {
-                Robot[] nearByEnemies;
-                int[] AllEnemyNoiseTowers;
-                int[] AllEnemyBots;
 
-                nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
-                if (nearByEnemies.length > 0)
-                {
-                    AllEnemyBots = FightMicro.AllEnemyBots(rc);
-                    AllEnemyNoiseTowers = null;
-
-                    FightMicro.FindAndRecordAllEnemies(rc, nearByEnemies, AllEnemyBots, AllEnemyNoiseTowers);
-
-                }
-                return true;
-            }
 
         } catch(Exception e)
         {

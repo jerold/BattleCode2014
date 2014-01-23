@@ -49,7 +49,6 @@ public class Drone {
             }
             else
             {
-                //pastrSpot = TowerUtil.bestSpot3(rc);
                 pastrSpot = Movement.convertIntToMapLocation(loc);
             }
             rc.setIndicatorString(0, "First try: "+pastrSpot);
@@ -61,7 +60,10 @@ public class Drone {
 
 
             rc.broadcast(needPastr, 0);
-            rc.broadcast(pastLoc, Movement.convertMapLocationToInt(pastrSpot));
+            if (rc.readBroadcast(pastLoc) == 0)
+            {
+                rc.broadcast(pastLoc, Movement.convertMapLocationToInt(pastrSpot));
+            }
             rc.setIndicatorString(1, "Pastr Spot:"+pastrSpot);
         } catch (Exception e) { rc.setIndicatorString(0, "Error");}
         
@@ -77,12 +79,16 @@ public class Drone {
 
                 if (rc.isActive())
                 {
-                    if (rc.readBroadcast(pastrBuilt) == 1)
+                    if (rc.canSenseSquare(pastrSpot))
                     {
-                        Hydralisk hydralisk = new Hydralisk(rc);
-                        hydralisk.run();
+                        Robot bot = (Robot) rc.senseObjectAtLocation(pastrSpot);
+                        if (bot != null && rc.senseRobotInfo(bot).team == rc.getTeam() && rc.senseRobotInfo(bot).isConstructing)
+                        {
+                            Hydralisk hydralisk = new Hydralisk(rc);
+                            hydralisk.run();
+                        }
                     }
-                    else if (rc.getLocation().x == pastrSpot.x && rc.getLocation().y == pastrSpot.y)
+                    if (rc.getLocation().equals(pastrSpot))
                     {
                     	if(type == 2)
                     	{
@@ -90,14 +96,16 @@ public class Drone {
                     	}
                     	else if(type == 3)
                     	{
-                    		for(int k = 0; k < 200 && rc.sensePastrLocations(rc.getTeam()).length == 0; k++){rc.yield();}
+                    		for(int k = 0; k < 200 && rc.sensePastrLocations(rc.getTeam()).length == 0; k++){
+                                FightMicro.defenseMicro(rc, rc.getLocation());
+                            }
                     	}
                     	else
                     	{
                     		while(!towerNear(rc)){rc.yield();}
-                    		for(int k = 0; k < type; k++){rc.yield();}
+                    		for(int k = 0; k < type; k++){FightMicro.defenseMicro(rc, rc.getLocation());}
                     	}
-                    	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){rc.yield();}
+                    	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){FightMicro.defenseMicro(rc, rc.getLocation());}
                         rc.construct(RobotType.PASTR);
                     }
                     else

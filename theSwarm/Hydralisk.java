@@ -52,6 +52,7 @@ public class Hydralisk {
             e.printStackTrace();
         }
         rc.setIndicatorString(0, "Hydralisk");
+        rc.setIndicatorString(2, ""+target);
     }
 
     public void run()
@@ -76,48 +77,16 @@ public class Hydralisk {
                     defense = true;
                 }
 
-                /*if (defense && rc.getRobot().getID() % 3 == 0)
-                {
-                    Roach roach = new Roach(rc);
-                    roach.run();
-                }*/
-                //System.out.println("Hello world");
-                // we will only do stuff if we are active
 
-                if (rc.readBroadcast(needPastr) == 1)
+
+                if (rc.getLocation().equals(Movement.convertIntToMapLocation(pastrLoc)))
                 {
-                    rc.broadcast(needPastr, 0);
                     Drone drone = new Drone(rc, 1);
                     drone.run();
                 }
-                else if (rc.readBroadcast(needPastr) == -1)
+                else if (rc.getLocation().equals(Movement.convertIntToMapLocation(towerLocation)))
                 {
-                    rc.broadcast(needPastr, 0);
-                    Drone drone = new Drone(rc, -1);
-                    drone.run();
-                }
-                else if (rc.readBroadcast(needNoiseTower) == 1)
-                {
-                    rc.broadcast(needNoiseTower, 0);
-                    Extractor extractor = new Extractor(rc, 1);
-                    extractor.run();
-                }
-                else if (rc.readBroadcast(needNoiseTower) == -1)
-                {
-                    rc.broadcast(needNoiseTower, 0);
-                    Extractor extractor = new Extractor(rc, -1);
-                    extractor.run();
-                }
-
-                if (pastrLoc != 0 && rc.getLocation().equals(Movement.convertIntToMapLocation(pastrLoc)))
-                {
-                    //rc.broadcast(pastrBuilt, 1);
-                    Drone drone = new Drone(rc, 1);
-                    drone.run();
-                }
-                else if (towerLocation != 0 && rc.getLocation().equals(Movement.convertIntToMapLocation(towerLocation)))
-                {
-                    rc.setIndicatorString(2, ""+towerLocation);
+                    rc.setIndicatorString(2, "Building tower: "+towerLocation);
                     Extractor extractor = new Extractor(rc, 1);
                     extractor.run();
                 }
@@ -131,6 +100,31 @@ public class Hydralisk {
                 }
                 else if (rc.isActive())
                 {
+                    if (rc.readBroadcast(needPastr) == 1)
+                    {
+                        rc.broadcast(needPastr, 0);
+                        Drone drone = new Drone(rc, 1);
+                        drone.run();
+                    }
+                    else if (rc.readBroadcast(needPastr) == -1)
+                    {
+                        rc.broadcast(needPastr, 0);
+                        Drone drone = new Drone(rc, -1);
+                        drone.run();
+                    }
+                    else if (rc.readBroadcast(needNoiseTower) == 1)
+                    {
+                        rc.broadcast(needNoiseTower, 0);
+                        Extractor extractor = new Extractor(rc, 1);
+                        extractor.run();
+                    }
+                    else if (rc.readBroadcast(needNoiseTower) == -1)
+                    {
+                        rc.broadcast(needNoiseTower, 0);
+                        Extractor extractor = new Extractor(rc, -1);
+                        extractor.run();
+                    }
+
                     if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
                     {
                         MapLocation newTarget = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
@@ -142,6 +136,18 @@ public class Hydralisk {
                         {
                             target = newTarget;
                         }
+                        MapLocation towerSlot = Movement.convertIntToMapLocation(towerLocation);
+                        MapLocation pastrSlot = Movement.convertIntToMapLocation(pastrLoc);
+                        if (rc.getLocation().distanceSquaredTo(towerSlot) <= 10 && rc.senseObjectAtLocation(towerSlot) == null)
+                        {
+                            target = towerSlot;
+                        }
+                        else if (rc.getLocation().distanceSquaredTo(pastrSlot) <= 10 && rc.senseObjectAtLocation(pastrSlot) == null)
+                        {
+                            target = pastrSlot;
+                        }
+
+                        rc.setIndicatorString(2, ""+target);
                     }
 
                     if (rc.senseCowsAtLocation(rc.getLocation()) > 500 && rc.sensePastrLocations(rc.getTeam()).length > 0)
@@ -152,11 +158,11 @@ public class Hydralisk {
 
                     if (defense)
                     {
-                        Movement.MoveMapLocation(rc, target, true, true);
+                        Movement.MoveMapLocation(rc, target, true, false);
                     }
                     else
                     {
-                        Movement.MoveMapLocation(rc, target, false, true);
+                        Movement.MoveMapLocation(rc, target, false, false);
                     }
 
 
