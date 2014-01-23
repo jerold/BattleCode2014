@@ -27,11 +27,11 @@ public class Hatchery {
 		HQFunctions.findInitialRally(rc);
 		if(TowerUtil.isGoodCorner(rc, TowerUtil.findBestCorner(rc)))
 		{
-			//rc.setIndicatorString(0, "Good Corner: " + TowerUtil.findBestCorner(rc));
+			rc.setIndicatorString(0, "Good Corner: " + TowerUtil.findBestCorner(rc));
 		}
 		else
 		{
-			//rc.setIndicatorString(0, "Bad Corner: " + TowerUtil.findBestCorner(rc));
+			rc.setIndicatorString(0, "Bad Corner: " + TowerUtil.findBestCorner(rc));
 		}
 		
 		doublePastr = checkDoublePastr(rc, TowerUtil.bestSpot3(rc), TowerUtil.getOppositeSpot(rc, TowerUtil.bestSpot3(rc)));
