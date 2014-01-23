@@ -4,6 +4,9 @@ import battlecode.common.*;
 
 import java.util.Random;
 
+import theSwarm6.TowerUtil;
+import theSwarm6.Utilities;
+
 public class HQFunctions 
 {
 
@@ -562,5 +565,41 @@ public class HQFunctions
         int numb = 0;
 
         return numb;
+    }
+    
+    public static boolean checkDoublePastr(RobotController rc, MapLocation m1, MapLocation m2){
+    	try{
+    		int mapSize = Utilities.getMapSize(rc);
+    		MapLocation enemy = rc.senseEnemyHQLocation();
+    		MapLocation pastr1 = m1;
+    		MapLocation pastr2 = m2;
+    		int distToEnemy1 = m2.distanceSquaredTo(enemy);
+    		int voidsBetween = 0;
+    		MapLocation temp = pastr1;
+    		while(temp.x != pastr2.x || temp.y != pastr2.y)
+    		{
+    			if(rc.senseTerrainTile(temp) == TerrainTile.VOID)
+    			{
+    				voidsBetween++;
+    			}
+    			temp = temp.add(temp.directionTo(pastr2));
+    		}
+    		if(mapSize >= 100){
+    			if(TowerUtil.getSpotScore(rc, pastr1) > 50){
+    				if((pastr1.distanceSquaredTo(pastr2) > mapSize/2. || (voidsBetween > 1 && pastr1.distanceSquaredTo(pastr2) > 100)) && distToEnemy1 > 100){
+    					return true;
+    				} else {
+    					return false;
+    				}
+    			} else {
+    				return false;
+    			}
+    		} else {
+    			return false;
+    		}
+    	}catch(Exception e){
+    		e.printStackTrace();
+    		return false;
+    	}
     }
 }
