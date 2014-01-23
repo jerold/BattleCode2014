@@ -65,7 +65,8 @@ public class Drone {
                 {
                     if (rc.getLocation().x == pastrSpot.x && rc.getLocation().y == pastrSpot.y)
                     {
-                    	if(type == 2)
+                    	if(rc.senseTeamMilkQuantity(rc.getTeam()) > 9000000){}
+                    	else if(type == 2)
                     	{
                     		while(!towerNear(rc)){rc.yield();}
                     	}

@@ -584,7 +584,7 @@ public class TowerUtil
     		}
     	}
     	
-    	if(rc.getLocation().distanceSquaredTo(target) > rc.getLocation().distanceSquaredTo(getOppositeSpot(rc, target)))
+    	if(rc.senseHQLocation().distanceSquaredTo(target) > rc.senseHQLocation().distanceSquaredTo(getOppositeSpot(rc, target)))
     	{
     		target = new MapLocation(width - target.x, height - target.y);
     	}
@@ -840,7 +840,7 @@ public class TowerUtil
     	
     	for(int k = startX; k < startX + scope; k++)
     	{
-    		for(int a = startY; k < startY + scope; k++)
+    		for(int a = startY; a < startY + scope; a++)
     		{
     			if(rc.senseTerrainTile(new MapLocation(k, a)) != TerrainTile.VOID)
     			{
@@ -849,8 +849,7 @@ public class TowerUtil
     		}
     	}
     	
-    	rc.setIndicatorString(0, "" + score);
-    	if(score > 0)
+    	if(score > 50)
     	{
     		return true;
     	}
