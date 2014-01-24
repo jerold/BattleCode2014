@@ -38,7 +38,7 @@ public class Extractor
         this.rc = rc;
         try
         {
-            int loc = rc.readBroadcast(towerLoc);
+            int loc = 0;//rc.readBroadcast(towerLoc);
             if (loc == 0)
             {
                 towerSpot = TowerUtil.bestSpot3(rc);
