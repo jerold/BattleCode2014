@@ -72,7 +72,7 @@ public class Drone {
         {
             try
             {
-                rc.setIndicatorString(2, ""+pastrSpot);
+                rc.setIndicatorString(2, "Pastr: "+pastrSpot+ ", Tower: "+rc.readBroadcast(towerLoc));
                 if (rc.isActive())
                 {
 

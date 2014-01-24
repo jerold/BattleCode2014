@@ -56,6 +56,8 @@ public class Kerrigan {
         while (true)
         {
             rc.setIndicatorString(0, "Mengsk will suffer!");
+            rc.setIndicatorString(1, "The Swarm conquers all.");
+            rc.setIndicatorString(2, "Your Queen listens");
             //rc.setIndicatorString(1, "But I am not alone,");
             //rc.setIndicatorString(2, "For I am the Swarm");
 
