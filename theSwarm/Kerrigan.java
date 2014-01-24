@@ -142,6 +142,8 @@ public class Kerrigan {
                     {
                         twoPastrs = true;
                     }
+                    rc.broadcast(pastLoc, 0);
+                    stratDetermined = true;
                 }
 
                 int broadcast = rc.readBroadcast(rallyPoint2);
