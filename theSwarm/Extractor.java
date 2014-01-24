@@ -80,7 +80,7 @@ public class Extractor
         {
             try
             {
-            	rc.setIndicatorString(1, "" + towerSpot);
+            	rc.setIndicatorString(1, " " + towerSpot);
                 if (rc.isActive())
                 {
                     Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
