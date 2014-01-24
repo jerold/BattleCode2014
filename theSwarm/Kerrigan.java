@@ -168,7 +168,7 @@ public class Kerrigan {
                     }
                 }
 
-                if ((rc.readBroadcast(hydraliskCount) > 6) && (rc.sensePastrLocations(rc.getTeam().opponent()).length == 0) && !build && !offense)
+                if ((rc.readBroadcast(hydraliskCount) > 6) && !build && !offense)
                 {
                     rc.broadcast(needNoiseTower, 1);
                     rc.broadcast(needPastr, 1);

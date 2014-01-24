@@ -2313,9 +2313,20 @@ public class FightMicro
             {
                 if (rc.isActive())
                 {
-                    nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-                    MapLocation[] alliedBots = locationOfBots(rc, nearByAllies);
-                    Movement.fire(rc, nearByEnemies10, alliedBots);
+                    int hq = 0;
+                    for (int i = nearByEnemies10.length; --i>=0;)
+                    {
+                        if (rc.senseRobotInfo(nearByEnemies10[i]).type != RobotType.HQ && rc.getLocation().distanceSquaredTo(rc.senseLocationOf(nearByEnemies10[i])) <= 10)
+                        {
+                            nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                            MapLocation[] alliedBots = locationOfBots(rc, nearByAllies);
+                            Movement.fire(rc, nearByEnemies10, alliedBots);
+                            return true;
+                        }
+                    }
+
+                    return false;
+
                 }
             }
 

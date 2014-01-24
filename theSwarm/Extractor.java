@@ -57,7 +57,11 @@ public class Extractor
                 towerSpot = Movement.convertIntToMapLocation(loc);
             }
 
-            if(type < 0)
+            int pastrSpotInt = rc.readBroadcast(pastLoc);
+            MapLocation pastrSpot = Movement.convertIntToMapLocation(pastrSpotInt);
+
+
+            if(type < 0 || (pastrSpotInt != 0 && pastrSpot.distanceSquaredTo(towerSpot) > 10))
             {
                 towerSpot = TowerUtil.getOppositeSpot(rc, towerSpot);
             }

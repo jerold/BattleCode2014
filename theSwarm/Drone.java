@@ -49,11 +49,17 @@ public class Drone {
             {
                 pastrSpot = Movement.convertIntToMapLocation(loc);
             }
-            if(this.type < 0)
+
+            int towerInt = rc.readBroadcast(towerLoc);
+            MapLocation towerLocation = Movement.convertIntToMapLocation(towerInt);
+
+            if(this.type < 0 || (towerInt != 0 && towerLocation.distanceSquaredTo(pastrSpot) > 10))
             {
                 pastrSpot = TowerUtil.getOppositeSpot(rc, pastrSpot);
                 this.type *= -1;
             }
+
+
 
 
             rc.broadcast(needPastr, 0);

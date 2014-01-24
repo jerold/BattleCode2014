@@ -72,10 +72,11 @@ public class Hydralisk {
                         {
                             defense = true;
                         }
+                        /*
                         else if (rc.senseRobotInfo(nearByAllies[i]).isConstructing)
                         {
                             defense = true;
-                        }
+                        }*/
                     }
                 }
                 if (pastrLoc == 0)
