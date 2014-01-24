@@ -71,10 +71,14 @@ public class Kerrigan {
                 {
                     Movement.fire(rc, enemies, null);
                     HQFunctions.SpawnSoldiers(rc);
+                    if (Clock.getRoundNum() < 10)
+                    {
+                        rc.broadcast(morphHydralisk, 1);
+                    }
                     numbOfSoldiers++;
                     if (offense)
                     {
-                        if (numbOfSoldiers > 5)
+                        if (numbOfSoldiers % 2 == 0)
                         {
                             rc.broadcast(morphHydralisk, 1);
                         }
