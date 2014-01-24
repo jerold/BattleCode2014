@@ -59,7 +59,7 @@ public class TowerUtil
             }
             try
             {
-                while(toFire.distanceSquaredTo(center) > distAway)
+                do
                 {
                     if(toFire.x >= -2 && toFire.x < rc.getMapWidth() + 2 && toFire.y >= -2 && toFire.y < rc.getMapHeight() + 2 && rc.canAttackSquare(toFire))
                     {
@@ -72,6 +72,7 @@ public class TowerUtil
                     }
                     toFire = toFire.add(toFire.directionTo(center));
                 }
+                while(toFire.distanceSquaredTo(center) > distAway);
             }
             catch(Exception e){}
             if(k == 4)
