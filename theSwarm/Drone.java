@@ -115,7 +115,16 @@ public class Drone {
                     {
                     	if(type == 2)
                     	{
-                    		while(!towerNear(rc)){rc.yield();}
+                            int i = 0;
+                    		while(!towerNear(rc)){
+                                i++;
+                                if (i > 250)
+                                {
+                                    pastrSpot = TowerUtil.getOppositeSpot(rc, pastrSpot);
+                                    break;
+                                }
+                                rc.yield();
+                            }
                     	}
                     	else if(type == 3)
                     	{

@@ -1143,13 +1143,15 @@ public class Movement
                         int[] alliedBotsCount = new int[enemies.length];
                         for (int i = enemies.length; --i>=0;)
                         {
-                            MapLocation target2 = rc.senseRobotInfo(enemies[i]).location;
-
-                            for (int j = allyBots.length; --j >=0;)
+                            if (rc.senseRobotInfo(enemies[i]).type != RobotType.HQ)
                             {
-                                if (target2.distanceSquaredTo(allyBots[j]) <= 10)
+                                MapLocation target2 = rc.senseRobotInfo(enemies[i]).location;
+                                for (int j = allyBots.length; --j >=0;)
                                 {
-                                    alliedBotsCount[i]++;
+                                    if (target2.distanceSquaredTo(allyBots[j]) <= 10)
+                                    {
+                                        alliedBotsCount[i]++;
+                                    }
                                 }
                             }
                         }

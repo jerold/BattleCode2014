@@ -175,12 +175,17 @@ public class Kerrigan {
                     build = true;
                     roundBuilt = Clock.getRoundNum();
                 }
-
-                if (build && ((Clock.getRoundNum()-roundBuilt) > 30) && (rc.getMapHeight() > 50) && !build2 && twoPastrs)
+                else if (build && Clock.getRoundNum()-roundBuilt > 350)
                 {
                     rc.broadcast(needNoiseTower, -1);
                     rc.broadcast(needPastr, -1);
-                    build2 = true;
+                }
+
+                if (build && ((Clock.getRoundNum()-roundBuilt) > 30) && (rc.getMapHeight() > 50) && !build2 && twoPastrs && rc.sensePastrLocations(rc.getTeam()).length == 0)
+                {
+                    rc.broadcast(needNoiseTower, -1);
+                    rc.broadcast(needPastr, -1);
+                    roundBuilt = Clock.getRoundNum();
                 }
 
                 else if (build && ((Clock.getRoundNum() - roundBuilt) > 250) && (twoPastrs) && rc.sensePastrLocations(rc.getTeam().opponent()).length == 0)
