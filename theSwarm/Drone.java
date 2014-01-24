@@ -134,7 +134,21 @@ public class Drone {
                     	}
                     	else
                     	{
-                    		while(!towerNear(rc)){rc.yield();}
+                            boolean calledForHelp = false;
+                    		while(!towerNear(rc)) {
+                                Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                                if (allies.length == 0 && !calledForHelp)
+                                {
+                                    rc.broadcast(needNoiseTower, 1);
+                                }
+
+                                if (Clock.getRoundNum() % 100 == 0)
+                                {
+                                    calledForHelp = true;
+                                }
+
+                                rc.yield();
+                            }
                     		for(int k = 0; k < type; k++){FightMicro.defenseMicro(rc, rc.getLocation());}
                     	}
                     	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){FightMicro.defenseMicro(rc, rc.getLocation());}
@@ -189,6 +203,7 @@ public class Drone {
 	    		{
 	    			return true;
 	    		}
+
     		}
     		catch(Exception e){}
     	}

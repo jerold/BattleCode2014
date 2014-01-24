@@ -6,8 +6,6 @@ import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.TerrainTile;
-import theSwarm3.*;
-import theSwarm3.FightMicro;
 
 /**
  * Created by fredkneeland on 1/16/14.
