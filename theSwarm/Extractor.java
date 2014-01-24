@@ -6,6 +6,8 @@ import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.TerrainTile;
+import theSwarm3.*;
+import theSwarm3.FightMicro;
 
 /**
  * Created by fredkneeland on 1/16/14.
@@ -113,7 +115,13 @@ public class Extractor
                         }
                     }
 
-                    if (rc.getLocation().distanceSquaredTo(towerSpot) < 1)
+                    Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+                    MapLocation[] alliedBots = FightMicro.locationOfBots(rc, nearByAllies);
+                    if (enemies.length > 0)
+                    {
+                        Movement.fire(rc, enemies, alliedBots);
+                    }
+                    else if (rc.getLocation().distanceSquaredTo(towerSpot) < 1)
                     {
                         rc.construct(RobotType.NOISETOWER);
                     }

@@ -62,6 +62,16 @@ public class GenericTower
         		}
         		catch(Exception e){}
         	}
+            Robot[] allAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+
+            if (allAllies.length == 0)
+            {
+                try
+                {
+                    rc.broadcast(towerLoc, Movement.convertMapLocationToInt(rc.getLocation()));
+                } catch (Exception e) {}
+            }
+            rc.yield();
         }
         
         /*for(int k = target.x - 10; k < target.x + 10; k++)
