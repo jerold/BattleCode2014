@@ -99,6 +99,12 @@ public class Drone {
                         }
                     }
 
+                    if (rc.getLocation().equals(Movement.convertIntToMapLocation(rc.readBroadcast(towerLoc))))
+                    {
+                        Extractor extractor = new Extractor(rc, 1);
+                        extractor.run();
+                    }
+
                     if (rc.getLocation().equals(pastrSpot))
                     {
                     	if(type == 2)
