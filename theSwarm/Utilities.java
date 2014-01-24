@@ -206,4 +206,11 @@ public class Utilities
 
         return false;
     }
+
+    public static int getMapSize(RobotController rc){
+        int width = rc.getMapWidth();
+        int height = rc.getMapHeight();
+        int mapSize = width*height;
+        return mapSize;
+    }
 }

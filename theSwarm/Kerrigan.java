@@ -17,6 +17,7 @@ public class Kerrigan {
     int roundBuilt = 0;
     boolean offense = false;
     boolean twoPastrs = false;
+    boolean stratDetermined = false;
 
     // these are the channels that we will use to communicate to our bots
     static final int enemyHQ = 1;
@@ -82,7 +83,7 @@ public class Kerrigan {
                             rc.broadcast(morphZergling, 1);
                         }
                     }
-                    else if (rc.getMapHeight() > 50)
+                    else if (twoPastrs)
                     {
                         if (rc.readBroadcast(pastLoc) == 0)
                         {
@@ -127,16 +128,20 @@ public class Kerrigan {
                     }
                 }
 
-                if (Clock.getRoundNum() % 50 == 0)
+                int pastrSpotInt = rc.readBroadcast(pastLoc);
+                if (!stratDetermined && pastrSpotInt != 0)
                 {
-                    System.out.println();
-                    System.out.println("Enemy Bots: ");
-                    int[] AllEnemies = FightMicro.AllEnemyBots(rc);
-                    for (int i = 0; i<AllEnemies.length; i++)
+                    MapLocation spot = Movement.convertIntToMapLocation(pastrSpotInt);
+                    MapLocation spot2 = TowerUtil.getOppositeSpot(rc, spot);
+                    if (TowerUtil.getSpotScore(rc, spot) <= 60)
                     {
-                        System.out.print(FightMicro.getBotLocation(AllEnemies[i]));
+                        offense = true;
                     }
-                    System.out.println();
+
+                    if (HQFunctions.checkDoublePastr(rc, spot, spot2))
+                    {
+                        twoPastrs = true;
+                    }
                 }
 
                 int broadcast = rc.readBroadcast(rallyPoint2);
@@ -155,24 +160,22 @@ public class Kerrigan {
                     }
                 }
 
-                if ((rc.readBroadcast(hydraliskCount) > 6) && (rc.sensePastrLocations(rc.getTeam().opponent()).length == 0) && !build)
+                if ((rc.readBroadcast(hydraliskCount) > 6) && (rc.sensePastrLocations(rc.getTeam().opponent()).length == 0) && !build && !offense)
                 {
                     rc.broadcast(needNoiseTower, 1);
                     rc.broadcast(needPastr, 1);
-                    //rc.broadcast(pastrBuilt, 0);
-                    //rc.broadcast(towerBuilt, 0);
                     build = true;
                     roundBuilt = Clock.getRoundNum();
                 }
 
-                if (build && ((Clock.getRoundNum()-roundBuilt) > 30) && (rc.getMapHeight() > 50) && !build2)
+                if (build && ((Clock.getRoundNum()-roundBuilt) > 30) && (rc.getMapHeight() > 50) && !build2 && twoPastrs)
                 {
                     rc.broadcast(needNoiseTower, -1);
                     rc.broadcast(needPastr, -1);
                     build2 = true;
                 }
 
-                else if (build && ((Clock.getRoundNum() - roundBuilt) > 250) && (rc.getMapHeight() > 50) && rc.sensePastrLocations(rc.getTeam().opponent()).length == 0)
+                else if (build && ((Clock.getRoundNum() - roundBuilt) > 250) && (twoPastrs) && rc.sensePastrLocations(rc.getTeam().opponent()).length == 0)
                 {
                     build = false;
                     int towerSpot = rc.readBroadcast(towerLoc);
