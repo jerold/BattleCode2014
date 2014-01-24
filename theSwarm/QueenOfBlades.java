@@ -4,6 +4,7 @@ import battlecode.common.Clock;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
+import java.util.Random;
 
 /**
  * Created by fredkneeland on 1/22/14.
@@ -20,6 +21,7 @@ public class QueenOfBlades {
     int roundBuilt = 0;
     boolean setUpPastr = false;
     boolean enemySetUpPastr = false;
+    Random rand;
 
     // these are the channels that we will use to communicate to our bots
     static final int enemyHQ = 1;
@@ -50,7 +52,7 @@ public class QueenOfBlades {
 
         HQFunctions.findInitialRally(rc);
 
-
+        rand = new Random();
     }
 
     public void run()
@@ -60,6 +62,7 @@ public class QueenOfBlades {
             rc.setIndicatorString(0, "Armies will be shattered.");
             rc.setIndicatorString(1, "Worlds will burn.");
             rc.setIndicatorString(2, "For I am the Queen of Blades.");
+            rc.setIndicatorString(1, "" + rand.nextInt());
 
             try
             {

@@ -4,6 +4,7 @@ import battlecode.common.Clock;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
+import java.util.Random;
 
 public class Hatchery {
 	
@@ -13,6 +14,7 @@ public class Hatchery {
     int roundNum = 0;
     boolean build = true;
     boolean build2 = true;
+    Random rand;
 	
 	public Hatchery(RobotController rc)
 	{
@@ -21,6 +23,7 @@ public class Hatchery {
 		HQFunctions.InitialLocationBroadcasts(rc);
 
 		HQFunctions.findInitialRally(rc);
+		rand = new Random();
 	}
 
 	public void run()
@@ -28,6 +31,7 @@ public class Hatchery {
 		while (true)
 		{
             Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+            rc.setIndicatorString(0, "" + rand.nextInt());
 
 			if (rc.isActive())
 			{
