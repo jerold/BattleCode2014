@@ -38,7 +38,7 @@ public class Extractor
         this.rc = rc;
         try
         {
-            int loc = rc.readBroadcast(towerLoc);
+            int loc = 0;//rc.readBroadcast(towerLoc);
             if (loc == 0)
             {
                 towerSpot = TowerUtil.bestSpot3(rc);
@@ -57,7 +57,11 @@ public class Extractor
                 towerSpot = Movement.convertIntToMapLocation(loc);
             }
 
-            if(type < 0)
+            int pastrSpotInt = rc.readBroadcast(pastLoc);
+            MapLocation pastrSpot = Movement.convertIntToMapLocation(pastrSpotInt);
+
+
+            if(type < 0 || (pastrSpotInt != 0 && pastrSpot.distanceSquaredTo(towerSpot) > 10))
             {
                 towerSpot = TowerUtil.getOppositeSpot(rc, towerSpot);
             }
@@ -80,6 +84,7 @@ public class Extractor
         {
             try
             {
+            	rc.setIndicatorString(1, " " + towerSpot);
                 if (rc.isActive())
                 {
                     Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
@@ -108,7 +113,13 @@ public class Extractor
                         }
                     }
 
-                    if (rc.getLocation().distanceSquaredTo(towerSpot) < 1)
+                    Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+                    MapLocation[] alliedBots = FightMicro.locationOfBots(rc, nearByAllies);
+                    if (enemies.length > 0)
+                    {
+                        Movement.fire(rc, enemies, alliedBots);
+                    }
+                    else if (rc.getLocation().distanceSquaredTo(towerSpot) < 1)
                     {
                         rc.construct(RobotType.NOISETOWER);
                     }

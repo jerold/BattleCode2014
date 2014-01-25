@@ -4,8 +4,6 @@ import battlecode.common.*;
 
 import java.util.Random;
 
-import theSwarm6.TowerUtil;
-import theSwarm6.Utilities;
 
 public class HQFunctions 
 {

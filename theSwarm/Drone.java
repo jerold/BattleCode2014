@@ -49,11 +49,17 @@ public class Drone {
             {
                 pastrSpot = Movement.convertIntToMapLocation(loc);
             }
-            if(this.type < 0)
+
+            int towerInt = rc.readBroadcast(towerLoc);
+            MapLocation towerLocation = Movement.convertIntToMapLocation(towerInt);
+
+            if(this.type < 0 || (towerInt != 0 && towerLocation.distanceSquaredTo(pastrSpot) > 10))
             {
                 pastrSpot = TowerUtil.getOppositeSpot(rc, pastrSpot);
                 this.type *= -1;
             }
+
+
 
 
             rc.broadcast(needPastr, 0);
@@ -72,7 +78,7 @@ public class Drone {
         {
             try
             {
-                rc.setIndicatorString(2, ""+pastrSpot);
+                rc.setIndicatorString(2, "Pastr: "+pastrSpot+ ", Tower: "+rc.readBroadcast(towerLoc));
                 if (rc.isActive())
                 {
 
@@ -99,11 +105,26 @@ public class Drone {
                         }
                     }
 
+                    if (rc.getLocation().equals(Movement.convertIntToMapLocation(rc.readBroadcast(towerLoc))))
+                    {
+                        Extractor extractor = new Extractor(rc, 1);
+                        extractor.run();
+                    }
+
                     if (rc.getLocation().equals(pastrSpot))
                     {
                     	if(type == 2)
                     	{
-                    		while(!towerNear(rc)){rc.yield();}
+                            int i = 0;
+                    		while(!towerNear(rc)){
+                                i++;
+                                if (i > 250)
+                                {
+                                    pastrSpot = TowerUtil.getOppositeSpot(rc, pastrSpot);
+                                    break;
+                                }
+                                rc.yield();
+                            }
                     	}
                     	else if(type == 3)
                     	{
@@ -113,7 +134,21 @@ public class Drone {
                     	}
                     	else
                     	{
-                    		while(!towerNear(rc)){rc.yield();}
+                            boolean calledForHelp = false;
+                    		while(!towerNear(rc)) {
+                                Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+                                if (allies.length == 0 && !calledForHelp)
+                                {
+                                    rc.broadcast(needNoiseTower, 1);
+                                }
+
+                                if (Clock.getRoundNum() % 100 == 0)
+                                {
+                                    calledForHelp = true;
+                                }
+
+                                rc.yield();
+                            }
                     		for(int k = 0; k < type; k++){FightMicro.defenseMicro(rc, rc.getLocation());}
                     	}
                     	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){FightMicro.defenseMicro(rc, rc.getLocation());}
@@ -168,6 +203,7 @@ public class Drone {
 	    		{
 	    			return true;
 	    		}
+
     		}
     		catch(Exception e){}
     	}

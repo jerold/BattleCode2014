@@ -64,6 +64,7 @@ public class Larva {
                         MapLocation pastrSpot;
                         pastrSpot = TowerUtil.bestSpot3(rc);
                         rc.broadcast(pastLoc, Movement.convertMapLocationToInt(pastrSpot));
+                        rc.yield();
                     }
 
                     if (Clock.getRoundNum() % 10 == 0)
@@ -72,6 +73,8 @@ public class Larva {
                     }
                     int noiseTowerBroadcast = rc.readBroadcast(needNoiseTower);
                     int pastrBroadcast = rc.readBroadcast(needPastr);
+
+                    rc.setIndicatorString(1, "Hydralisk:"+rc.readBroadcast(morphHydralisk)+", Zergling: "+ rc.readBroadcast(morphZergling)+", Roach: "+rc.readBroadcast(morphRoach));
 
                     if (noiseTowerBroadcast != 0)
                     {
@@ -108,9 +111,6 @@ public class Larva {
                     {
                         target = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
                     }
-
-					rc.setIndicatorString(1, "Target:" + target);
-                    rc.setIndicatorString(2, "Not Running fight micro 1");
 
                     MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                     if (enemyPastrs.length == 0)
