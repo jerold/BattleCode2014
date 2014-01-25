@@ -20,10 +20,11 @@ public class Utilities
     static final public int startMacroChannels = 10003;
 
     static final public int unitNeededChannel = 20000;
-    static final public int rallyPointChannel1 = 20001;
-    static final public int rallyPointChannel2 = 20002;
-    static final public int bestPastrLocationChannel1 = 20003;
-    static final public int bestPastrLocationChannel2 = 20004;
+
+    static final public int startRallyPointChannels = 20001;
+
+    static final public int bestPastrLocationChannel1 = 20200;
+    static final public int bestPastrLocationChannel2 = 20201;
 
     static final public int startPastrChannels = 30002;
     static final public int PastrDetailCount = 5; // [LastActiveRound, DefenderCount, EnemyCount, CowCount, PastrLocation]
@@ -141,6 +142,37 @@ public class Utilities
     //================================================================================
     // Helper Methods
     //================================================================================
+
+    public static final boolean directionIsLeftOf(Direction inQuestion, Direction heading)
+    {
+        switch (heading) {
+            case NORTH:
+                if (inQuestion == Direction.NORTH_WEST || inQuestion == Direction.WEST || inQuestion == Direction.SOUTH_WEST) return true;
+                return false;
+            case NORTH_EAST:
+                if (inQuestion == Direction.NORTH || inQuestion == Direction.NORTH_WEST || inQuestion == Direction.WEST) return true;
+                return false;
+            case EAST:
+                if (inQuestion == Direction.NORTH_EAST || inQuestion == Direction.NORTH || inQuestion == Direction.NORTH_WEST) return true;
+                return false;
+            case SOUTH_EAST:
+                if (inQuestion == Direction.EAST || inQuestion == Direction.NORTH_EAST || inQuestion == Direction.NORTH) return true;
+                return false;
+            case SOUTH:
+                if (inQuestion == Direction.SOUTH_EAST || inQuestion == Direction.EAST || inQuestion == Direction.NORTH_EAST) return true;
+                return false;
+            case SOUTH_WEST:
+                if (inQuestion == Direction.SOUTH || inQuestion == Direction.SOUTH_EAST || inQuestion == Direction.EAST) return true;
+                return false;
+            case WEST:
+                if (inQuestion == Direction.SOUTH_WEST || inQuestion == Direction.SOUTH || inQuestion == Direction.SOUTH_EAST) return true;
+                return false;
+            case NORTH_WEST:
+                if (inQuestion == Direction.WEST || inQuestion == Direction.SOUTH_WEST || inQuestion == Direction.SOUTH) return true;
+                return false;
+        }
+        return false;
+    }
 
     public static final Direction directionByOrdinal[] = Direction.values();
 

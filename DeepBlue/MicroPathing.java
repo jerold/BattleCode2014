@@ -8,7 +8,7 @@ import battlecode.common.*;
  */
 public class MicroPathing {
 
-    static int MAX_TRAIL_LENGTH = 4;
+    static int MAX_TRAIL_LENGTH = 10;
     static MapLocation[] trail = new MapLocation[MAX_TRAIL_LENGTH];
     static int headIndex = 0;
     static int trailLength = 0;

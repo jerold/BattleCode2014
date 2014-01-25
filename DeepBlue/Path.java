@@ -8,6 +8,33 @@ import java.util.ArrayList;
  */
 public class Path {
 
+    public static boolean canSimplyPath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
+    {
+        if (origin.x > 0 && origin.x < map.MAP_WIDTH && origin.y > 0 && origin.y < map.MAP_HEIGHT)
+            return false;
+
+        if (destination.x > 0 && destination.x < map.MAP_WIDTH && destination.y > 0 && destination.y < map.MAP_HEIGHT)
+            return false;
+
+        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
+            return false;
+
+        MapLocation stepLocation = origin;
+        MapLocation lastStep = destination;
+        while (!(stepLocation.x == destination.x && stepLocation.y == destination.y)) {
+            MapLocation nextStepLocation = stepLocation.add(map.directionTo(stepLocation, destination));
+
+            // Check for Doubling back
+            if (nextStepLocation.x == lastStep.x && nextStepLocation.y == lastStep.y)
+                return false;
+
+            lastStep = stepLocation;
+            stepLocation = nextStepLocation;
+        }
+
+        return true;
+    }
+
     public static MapLocation[] getSimplePath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
     {
         if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
