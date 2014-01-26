@@ -39,7 +39,7 @@ public class Structures {
 
     public static void runPastr() throws GameActionException
     {
-        updatePastrDetails();
+        new GenericPastr(rc).run();
     }
 
     public static void updatePastrDetails() throws GameActionException
@@ -76,7 +76,7 @@ public class Structures {
 
     public static void runNoiseTower() throws GameActionException
     {
-        updatePastrDetails();
+        new GenericTower(rc, false).run();
     }
 
 }

@@ -62,7 +62,7 @@ public class QueenOfBlades {
             rc.setIndicatorString(0, "Armies will be shattered.");
             rc.setIndicatorString(1, "Worlds will burn.");
             rc.setIndicatorString(2, "For I am the Queen of Blades.");
-            rc.setIndicatorString(1, "" + rand.nextInt());
+            //rc.setIndicatorString(1, "" + rand.nextInt());
 
             try
             {
