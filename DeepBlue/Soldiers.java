@@ -3,6 +3,7 @@ package DeepBlue;
 import DeepBlue.Strategies.UnitStratFrontLiner;
 import DeepBlue.Strategies.UnitStratReinforcement;
 import battlecode.common.*;
+import theSwarm.*;
 
 /**
  * Created by Jerold Albertson on 1/12/14.
@@ -55,8 +56,10 @@ public class Soldiers {
             // Do unit strategy picker
             // strategy picks destinations and performs special tasks
 
-            if (engine.engaging())
-                engine.adjustFire(); // Micro Movements based on enemy contact
+            /*if (engine.engaging())
+                engine.adjustFire(); // Micro Movements based on enemy contact*/
+            if (FightMicro.fightMode(rc, null))
+            {}
             else
                 nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
 
