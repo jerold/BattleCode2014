@@ -532,13 +532,13 @@ public class TowerUtil
 	    			{
 	    				for(int i = 0; i < height / 3; i++)
 	    				{
-	    					if(rc.senseTerrainTile(new MapLocation((k * width / 3) + t, (a * width / 3) + i)) == TerrainTile.VOID)
+	    					if(rc.senseTerrainTile(new MapLocation((k * width / 3) + t, (a * height / 3) + i)) == TerrainTile.VOID)
 	    					{
 	    						temp--;
 	    					}
 	    					else
 	    					{
-	    						temp += cows[(k * width / 3) + t][(a * width / 3) + i];
+	    						temp += cows[(k * width / 3) + t][(a * height / 3) + i];
 	    					}
 	    				}
 	    			}
@@ -546,7 +546,7 @@ public class TowerUtil
 	    			if(temp > total)
 	    			{
 	    				total = temp;
-	    				start = new MapLocation(k * width / 3, a * width / 3);
+	    				start = new MapLocation(k * width / 3, a * height / 3);
 	    			}
     			}
     		}

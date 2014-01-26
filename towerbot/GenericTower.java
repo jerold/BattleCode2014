@@ -113,7 +113,7 @@ public class GenericTower
 	            lines4 = TowerUtil.generateSpokeLines(rc, target, 4);
         	}
         }
-        type = 1;
+        type = 3;
     }
 
     public void run()
@@ -207,6 +207,13 @@ public class GenericTower
 		    		            			TowerUtil.fireLine(rc, lines3[k], lines3[k + 1], 1);
 		    		            		}
 		    		            	}
+		                		}
+		                	}
+		                	else if(type == 3)
+		                	{
+		                		for(int k = 16; k > 6; k--)
+		                		{
+		                			TowerUtil.fireCircle(rc, k, target);
 		                		}
 		                	}
 		            		

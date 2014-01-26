@@ -1,35 +1,20 @@
 package theSwarm6;
 
-import battlecode.common.Direction;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
-import battlecode.common.TerrainTile;
+import battlecode.common.*;
 
-/**
- * Created by fredkneeland on 1/16/14.
- */
-public class Extractor {
+public class Extractor
+{
     RobotController rc;
     MapLocation towerSpot;
+    towerPastrRequest request;
+    int start;
 
-    public Extractor(RobotController rc, int type)
+    public Extractor(RobotController rc, int type, MapLocation target)
     {
         this.rc = rc;
-        towerSpot = TowerUtil.bestSpot3(rc);
-        Direction[] dirs = Direction.values();
-        for(int k = 0; k < dirs.length; k++)
-        {
-        	if(rc.senseTerrainTile(towerSpot.add(dirs[k])) != TerrainTile.VOID)
-        	{
-        		towerSpot = towerSpot.add(dirs[k]);
-        		break;
-        	}
-        }
-        if(type < 0)
-        {
-        	towerSpot = TowerUtil.getOppositeSpot(rc, towerSpot);
-        }
+        towerSpot = target;
+        start = Clock.getRoundNum();
+        request = new towerPastrRequest(rc);
         
         rc.setIndicatorString(0, "Extractor");
     }
@@ -49,6 +34,11 @@ public class Extractor {
                     else
                     {
                         Movement.MoveMapLocation(rc, towerSpot, false, false);
+                        if(Clock.getRoundNum() - start > 100)
+                        {
+                        	request.abandonPath(towerSpot);
+                        	new Larva(rc).run();
+                        }
                     }
                 }
             } catch (Exception e) {}

@@ -374,15 +374,6 @@ public class TowerUtil
     
     public static MapLocation bestSpot3(RobotController rc)
     {
-    	try
-    	{
-    	if(rc.readBroadcast(bestLocChannel) != 0)
-    	{
-    		return Movement.convertIntToMapLocation(rc.readBroadcast(bestLocChannel));
-    	}
-    	}
-    	catch(Exception e){}
-    	
     	double[][] cows = rc.senseCowGrowth();
     	int width = rc.getMapWidth();
     	int height = rc.getMapHeight();
@@ -453,17 +444,6 @@ public class TowerUtil
     			}
     		}
     	}
-
-    	if(rc.senseHQLocation().distanceSquaredTo(target) > rc.senseHQLocation().distanceSquaredTo(getOppositeSpot(rc, target)))
-    	{
-    		target = new MapLocation(width - target.x, height - target.y);
-    	}
-    	
-    	try
-    	{
-			rc.broadcast(bestLocChannel, Movement.convertMapLocationToInt(target));
-		}
-    	catch (Exception e){}
     	
     	return target;
     }

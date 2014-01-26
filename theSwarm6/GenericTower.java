@@ -1,118 +1,63 @@
 package theSwarm6;
 
-import battlecode.common.*;
+import battlecode.common.Clock;
+import battlecode.common.MapLocation;
+import battlecode.common.Robot;
+import battlecode.common.RobotController;
+import battlecode.common.RobotType;
 
-//type is what pattern to fire. 1: pull, 2: spoke pull, 3: circle
+//type is what pattern to fire. 1: pull
 public class GenericTower
 {
-
-    RobotController rc;
-    MapLocation target;
-    MapLocation[] lines1, lines2, lines3, lines4;
-    int type;
-    boolean troll, first;
+	private RobotController rc;
+    private towerPastrRequest request;
+    private MapLocation target;
+    private int type, lastPastr;
+    private boolean troll, first, pastrLast;
 
     public GenericTower(RobotController rc, boolean troll)
     {
     	this.troll = troll;
     	first = true;
-    	//int width = rc.getMapWidth();
-    	//int height = rc.getMapHeight();
-    	//double[][] cows = rc.senseCowGrowth();
         this.rc = rc;
         target = rc.getLocation();
-        //int voidTotal = 0;
-        //int cowTotal = 0;
-        //int offMap = 0;
         boolean foundPastr = false;
+        request = new towerPastrRequest(rc);
         
-        while(!foundPastr)
+        if(troll)
         {
-        	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam());
-        	for(Robot bot : bots)
+        	int minDist = 301;
+        	MapLocation[] pastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+        	for(MapLocation pastr : pastrs)
         	{
-        		try
+        		if(minDist > pastr.distanceSquaredTo(rc.getLocation()))
         		{
-	        		if(rc.senseRobotInfo(bot).type == RobotType.PASTR || rc.senseRobotInfo(bot).type == RobotType.SOLDIER)
-	        		{
-	        			target = rc.senseRobotInfo(bot).location;
-	        			foundPastr = true;
-	        		}
+        			minDist = pastr.distanceSquaredTo(rc.getLocation());
+        			target = pastr;
         		}
-        		catch(Exception e){}
-        	}
-        }
-        
-        /*for(int k = target.x - 10; k < target.x + 10; k++)
-        {
-        	for(int a = target.y - 10; a < target.y + 10; a++)
-        	{
-        		if(k < 0 || k >= width || a < 0 || a >= height)
-        		{
-        			offMap++;
-        		}
-        		else
-        		{
-	        		if(rc.senseTerrainTile(new MapLocation(k, a)) == TerrainTile.VOID)
-	        		{
-	        			if(target.distanceSquaredTo(new MapLocation(k, a)) < 10)
-	        			{
-	        				voidTotal++;
-	        			}
-	        		}
-	        		else
-	        		{
-	        			cowTotal += (int)cows[k][a];
-	        		}
-        		}
-        	}
-        }
-        
-        if(offMap > 250)
-        {
-        	if(cowTotal > 200)
-        	{
-        		type = 1;
-        	}
-        	else
-        	{
-        		type = 2;
-        		lines1 = TowerUtil.generateSpokeLines(rc, target, 1);
-                lines2 = TowerUtil.generateSpokeLines(rc, target, 2);
-                lines3 = TowerUtil.generateSpokeLines(rc, target, 3);
-                lines4 = TowerUtil.generateSpokeLines(rc, target, 4);
-        	}
-        }
-        else if(offMap > 150)
-        {
-        	if(cowTotal > 400)
-        	{
-        		type = 1;
-        	}
-        	else
-        	{
-        		type = 2;
-        		lines1 = TowerUtil.generateSpokeLines(rc, target, 1);
-                lines2 = TowerUtil.generateSpokeLines(rc, target, 2);
-                lines3 = TowerUtil.generateSpokeLines(rc, target, 3);
-                lines4 = TowerUtil.generateSpokeLines(rc, target, 4);
         	}
         }
         else
         {
-        	if(voidTotal > 2)
-        	{
-        		type = 1;
-        	}
-        	else
-        	{
-	    		type = 2;
-	    		lines1 = TowerUtil.generateSpokeLines(rc, target, 1);
-	            lines2 = TowerUtil.generateSpokeLines(rc, target, 2);
-	            lines3 = TowerUtil.generateSpokeLines(rc, target, 3);
-	            lines4 = TowerUtil.generateSpokeLines(rc, target, 4);
-        	}
-        }*/
+	        while(!foundPastr)
+	        {
+	        	Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 8, rc.getTeam());
+	        	for(Robot bot : bots)
+	        	{
+	        		try
+	        		{
+		        		if(rc.senseRobotInfo(bot).type == RobotType.PASTR || rc.senseRobotInfo(bot).type == RobotType.SOLDIER)
+		        		{
+		        			target = rc.senseRobotInfo(bot).location;
+		        			foundPastr = true;
+		        		}
+	        		}
+	        		catch(Exception e){}
+	        	}
+	            rc.yield();
+	        }
+        }
+        
         type = 1;
     }
 
@@ -138,7 +83,7 @@ public class GenericTower
 	            	try
 	            	{
 		            	MapLocation[] enemies = rc.sensePastrLocations(rc.getTeam().opponent());
-		            	Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam());
+		            	Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 16, rc.getTeam());
 		            	MapLocation pastrE = null;
 		            	boolean enemyPastr = false;
 		            	boolean allyPastr = false;
@@ -154,64 +99,35 @@ public class GenericTower
 		            	if(allies.length > 0)
 		            	{
 		            		allyPastr = true;
+		            		pastrLast = true;
 		            	}
-		            	if(allyPastr)
+		            	if(allyPastr || first)
 		            	{
 		            		if(type == 1)
 		                	{
 		                		TowerUtil.pullInto(rc, 17, target);
 		                	}
-		                	else if(type == 2)
-		                	{
-		                		boolean[] spokes = TowerUtil.goodSpokeDirs(rc, target);
-		                		
-		                		if(spokes[0])
-		                		{
-		    		            	for(int k = 0; k < lines1.length; k += 2)
-		    		            	{
-		    		            		if(lines1[k] != null)
-		    		            		{
-		    		            			TowerUtil.fireLine(rc, lines1[k], lines1[k + 1], 1);
-		    		            		}
-		    		            	}
-		                		}
-		                		if(spokes[1])
-		                		{
-		    		            	for(int k = 0; k < lines2.length; k += 2)
-		    		            	{
-		    		            		if(lines2[k] != null)
-		    		            		{
-		    		            			TowerUtil.fireLine(rc, lines2[k], lines2[k + 1], 1);
-		    		            		}
-		    		            	}
-		                		}
-		                		if(spokes[3])
-		                		{
-		    		            	for(int k = 0; k < lines4.length; k += 2)
-		    		            	{
-		    		            		if(lines4[k] != null)
-		    		            		{
-		    		            			TowerUtil.fireLine(rc, lines4[k], lines4[k + 1], 1);
-		    		            		}
-		    		            	}
-		                		}
-		                		if(spokes[2])
-		                		{
-		    		            	for(int k = 0; k < lines3.length; k += 2)
-		    		            	{
-		    		            		if(lines3[k] != null)
-		    		            		{
-		    		            			TowerUtil.fireLine(rc, lines3[k], lines3[k + 1], 1);
-		    		            		}
-		    		            	}
-		                		}
-		                	}
-		            		
 		            		first = false;
 		            	}
-		            	else if(enemyPastr && !allyPastr)
+		            	else
 		            	{
-		            		rc.attackSquare(pastrE);
+		            		if(pastrLast == true)
+		            		{
+		            			pastrLast = false;
+		            			request.sendRequest();
+		            			lastPastr = Clock.getRoundNum();
+		            		}
+		            		else
+		            		{
+		            			if(Clock.getRoundNum() - lastPastr >= 300 && !request.isPending())
+		            			{
+		            				request.sendRequest();
+		            			}
+		            		}
+			            	if(enemyPastr)
+			            	{
+			            		rc.attackSquare(pastrE);
+			            	}
 		            	}
 	            	}
 	            	catch(Exception e){}

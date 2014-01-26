@@ -1,11 +1,11 @@
 package theSwarm6;
 
+import theSwarm.Movement;
 import battlecode.common.*;
 
 public class TowerUtil
 {
 	public static Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
-	public static int bestLocChannel = 60000;
 	
 	public static void fireCircle(RobotController rc, int radius, MapLocation center)
     {
@@ -59,7 +59,7 @@ public class TowerUtil
             }
             try
             {
-                while(toFire.distanceSquaredTo(center) > distAway)
+                do
                 {
                     if(toFire.x >= -2 && toFire.x < rc.getMapWidth() + 2 && toFire.y >= -2 && toFire.y < rc.getMapHeight() + 2 && rc.canAttackSquare(toFire))
                     {
@@ -72,6 +72,7 @@ public class TowerUtil
                     }
                     toFire = toFire.add(toFire.directionTo(center));
                 }
+                while(toFire.distanceSquaredTo(center) > distAway);
             }
             catch(Exception e){}
             if(k == 4)
@@ -371,148 +372,8 @@ public class TowerUtil
     	return false;
     }
     
-    public static MapLocation bestSpot(RobotController rc)
-    {
-    	double[][] cows = rc.senseCowGrowth();
-    	MapLocation target = new MapLocation(5, 5);
-    	int total = 5;
-    	int skip, start;
-    	int scope = 7;
-    	int width = rc.getMapWidth();
-    	int height = rc.getMapHeight();
-    	
-    	if(rc.getMapWidth() * rc.getMapHeight() < 2600)
-    	{
-    		skip = 2;
-    		start = 6;
-    	}
-    	else
-    	{
-    		skip = 4;
-    		start = 6;
-    	}
-    	
-    	for(int k = start; k < width - start; k += skip)
-    	{
-    		for(int a = start; a < height - start; a += skip)
-    		{
-    			int score = 0;
-    			for(int t = 0; t < scope; t += 1)
-    			{
-    				for(int i = 0; i < scope; i += 1)
-    				{
-    					score += (int)cows[k - scope / 2 + t][a - scope / 2 + i];
-    					if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
-    					{
-    						score -= 2;
-    					}
-    				}
-    			}
-    			
-    			if(score > total)
-    			{
-    				total = score;
-    				target = new MapLocation(k, a);
-    			}
-    		}
-    	}
-    	
-    	return target;
-    }
-    
-    public static MapLocation bestSpot2(RobotController rc)
-    {
-    	try
-    	{
-    	if(rc.readBroadcast(bestLocChannel) != 0)
-    	{
-    		return Utilities.convertIntToMapLocation(rc.readBroadcast(bestLocChannel));
-    	}
-    	}
-    	catch(Exception e){}
-    	
-    	double[][] cows = rc.senseCowGrowth();
-    	int width = rc.getMapWidth();
-    	int height = rc.getMapHeight();
-    	MapLocation start = new MapLocation(0, 0);
-    	MapLocation target = new MapLocation(0, 0);
-    	int total = 0;
-    	
-    	for(int k = 0; k < 3; k++)
-    	{
-    		for(int a = 0; a < 3; a++)
-    		{
-    			int temp = 0;
-    			for(int t = 0; t < width / 3; t++)
-    			{
-    				for(int i = 0; i < height / 3; i++)
-    				{
-    					temp += cows[(k * width / 3) + t][(a * width / 3) + i];
-    					if(rc.senseTerrainTile(new MapLocation((k * width / 3) + t, (a * width / 3) + i)) == TerrainTile.VOID)
-    					{
-    						temp--;
-    					}
-    				}
-    			}
-    			
-    			if(temp > total)
-    			{
-    				total = temp;
-    				start = new MapLocation(k * width / 3, a * width / 3);
-    			}
-    		}
-    	}
-    	
-    	total = 0;
-    	int scope = 8;
-    	int skip = 2;
-    	int begin = 4;
-    	for(int k = start.x + begin; k < start.x + width / 3 - begin; k += skip)
-    	{
-    		for(int a = start.y + begin; a < start.y + height / 3 - begin; a += skip)
-    		{
-    			int score = 0;
-    			for(int t = 0; t < scope; t += 1)
-    			{
-    				for(int i = 0; i < scope; i += 1)
-    				{
-    					score += (int)cows[k - scope / 2 + t][a - scope / 2 + i];
-    					if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
-    					{
-    						score -= 2;
-    					}
-    				}
-    			}
-    			
-    			if(score > total)
-    			{
-    				total = score;
-    				target = new MapLocation(k, a);
-    				rc.setIndicatorString(1, target.toString());
-    			}
-    		}
-    	}
-    	
-    	try
-    	{
-			rc.broadcast(bestLocChannel, Utilities.convertMapLocationToInt(target));
-		}
-    	catch (Exception e){}
-    	
-    	return target;
-    }
-    
     public static MapLocation bestSpot3(RobotController rc)
     {
-    	try
-    	{
-    	if(rc.readBroadcast(bestLocChannel) != 0)
-    	{
-    		return Utilities.convertIntToMapLocation(rc.readBroadcast(bestLocChannel));
-    	}
-    	}
-    	catch(Exception e){}
-    	
     	double[][] cows = rc.senseCowGrowth();
     	int width = rc.getMapWidth();
     	int height = rc.getMapHeight();
@@ -531,13 +392,13 @@ public class TowerUtil
 	    			{
 	    				for(int i = 0; i < height / 3; i++)
 	    				{
-	    					if(rc.senseTerrainTile(new MapLocation((k * width / 3) + t, (a * width / 3) + i)) == TerrainTile.VOID)
+	    					if(rc.senseTerrainTile(new MapLocation((k * width / 3) + t, (a * height / 3) + i)) == TerrainTile.VOID)
 	    					{
 	    						temp--;
 	    					}
 	    					else
 	    					{
-	    						temp += cows[(k * width / 3) + t][(a * width / 3) + i];
+	    						temp += cows[(k * width / 3) + t][(a * height / 3) + i];
 	    					}
 	    				}
 	    			}
@@ -545,7 +406,7 @@ public class TowerUtil
 	    			if(temp > total)
 	    			{
 	    				total = temp;
-	    				start = new MapLocation(k * width / 3, a * width / 3);
+	    				start = new MapLocation(k * width / 3, a * height / 3);
 	    			}
     			}
     		}
@@ -579,23 +440,64 @@ public class TowerUtil
     			{
     				total = score;
     				target = new MapLocation(k, a);
-    				rc.setIndicatorString(1, target.toString());
+    				rc.setIndicatorString(1, "Calculating:"+target.toString());
     			}
     		}
     	}
     	
-    	if(rc.senseHQLocation().distanceSquaredTo(target) > rc.senseHQLocation().distanceSquaredTo(getOppositeSpot(rc, target)))
+    	return target;
+    }
+    
+    //finds the 3 best spots on the map
+    public static MapLocation[] findBestSpots(RobotController rc, int spotCount)
+    {
+    	MapLocation[] spots = new MapLocation[spotCount];
+    	int[] spotScores = new int[spotCount];
+    	int width = rc.getMapWidth();
+    	int height = rc.getMapHeight();
+    	int start = 5;
+    	int skip = 3;
+    	
+    	MapLocation spot;
+    	int score, minLoc;
+    	
+    	for(int k = start; k < width - start; k += skip)
     	{
-    		target = new MapLocation(width - target.x, height - target.y);
+    		for(int a = start; a < height - start; a += skip)
+    		{
+    			spot = new MapLocation(k, a);
+    			if(rc.senseTerrainTile(spot) != TerrainTile.VOID)
+    			{
+	    			score = getSpotScore(rc, spot);
+	    			minLoc = findMin(spotScores);
+	    			
+	    			if(score > spotScores[minLoc])
+	    			{
+	    				spots[minLoc] = spot;
+	    				spotScores[minLoc] = score;
+	    			}
+    			}
+    		}
     	}
     	
-    	try
-    	{
-			rc.broadcast(bestLocChannel, Utilities.convertMapLocationToInt(target));
-		}
-    	catch (Exception e){}
+    	return spots;
+    }
+    
+    private static int findMin(int[] nums)
+    {
+    	int temp = nums[0];
+    	int spot = 0;
     	
-    	return target;
+    	for(int k = 1; k < nums.length; k++)
+    	{
+    		if(nums[k] < temp)
+    		{
+    			spot = k;
+    			temp = nums[k];
+    		}
+    	}
+    	
+    	return spot;
     }
     
     public static int getSpotScore(RobotController rc, MapLocation target)
@@ -621,11 +523,6 @@ public class TowerUtil
     	}
     	
     	return total;
-    }
-    
-    public static MapLocation getOppositeSpot(RobotController rc, MapLocation loc)
-    {
-    	return new MapLocation(rc.getMapWidth() - loc.x - 1, rc.getMapHeight() - loc.y - 1);
     }
     
     public static boolean[] goodSpokeDirs(RobotController rc, MapLocation target)
@@ -700,160 +597,19 @@ public class TowerUtil
     	return spokes;
     }
     
-  //finds best corner to collect milk where the return is an int as follows:
-    //1  2
-    //3  4
-    public static int findBestCorner(RobotController rc)
+    public static int convertMapLocationToInt(MapLocation loc)
     {
-        double[][] pasture = rc.senseCowGrowth();
-        
-        double[] voids = new double[4];
-        double[] cows = new double[4];
-        double[] distances = new double[4];
-
-        double max = -1000;
-        int corner = 0;
-        double total = 0;
-        MapLocation target = null;
-        MapLocation current = rc.senseHQLocation();
-        
-        for(int k = 1; k <= 4; k++)
-        {
-        	switch(k)
-            {
-                case 1:
-                    target = new MapLocation(5, 5);
-                    break;
-                case 2:
-                    target = new MapLocation(rc.getMapWidth() - 6, 5);
-                    break;
-                case 3:
-                    target = new MapLocation(5, rc.getMapHeight() - 6);
-                    break;
-                default:
-                    target = new MapLocation(rc.getMapWidth() - 6, rc.getMapHeight() - 6);
-                    break;
-            }
-        	
-        	while(target.x != current.x || target.y != current.y)
-        	{
-        		if(rc.senseTerrainTile(current) == TerrainTile.VOID)
-        		{
-        			total++;
-        		}
-        		current = current.add(current.directionTo(target));
-        	}
-        	
-        	voids[k - 1] = total;
-        	distances[k - 1] = rc.senseHQLocation().distanceSquaredTo(target);
-        	
-        	total = 0;
-        	current = rc.senseHQLocation();
-        }
-
-        //top left corner
-        for(int k = 0; k < 10; k++)
-        {
-            for(int a = 0; a < 10; a++)
-            {
-                total += pasture[k][a];
-            }
-        }
-        cows[0] = total;
-            
-        total = 0;
-
-        //top right corner
-        for(int k = rc.getMapWidth() - 11; k < rc.getMapWidth(); k++)
-        {
-            for(int a = 0; a < 10; a++)
-            {
-                total += pasture[k][a];
-            }
-        }
-        cows[1] = total;
-        
-        total = 0;
-
-        //bottom left corner
-        for(int k = 0; k < 10; k++)
-        {
-            for(int a = rc.getMapHeight() - 11; a < rc.getMapHeight(); a++)
-            {
-                total += pasture[k][a];
-            }
-        }
-        cows[2] = total;
-        
-        total = 0;
-
-        //bottom right corner
-        for(int k = rc.getMapWidth() - 11; k < rc.getMapWidth(); k++)
-        {
-            for(int a = rc.getMapHeight() - 11; a < rc.getMapHeight(); a++)
-            {
-                total += pasture[k][a];
-            }
-        }
-        cows[3] = total;
-        
-        for(int k = 0; k < 4; k++)
-        {
-        	total = cows[k] * 1 - voids[k] * 50 - distances[k] * .001;
-        	
-        	if(total > max)
-        	{
-        		max = total;
-        		corner = k + 1;
-        	}
-        }
-
-        return corner;
+        int x = loc.x;
+        int y = loc.y;
+        int total = (x*100) + y;
+        return total;
     }
-    
-    public static boolean isGoodCorner(RobotController rc, int corner)
+
+    public static MapLocation convertIntToMapLocation(int value)
     {
-    	int startX, startY;
-    	int scope = 10;
-    	int score = 0;
-    	double[][] cows = rc.senseCowGrowth();
-    	
-    	switch(corner)
-    	{
-    		case 1:
-    			startX = 0; 
-    			startY = 0;
-    			break;
-    		case 2:
-    			startX = rc.getMapWidth() - scope;
-    			startY = 0;
-    			break;
-    		case 3:
-    			startX = 0;
-    			startY = rc.getMapHeight() - scope;
-    			break;
-    		default:
-    			startX = rc.getMapWidth() - scope;
-    			startY = rc.getMapHeight() - scope;
-    			break;
-    	}
-    	
-    	for(int k = startX; k < startX + scope; k++)
-    	{
-    		for(int a = startY; a < startY + scope; a++)
-    		{
-    			if(rc.senseTerrainTile(new MapLocation(k, a)) != TerrainTile.VOID)
-    			{
-    				score += (int)cows[k][a];
-    			}
-    		}
-    	}
-    	
-    	if(score > 50)
-    	{
-    		return true;
-    	}
-    	
-    	return false;
+        int x = value / 100;
+        int y = value % 100;
+        MapLocation loc = new MapLocation(x, y);
+        return loc;
     }
 }

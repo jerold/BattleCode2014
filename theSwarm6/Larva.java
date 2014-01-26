@@ -6,6 +6,7 @@ public class Larva {
 	RobotController rc;
 	MapLocation target;
     int ourIndex;
+    towerPastrRequest request;
 
     Robot[] nearByEnemies;
     int[] AllEnemyNoiseTowers;
@@ -27,6 +28,7 @@ public class Larva {
 		} catch (GameActionException e) {
 			e.printStackTrace();
 		}
+		request = new towerPastrRequest(rc);
 		rc.setIndicatorString(0, "Larva");
         //ourIndex = FightMicro.ourSlotInMessaging(rc);
 
@@ -55,13 +57,13 @@ public class Larva {
                     if (a != 0)
                     {
                         rc.broadcast(needNoiseTower, 0);
-                        Extractor extractor = new Extractor(rc, a);
+                        Extractor extractor = new Extractor(rc, a, null);
                         extractor.run();
                     }
                     else if (k != 0)
                     {
                         rc.broadcast(needPastr, 0);
-                        Drone drone = new Drone(rc, k);
+                        Drone drone = new Drone(rc, k, null);
                         drone.run();
                     }
 

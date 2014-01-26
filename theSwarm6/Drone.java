@@ -32,24 +32,16 @@ public class Drone {
 
     RobotController rc;
     MapLocation pastrSpot;
-    int type;
+    towerPastrRequest request;
+    int type, start;
 
-    public Drone(RobotController rc, int type)
+    public Drone(RobotController rc, int type, MapLocation target)
     {
         this.rc = rc;
         this.type = type;
-        pastrSpot = TowerUtil.bestSpot3(rc);
-        if(this.type < 0)
-        {
-        	pastrSpot = TowerUtil.getOppositeSpot(rc, pastrSpot);
-        	this.type *= -1;
-        }
-
-        try
-        {
-            rc.broadcast(pastLoc, Utilities.convertMapLocationToInt(pastrSpot));
-
-        } catch (Exception e) {}
+        pastrSpot = target;
+        request = new towerPastrRequest(rc);
+        start = Clock.getRoundNum();
         
         rc.setIndicatorString(0, "Drone");
     }
@@ -70,10 +62,10 @@ public class Drone {
                     	{
                     		while(!towerNear(rc)){rc.yield();}
                     	}
-                    	else if(type == 3)
+                    	else if(type > 3)
                     	{
                     		while(!towerNear(rc)){rc.yield();}
-                    		for(int k = 0; k < 200 && rc.sensePastrLocations(rc.getTeam()).length == 0; k++){rc.yield();}
+                    		for(int k = 0; k < type; k++){rc.yield();}
                     	}
                     	else
                     	{
@@ -86,6 +78,11 @@ public class Drone {
                     else
                     {
                         Movement.MoveMapLocation(rc, pastrSpot, false, false);
+                        if(Clock.getRoundNum() - start > 100)
+                        {
+                        	request.abandonPath(pastrSpot);
+                        	new Larva(rc).run();
+                        }
                     }
                 }
 

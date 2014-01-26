@@ -4,9 +4,6 @@ import battlecode.common.*;
 
 import java.util.Random;
 
-/**
- * Created by fredkneeland on 1/8/14.
- */
 public class MULE
 {
     RobotController rc;

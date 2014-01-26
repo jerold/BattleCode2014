@@ -9,36 +9,74 @@ public class TowerUtil
 	
 	public static void fireCircle(RobotController rc, int radius, MapLocation center)
     {
-        for(int k = 0; k < directions.length; k++)
-        {
-            while(!rc.isActive()){rc.yield();}
-            MapLocation toFire = center.add(directions[k], radius);
-            try
-            {
-                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
-                {
-                	while(!rc.isActive()){rc.yield();}
-                    rc.attackSquare(toFire);
-                }
-            }
-            catch(Exception e){}
-            while(!rc.isActive()){rc.yield();}
-            toFire = center;
-            for(int a = 0; a < radius / 2; a++)
-            {
-                toFire = toFire.add(directions[k]);
-                toFire = toFire.add(directions[(k + 1) % directions.length]);
-            }
-            try
-            {
-                if(toFire.x >= 0 && toFire.x < rc.getMapWidth() && toFire.y >= 0 && toFire.y < rc.getMapHeight() && rc.canAttackSquare(toFire))
-                {
-                	while(!rc.isActive()){rc.yield();}
-                    rc.attackSquare(toFire);
-                }
-            }
-            catch(Exception e){}
-        }
+		if(radius % 2 == 0)
+		{
+	        for(int k = 0; k < directions.length; k++)
+	        {
+	            MapLocation toFire = center.add(directions[k], radius);
+	            try
+	            {
+	                if(toFire.x >= -2 && toFire.x < rc.getMapWidth() + 2 && toFire.y >= -2 && toFire.y < rc.getMapHeight() + 2 && rc.canAttackSquare(toFire))
+	                {
+	                	while(!rc.isActive()){rc.yield();}
+	                    rc.attackSquare(toFire);
+	                }
+	            }
+	            catch(Exception e){}
+	            if(radius < 8)
+	            {
+		            toFire = center;
+		            for(int a = 0; a < radius / 2; a++)
+		            {
+		                toFire = toFire.add(directions[k]);
+		                toFire = toFire.add(directions[(k + 1) % directions.length]);
+		            }
+		            try
+		            {
+		                if(toFire.x >= -2 && toFire.x < rc.getMapWidth() + 2 && toFire.y >= -2 && toFire.y < rc.getMapHeight() + 2 && rc.canAttackSquare(toFire))
+		                {
+		                	while(!rc.isActive()){rc.yield();}
+		                    rc.attackSquare(toFire);
+		                }
+		            }
+		            catch(Exception e){}
+	            }
+	        }
+		}
+		else
+		{
+			for(int k = directions.length - 1; k >= 0; k--)
+	        {
+	            MapLocation toFire = center.add(directions[k], radius);
+	            try
+	            {
+	                if(toFire.x >= -2 && toFire.x < rc.getMapWidth() + 2 && toFire.y >= -2 && toFire.y < rc.getMapHeight() + 2 && rc.canAttackSquare(toFire))
+	                {
+	                	while(!rc.isActive()){rc.yield();}
+	                    rc.attackSquare(toFire);
+	                }
+	            }
+	            catch(Exception e){}
+	            if(radius < 8)
+	            {
+		            toFire = center;
+		            for(int a = 0; a < radius / 2; a++)
+		            {
+		                toFire = toFire.add(directions[k]);
+		                toFire = toFire.add(directions[(k + 1) % directions.length]);
+		            }
+		            try
+		            {
+		                if(toFire.x >= -2 && toFire.x < rc.getMapWidth() + 2 && toFire.y >= -2 && toFire.y < rc.getMapHeight() + 2 && rc.canAttackSquare(toFire))
+		                {
+		                	while(!rc.isActive()){rc.yield();}
+		                    rc.attackSquare(toFire);
+		                }
+		            }
+		            catch(Exception e){}
+	            }
+	        }
+		}
     }
 
     public static void pullInto(RobotController rc, int radius, MapLocation center)

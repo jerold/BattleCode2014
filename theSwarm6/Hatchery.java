@@ -25,7 +25,7 @@ public class Hatchery {
 		HQFunctions.InitialLocationBroadcasts(rc);
 
 		HQFunctions.findInitialRally(rc);
-		if(TowerUtil.isGoodCorner(rc, TowerUtil.findBestCorner(rc)))
+		/*if(TowerUtil.isGoodCorner(rc, TowerUtil.findBestCorner(rc)))
 		{
 			rc.setIndicatorString(0, "Good Corner: " + TowerUtil.findBestCorner(rc));
 		}
@@ -43,7 +43,7 @@ public class Hatchery {
 		else
 		{
 			rc.setIndicatorString(2, "Single Pasture");
-		}
+		}*/
 	}
 
 	public void run()
