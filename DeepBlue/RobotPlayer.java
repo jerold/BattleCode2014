@@ -14,7 +14,11 @@ public class RobotPlayer
     {
         while (true) {
             try {
-                if (rc.getType() == RobotType.HQ) Headquarter.run(rc);
+                if (rc.getType() == RobotType.HQ)
+                {
+                    rc.wearHat();
+                    Headquarter.run(rc);
+                }
                 else if (rc.getType() == RobotType.SOLDIER) Soldiers.run(rc);
                 else Structures.run(rc);
             } catch(Exception e) {
