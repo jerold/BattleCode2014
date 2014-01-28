@@ -25,25 +25,8 @@ public class Hatchery {
 		HQFunctions.InitialLocationBroadcasts(rc);
 
 		HQFunctions.findInitialRally(rc);
-		/*if(TowerUtil.isGoodCorner(rc, TowerUtil.findBestCorner(rc)))
-		{
-			rc.setIndicatorString(0, "Good Corner: " + TowerUtil.findBestCorner(rc));
-		}
-		else
-		{
-			rc.setIndicatorString(0, "Bad Corner: " + TowerUtil.findBestCorner(rc));
-		}
 		
-		doublePastr = checkDoublePastr(rc, TowerUtil.bestSpot3(rc), TowerUtil.getOppositeSpot(rc, TowerUtil.bestSpot3(rc)));
-		
-		if(doublePastr)
-		{
-			rc.setIndicatorString(2, "Double Pasture");
-		}
-		else
-		{
-			rc.setIndicatorString(2, "Single Pasture");
-		}*/
+		towerPastrRequest.setInitial(rc);
 	}
 
 	public void run()
@@ -75,35 +58,6 @@ public class Hatchery {
                 //HQFunctions.findInitialRally(rc);
 
 			}
-			
-			
-			if(Clock.getRoundNum() >= lastCreate && rc.sensePastrLocations(rc.getTeam()).length == 0)
-			{
-				build = true;
-				if(doublePastr)
-				{
-					build2 = true;
-				}
-				lastCreate = Clock.getRoundNum() + 300;
-			}
-			
-			try
-			{
-				if(build && rc.readBroadcast(4) == 0 && rc.readBroadcast(5) == 0)
-				{
-					rc.broadcast(4, 1);
-					rc.broadcast(5, 50);
-					build = false;
-				}
-				else if(build2 && rc.readBroadcast(4) == 0 && rc.readBroadcast(5) == 0)
-				{
-					rc.broadcast(4, -1);
-					rc.broadcast(5, -3);
-					build2 = false;
-				}
-			}
-			catch(Exception e) {}
-			
 			
 			rc.yield();
 		}

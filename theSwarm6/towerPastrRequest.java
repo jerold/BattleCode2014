@@ -17,8 +17,8 @@ import battlecode.common.*;
  */
 public class towerPastrRequest
 {
-	public final int start = 60000;
-	public final int numSpots = 3;
+	public static final int start = 60000;
+	public static final int numSpots = 3;
 	
 	private MapLocation[] locs;
 	private RobotController rc;
@@ -31,6 +31,7 @@ public class towerPastrRequest
 			
 			if(rc.readBroadcast(start) == 0)
 			{
+				rc.broadcast(start, -1);
 				MapLocation[] locs = TowerUtil.findBestSpots(rc, numSpots);
 				this.locs = locs;
 				for(int k = 0; k < numSpots; k++)
@@ -40,6 +41,7 @@ public class towerPastrRequest
 			}
 			else
 			{
+				while(rc.readBroadcast(start) == -1){rc.yield();}
 				locs = new MapLocation[numSpots];
 				for(int k = 0; k < numSpots; k++)
 				{
@@ -50,7 +52,13 @@ public class towerPastrRequest
 		catch(Exception e){}
 	}
 	
-	public MapLocation checkForNeed()
+	/*
+	 * returns 3 ints:
+	 * target location as int
+	 * type associated with it
+	 * 1 for pasture, 0 for tower
+	 */
+	public int[] checkForNeed()
 	{
 		for(int k = 0; k < numSpots; k++)
 		{
@@ -61,92 +69,49 @@ public class towerPastrRequest
 				
 				if(tower == 1)
 				{
-					rc.broadcast(start + (k * 3) + 1, 2);
-					Direction[] dirs = Direction.values();
-					Direction choice = Direction.NONE;
-					for(Direction dir : dirs)
+					if(locs[k].x != 0 || locs[k].y != 0)
 					{
-						if(rc.senseTerrainTile(locs[k].add(dir)) != TerrainTile.VOID)
+						rc.broadcast(start + (k * 3) + 1, 2);
+						Direction[] dirs = Direction.values();
+						Direction choice = Direction.NONE;
+						for(Direction dir : dirs)
 						{
-							choice = dir;
-							break;
+							if(rc.senseTerrainTile(locs[k].add(dir)) != TerrainTile.VOID)
+							{
+								choice = dir;
+								break;
+							}
 						}
+						int[] answer = {TowerUtil.convertMapLocationToInt(locs[k].add(choice)), tower, 0};
+						return answer;
 					}
-					return locs[k].add(choice);
+					else
+					{
+						rc.broadcast(start + (k * 3) + 1, 0);
+					}
 				}
 				if(pastr == 1 || pastr == 2 || pastr > 3)
 				{
-					rc.broadcast(start + (k * 3) + 2, 3);
-					return locs[k];
+					if(locs[k].x != 0 || locs[k].y != 0)
+					{
+						rc.broadcast(start + (k * 3) + 2, 3);
+						int[] answer = {TowerUtil.convertMapLocationToInt(locs[k]), pastr, 1};
+						return answer;
+					}
+					else
+					{
+						rc.broadcast(start + (k * 3) + 2, 0);
+					}
 				}
 			}
 			catch(Exception e){}
 		}
 		
-		return null;
+		int[] answer = {-1,-1,-1};
+		return answer;
 	}
 	
-	public void sendRequest()
-	{
-		try
-		{
-			for(int k = 0; k < numSpots; k++)
-			{
-				if(locs[k].distanceSquaredTo(rc.getLocation()) <= 16)
-				{
-					if(rc.getType() == RobotType.PASTR)
-					{
-						rc.broadcast(start + (k * 3) + 1, 1);
-					}
-					else
-					{
-						rc.broadcast(start + (k * 3) + 2, 2);
-					}
-				}
-			}
-		}
-		catch(Exception e){}
-	}
-	
-	public boolean isPending()
-	{
-		try
-		{
-			for(int k = 0; k < numSpots; k++)
-			{
-				if(locs[k].distanceSquaredTo(rc.getLocation()) <= 16)
-				{
-					if(rc.getType() == RobotType.PASTR)
-					{
-						if(rc.readBroadcast(start + (k * 3) + 1) == 2)
-						{
-							return true;
-						}
-						else
-						{
-							return false;
-						}
-					}
-					else
-					{
-						if(rc.readBroadcast(start + (k * 3) + 2) == 3)
-						{
-							return true;
-						}
-						else
-						{
-							return false;
-						}
-					}
-				}
-			}
-		}
-		catch(Exception e){}
-		
-		return false;
-	}
-	
-	public void abandonPath(MapLocation target)
+	public void sendRequest(MapLocation target, boolean pastr)
 	{
 		try
 		{
@@ -154,17 +119,55 @@ public class towerPastrRequest
 			{
 				if(locs[k].distanceSquaredTo(target) <= 16)
 				{
-					if(rc.getType() == RobotType.PASTR)
-					{
-						rc.broadcast(start + (k * 3) + 2, 2);
-					}
-					else
+					if(!pastr && rc.readBroadcast(start + (k * 3) + 1) == 0)
 					{
 						rc.broadcast(start + (k * 3) + 1, 1);
+					}
+					else if(rc.readBroadcast(start + (k * 3) + 2) == 0)
+					{
+						rc.broadcast(start + (k * 3) + 2, 2);
 					}
 				}
 			}
 		}
 		catch(Exception e){}
+	}
+	
+	public void madeIt(boolean pastr)
+	{
+		MapLocation target = rc.getLocation();
+		
+		try
+		{
+			for(int k = 0; k < numSpots; k++)
+			{
+				if(locs[k].distanceSquaredTo(target) <= 16)
+				{
+					if(!pastr)
+					{
+						rc.broadcast(start + (k * 3) + 1, 0);
+					}
+					else
+					{
+						rc.broadcast(start + (k * 3) + 2, 0);
+					}
+					break;
+				}
+			}
+		}
+		catch(Exception e){}
+	}
+	
+	public static void setInitial(RobotController rc)
+	{
+		for(int k = 0; k < numSpots; k++)
+		{
+			try
+			{
+				rc.broadcast(start + (k * 3) + 1, 1);
+				rc.broadcast(start + (k * 3) + 2, 2);
+			}
+			catch(Exception e){}
+		}
 	}
 }

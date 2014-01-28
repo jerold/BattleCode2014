@@ -24,19 +24,17 @@ public class RobotPlayer
 
 				else if (rc.getType() == RobotType.NOISETOWER)
 				{
-                    GenericTower tower = new GenericTower(rc, false);
-                    tower.run();
+                    new GenericTower(rc, false).run();
 				}
 				else if (rc.getType() == RobotType.PASTR)
 				{
-
+					new GenericPastr(rc).run();
 				}
 				// other wise we must be a soldier
 				else
 				{
 					// our hq spawns larva which run to a rally point and then morph into whatever unit is most critical at that point
-					Larva larva = new Larva(rc);
-					larva.run();
+					new Larva(rc).run();
 				}
 			} catch (Exception e)
             {

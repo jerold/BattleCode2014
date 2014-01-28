@@ -41,30 +41,20 @@ public class Larva {
 		{
 			try
 			{
-                //System.out.println("Hello world");
 				// we will only do stuff if we are active
 				if (rc.isActive())
 				{
-
-
-                    if (rc.senseTeamMilkQuantity(rc.getTeam()) > 9000000)
+                    int[] get = request.checkForNeed();
+                    if(get[0] != -1)
                     {
-                        //rc.wearHat();
-                    }
-
-                    int k = rc.readBroadcast(needPastr);
-                    int a = rc.readBroadcast(needNoiseTower);
-                    if (a != 0)
-                    {
-                        rc.broadcast(needNoiseTower, 0);
-                        Extractor extractor = new Extractor(rc, a, null);
-                        extractor.run();
-                    }
-                    else if (k != 0)
-                    {
-                        rc.broadcast(needPastr, 0);
-                        Drone drone = new Drone(rc, k, null);
-                        drone.run();
+                    	if(get[2] == 0)
+                    	{
+                    		new Extractor(rc, get[1], TowerUtil.convertIntToMapLocation(get[0])).run();
+                    	}
+                    	else
+                    	{
+                    		new Drone(rc, get[1], TowerUtil.convertIntToMapLocation(get[0])).run();
+                    	}
                     }
 
                     if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)

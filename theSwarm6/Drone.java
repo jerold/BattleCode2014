@@ -52,7 +52,6 @@ public class Drone {
         {
             try
             {
-
                 if (rc.isActive())
                 {
                     if (rc.getLocation().x == pastrSpot.x && rc.getLocation().y == pastrSpot.y)
@@ -73,16 +72,12 @@ public class Drone {
                     		for(int k = 0; k < type; k++){rc.yield();}
                     	}
                     	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){rc.yield();}
-                        rc.construct(RobotType.PASTR);
+                        request.madeIt(true);
+                    	rc.construct(RobotType.PASTR);
                     }
                     else
                     {
                         Movement.MoveMapLocation(rc, pastrSpot, false, false);
-                        if(Clock.getRoundNum() - start > 100)
-                        {
-                        	request.abandonPath(pastrSpot);
-                        	new Larva(rc).run();
-                        }
                     }
                 }
 
