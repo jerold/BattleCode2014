@@ -19,23 +19,13 @@ public class GenericPastr
 		{
 			try
 			{
-				Robot[] bots = rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam());
-				boolean tower = false;
-				
-				for(Robot bot : bots)
+				if(rc.getHealth() < 50)
 				{
-					if(rc.senseRobotInfo(bot).type == RobotType.NOISETOWER)
-					{
-						tower = true;
-					}
-				}
-				
-				if(!tower)
-				{
-					request.sendRequest();
+					request.sendRequest(rc.getLocation(), true);
 				}
 			}
 			catch(Exception e){}
+			rc.yield();
 		}
 	}
 }

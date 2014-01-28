@@ -230,7 +230,28 @@ public class TowerUtil
     	int width = rc.getMapWidth();
     	int height = rc.getMapHeight();
     	int start = 5;
-    	int skip = 3;
+    	int skip;
+    	int minDist;
+    	if(width * height <= 450)
+    	{
+    		skip = 1;
+    		minDist = 100;
+    	}
+    	else if(width * height <= 1000)
+    	{
+    		skip = 2;
+    		minDist = 200;
+    	}
+    	else if(width * height <= 3000)
+    	{
+    		skip = 3;
+    		minDist = 300;
+    	}
+    	else
+    	{
+    		skip = 3;
+    		minDist = 400;
+    	}
     	
     	MapLocation spot;
     	int score, minLoc;
@@ -245,10 +266,13 @@ public class TowerUtil
     			{
     				try
     				{
-	    				if(spot.distanceSquaredTo(spots[t]) < 300)
-	    				{
-	    					go  = false;
-	    				}
+    					if(spots[t].x != 0 || spots[t].y != 0)
+    					{
+		    				if(spot.distanceSquaredTo(spots[t]) < minDist || spot.distanceSquaredTo(rc.senseEnemyHQLocation()) < 200)
+		    				{
+		    					go  = false;
+		    				}
+    					}
     				}
     				catch(Exception e){}
     			}

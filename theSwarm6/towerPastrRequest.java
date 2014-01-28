@@ -69,25 +69,39 @@ public class towerPastrRequest
 				
 				if(tower == 1)
 				{
-					rc.broadcast(start + (k * 3) + 1, 2);
-					Direction[] dirs = Direction.values();
-					Direction choice = Direction.NONE;
-					for(Direction dir : dirs)
+					if(locs[k].x != 0 || locs[k].y != 0)
 					{
-						if(rc.senseTerrainTile(locs[k].add(dir)) != TerrainTile.VOID)
+						rc.broadcast(start + (k * 3) + 1, 2);
+						Direction[] dirs = Direction.values();
+						Direction choice = Direction.NONE;
+						for(Direction dir : dirs)
 						{
-							choice = dir;
-							break;
+							if(rc.senseTerrainTile(locs[k].add(dir)) != TerrainTile.VOID)
+							{
+								choice = dir;
+								break;
+							}
 						}
+						int[] answer = {TowerUtil.convertMapLocationToInt(locs[k].add(choice)), tower, 0};
+						return answer;
 					}
-					int[] answer = {TowerUtil.convertMapLocationToInt(locs[k].add(choice)), tower, 0};
-					return answer;
+					else
+					{
+						rc.broadcast(start + (k * 3) + 1, 0);
+					}
 				}
 				if(pastr == 1 || pastr == 2 || pastr > 3)
 				{
-					rc.broadcast(start + (k * 3) + 2, 3);
-					int[] answer = {TowerUtil.convertMapLocationToInt(locs[k]), pastr, 1};
-					return answer;
+					if(locs[k].x != 0 || locs[k].y != 0)
+					{
+						rc.broadcast(start + (k * 3) + 2, 3);
+						int[] answer = {TowerUtil.convertMapLocationToInt(locs[k]), pastr, 1};
+						return answer;
+					}
+					else
+					{
+						rc.broadcast(start + (k * 3) + 2, 0);
+					}
 				}
 			}
 			catch(Exception e){}
