@@ -29,16 +29,13 @@ public class Extractor
                 {
                     if (rc.getLocation().x == towerSpot.x && rc.getLocation().y == towerSpot.y)
                     {
+                    	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){rc.yield();}
+                    	request.madeIt(false);
                         rc.construct(RobotType.NOISETOWER);
                     }
                     else
                     {
                         Movement.MoveMapLocation(rc, towerSpot, false, false);
-                        if(Clock.getRoundNum() - start > 100)
-                        {
-                        	request.abandonPath(towerSpot);
-                        	new Larva(rc).run();
-                        }
                     }
                 }
             } catch (Exception e) {}

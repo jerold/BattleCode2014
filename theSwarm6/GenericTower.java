@@ -1,19 +1,15 @@
 package theSwarm6;
 
-import battlecode.common.Clock;
-import battlecode.common.MapLocation;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 //type is what pattern to fire. 1: pull
 public class GenericTower
 {
 	private RobotController rc;
-    private towerPastrRequest request;
     private MapLocation target;
-    private int type, lastPastr;
-    private boolean troll, first, pastrLast;
+    private int type;
+    private boolean troll, first;
+    private towerPastrRequest request;
 
     public GenericTower(RobotController rc, boolean troll)
     {
@@ -99,31 +95,17 @@ public class GenericTower
 		            	if(allies.length > 0)
 		            	{
 		            		allyPastr = true;
-		            		pastrLast = true;
 		            	}
 		            	if(allyPastr || first)
 		            	{
 		            		if(type == 1)
 		                	{
-		                		TowerUtil.pullInto(rc, 17, target);
+		                		TowerUtil.pullInto(rc, 17, target, request);
 		                	}
 		            		first = false;
 		            	}
 		            	else
 		            	{
-		            		if(pastrLast == true)
-		            		{
-		            			pastrLast = false;
-		            			request.sendRequest();
-		            			lastPastr = Clock.getRoundNum();
-		            		}
-		            		else
-		            		{
-		            			if(Clock.getRoundNum() - lastPastr >= 300 && !request.isPending())
-		            			{
-		            				request.sendRequest();
-		            			}
-		            		}
 			            	if(enemyPastr)
 			            	{
 			            		rc.attackSquare(pastrE);
