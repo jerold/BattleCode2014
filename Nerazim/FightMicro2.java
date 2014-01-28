@@ -1,9 +1,11 @@
-package DeepBlue;
+package Nerazim;
 
 import battlecode.common.*;
 
-public class FightMicro 
-{
+/**
+ * Created by fredkneeland on 1/26/14.
+ */
+public class FightMicro2 {
     // these are the channels that we will use to communicate
     static final int enemyHQ = 1;
     static final int ourHQ = 2;
@@ -1601,8 +1603,8 @@ public class FightMicro
                         {
                             if (rc.getLocation().distanceSquaredTo(enemyBots[i]) <= 10)
                             {
-                                SuicideSoldier suicideSoldier = new SuicideSoldier(rc);
-                                suicideSoldier.run();
+                                Archon archon = new Archon(rc);
+                                archon.run();
                             }
                         }
 
@@ -1921,8 +1923,8 @@ public class FightMicro
                         if (rc.getHealth() < 100 && !banelingAlreadyMorphed)
                         {
                             // the time has come. let each man do his duty
-                            SuicideSoldier suicideSoldier = new SuicideSoldier(rc);
-                            suicideSoldier.run();
+                            Archon archon = new Archon(rc);
+                            archon.run();
                         }
                     }
                 }
@@ -2630,7 +2632,7 @@ public class FightMicro
                         //Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
                         if (rc.senseRobotInfo(nearByEnemies2[0]).type == RobotType.NOISETOWER || rc.senseRobotInfo(nearByEnemies2[0]).type == RobotType.PASTR)
                         {
-                            MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
+                            Movement.MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
                         }
                         else if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
                         {

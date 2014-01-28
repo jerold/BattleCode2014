@@ -59,7 +59,7 @@ public class Zergling {
                     Roach roach = new Roach(rc);
                     roach.run();
                 }
-                else if (FightMicro.fightMode(rc, target))
+                else if (FightMicro2.fightMode(rc, target))
                 {
                 }
                 else if (rc.isActive())

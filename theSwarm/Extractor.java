@@ -114,7 +114,7 @@ public class Extractor
                     }
 
                     Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-                    MapLocation[] alliedBots = FightMicro.locationOfBots(rc, nearByAllies);
+                    MapLocation[] alliedBots = FightMicro2.locationOfBots(rc, nearByAllies);
                     if (enemies.length > 0)
                     {
                         Movement.fire(rc, enemies, alliedBots);

@@ -1,6 +1,7 @@
-package theSwarm;
+package Nerazim;
 
 import battlecode.common.*;
+
 
 import java.util.Random;
 
@@ -952,6 +953,308 @@ public class Movement
                             }
                         }
                     }
+                }
+            }
+            catch (Exception e)
+            {
+                // tell the console we through an exception in utility object for debug purposes
+                e.printStackTrace();
+
+            }
+            rc.yield();
+        }
+    }
+
+    /**
+     * This is a movement function that uses clocked fight micro
+     */
+    public static void MoveMapLocation3(RobotController rc, MapLocation target, boolean sneak, boolean larva)
+    {
+        MapLocation[] pastLocations = new MapLocation[10];
+        int side = 45;
+        Direction dir;
+        Direction newDir;
+        rand = new Random();
+        boolean didNotShoot = false;
+        //int[] alliedBots = FightMicro2.AllAlliedBotsInfo(rc);
+        //int[] AllEnemyBots = FightMicro2.AllEnemyBots(rc);
+        //int[] AllEnemyNoiseTowers = FightMicro2.AllEnemyNoiseTowers(rc);
+        Robot[] nearByEnemies;
+        //int ourIndex = FightMicro2.ourSlotInMessaging2(rc, alliedBots);
+        // we initialize pastLocations to hold our current location 5 times
+        for (int i = 0; i < pastLocations.length; i++)
+        {
+            pastLocations[i] = rc.getLocation();
+        }
+
+        int numb = 0;
+
+        // this method will run until we get to our target location
+        while (!rc.getLocation().equals(target) || rc.getLocation().isAdjacentTo(target))
+        {
+
+            // we put the try block inside of the while loop so an exception won't terminate the method
+            try
+            {
+                if (FightMicro2.cloakedMove(rc, target))
+                {
+                }
+                else if (rc.isActive())
+                {
+
+
+                    if (rc.getLocation().isAdjacentTo(target))
+                    {
+                        if (rc.senseObjectAtLocation(target) != null || rc.senseTerrainTile(target).equals(TerrainTile.VOID))
+                        {
+                            break;
+                        }
+                    }
+
+                    dir = rc.getLocation().directionTo(target);
+                    newDir = Direction.NONE;
+//                    nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+
+
+
+                    if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
+                    {
+                        MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
+                    }
+                    //
+                    // if we can move towards target and we haven't been on the square recently then lets move
+                    else if (rc.canMove(dir) && !MapLocationInArray(rc, rc.getLocation().add(dir), pastLocations))
+                    {
+                        didNotShoot = true;
+                        newDir = dir;
+                        int distanceToEnemyHQ = rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation());
+                        // if we found a direction to move then we go to it
+                        if (distanceToEnemyHQ < 40)
+                        {
+                            while (rc.getLocation().add(newDir).distanceSquaredTo(rc.senseEnemyHQLocation()) > distanceToEnemyHQ)
+                            {
+                                newDir = newDir.rotateLeft();
+                            }
+                            MoveDirection(rc, newDir, sneak);
+                        }
+                        else if (newDir != Direction.NONE)
+                        {
+                            // now we decide if we are going to sneak or run
+                            if (sneak)
+                            {
+                                // another check to make sure we don't throw any exceptions
+                                if (rc.isActive() && rc.canMove(newDir))
+                                {
+                                    rc.sneak(newDir);
+                                }
+                            }
+                            else
+                            {
+                                // another check to make sure we don't throw any exceptions
+                                if (rc.isActive() && rc.canMove(newDir))
+                                {
+                                    rc.move(newDir);
+                                }
+                            }
+                        }
+                        side = 45;
+                    }
+                    else
+                    {
+                        didNotShoot = true;
+                        // if their is a robot blocking our way then we just move in a random direction
+                        if (rc.senseObjectAtLocation(rc.getLocation().add(dir)) != null)
+                        {
+                            //newDir = directions[rand.nextInt(8)];
+                            MoveDirection(rc, dir, sneak);
+                        }
+                        else
+                        {
+                            Direction dir2 = dir;
+                            MapLocation right;
+                            MapLocation left;
+                            dir2 = (dir.rotateRight());
+                            while (!rc.canMove(dir2))
+                            {
+                                dir2 = dir2.rotateRight();
+                            }
+                            right = rc.getLocation().add(dir2);
+
+                            dir2 = dir.rotateLeft();
+                            while (!rc.canMove(dir2))
+                            {
+                                dir2 = dir2.rotateLeft();
+                            }
+
+                            left = rc.getLocation().add(dir2);
+
+                            // left seems better so lets go that way
+                            if (left.distanceSquaredTo(target) < right.distanceSquaredTo(target))
+                            {
+                                side = 1;
+                            }
+                            // right seems better so lets try that way
+                            else
+                            {
+                                side = 0;
+                            }
+
+                            int number = 0;
+
+                            // we will go hugging one side of obstacle until we get back on our original line
+                            while (!dir2.equals(dir) && !rc.getLocation().equals(target) && !rc.getLocation().isAdjacentTo(target))// && rc.canMove(dir2))
+                            {
+
+
+                                try
+                                {
+                                    number++;
+                                    if (number > 50)
+                                    {
+                                        MoveMapLocation2(rc, target, sneak, larva);
+                                    }
+                                    boolean ranFight = false;
+                                    if (FightMicro2.cloakedMove(rc, target))
+                                    {
+                                    }
+                                    else if (rc.isActive())
+                                    {
+                                        dir2 = rc.getLocation().directionTo(target);
+
+
+
+                                        if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
+                                        {
+                                            MoveDirection(rc, rc.getLocation().directionTo(rc.senseEnemyHQLocation()).opposite(), false);
+                                        }
+                                        else if (rc.canMove(dir2) && !MapLocationInArray(rc, rc.getLocation().add(dir2), pastLocations))//  && !rc.senseTerrainTile(rc.getLocation().add(dir2).add(dir2)).equals(TerrainTile.VOID))
+                                        {
+                                        }
+                                        else
+                                        {
+                                            for (int i = 0; i < 4; i++)
+                                            {
+                                                if (side == 1)
+                                                {
+                                                    dir2 = dir2.rotateLeft();
+                                                }
+                                                else
+                                                {
+                                                    dir2 = dir2.rotateRight();
+                                                }
+                                                if (rc.senseTerrainTile(rc.getLocation().add(dir2)).equals(TerrainTile.OFF_MAP))
+                                                {
+                                                    dir2 = Direction.NONE;
+                                                    i = 48;
+                                                }
+                                                else if ((rc.canMove(dir2) || (rc.senseObjectAtLocation(rc.getLocation().add(dir2)) != null)))// && !MapLocationInArray(rc, rc.getLocation().add(dir2), pastLocations))// && !rc.senseTerrainTile(rc.getLocation().add(dir2).add(dir2)).equals(TerrainTile.VOID))
+                                                {
+                                                    i = 48;
+                                                }
+                                                else if (i == 3)
+                                                {
+                                                    dir2 = Direction.NONE;
+                                                }
+                                            }
+                                        }
+
+                                        if (!ranFight)
+                                        {
+                                            // if we can move
+                                            if (dir2 != Direction.NONE)
+                                            {
+                                                if (rc.isActive())
+                                                {
+                                                    int distanceToEnemyHQ = rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation());
+                                                    // if we found a direction to move then we go to it
+                                                    if (distanceToEnemyHQ < 40)
+                                                    {
+                                                        while (rc.getLocation().add(newDir).distanceSquaredTo(rc.senseEnemyHQLocation()) > distanceToEnemyHQ)
+                                                        {
+                                                            if (side == 1)
+                                                            {
+                                                                newDir = newDir.rotateLeft();
+                                                            }
+                                                            else
+                                                            {
+                                                                newDir = newDir.rotateRight();
+                                                            }
+
+                                                        }
+                                                        MoveDirection(rc, newDir, sneak);
+                                                    }
+                                                    else if (rc.canMove(dir2))
+                                                    {
+                                                        if (sneak)
+                                                        {
+                                                            rc.sneak(dir2);
+                                                        }
+                                                        else
+                                                        {
+                                                            rc.move(dir2);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        MoveDirection(rc, dir2, sneak);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (side == 1)
+                                                {
+                                                    side = 0;
+                                                }
+                                                else
+                                                {
+                                                    side = 1;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                    }
+                                } catch (Exception e)
+                                {
+                                    // tell the console we through an exception in utility object for debug purposes
+                                    e.printStackTrace();
+                                    rc.yield();
+                                }
+                                if (didNotShoot)
+                                {
+                                    if (!rc.getLocation().equals(pastLocations[(pastLocations.length-1)]))
+                                    {
+                                        for (int j = 0; j < (pastLocations.length-1); j++)
+                                        {
+                                            pastLocations[j] = pastLocations[j+1];
+                                        }
+                                        // stick current local into array
+                                        pastLocations[(pastLocations.length-1)] = rc.getLocation();
+                                    }
+                                }
+                                rc.yield();
+                            }
+                        }
+                    }
+
+                    if (didNotShoot)
+                    {
+                        // now we  shift everything up one in pastLocations
+                        if (rc.getLocation() != pastLocations[(pastLocations.length-1)])
+                        {
+                            for (int j = 0; j < (pastLocations.length-1); j++)
+                            {
+                                pastLocations[j] = pastLocations[j+1];
+                            }
+                            // stick current local into array
+                            pastLocations[(pastLocations.length-1)] = rc.getLocation();
+                        }
+                    }
+                }
+                else
+                {
                 }
             }
             catch (Exception e)

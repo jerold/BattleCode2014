@@ -1,9 +1,11 @@
-package DeepBlue;
+package theSwarm;
 
 import battlecode.common.*;
 
-public class FightMicro 
-{
+/**
+ * Created by fredkneeland on 1/26/14.
+ */
+public class FightMicro2 {
     // these are the channels that we will use to communicate
     static final int enemyHQ = 1;
     static final int ourHQ = 2;
@@ -679,7 +681,7 @@ public class FightMicro
 
     public static boolean MapLocationInRangeOfEnemyHQ(RobotController rc, MapLocation target)
     {
-        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 0)//24)
+        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 30)
         {
             return true;
         }
@@ -1601,8 +1603,8 @@ public class FightMicro
                         {
                             if (rc.getLocation().distanceSquaredTo(enemyBots[i]) <= 10)
                             {
-                                SuicideSoldier suicideSoldier = new SuicideSoldier(rc);
-                                suicideSoldier.run();
+                                Baneling baneling = new Baneling(rc);
+                                baneling.run();
                             }
                         }
 
@@ -1921,8 +1923,8 @@ public class FightMicro
                         if (rc.getHealth() < 100 && !banelingAlreadyMorphed)
                         {
                             // the time has come. let each man do his duty
-                            SuicideSoldier suicideSoldier = new SuicideSoldier(rc);
-                            suicideSoldier.run();
+                            Baneling baneling = new Baneling(rc);
+                            baneling.run();
                         }
                     }
                 }
@@ -2334,138 +2336,6 @@ public class FightMicro
     }
 
     /**
-     * This method tells us if we should ignore enemies because their is a wall in between us and them
-     */
-    public static boolean enemiesWalledOff(RobotController rc, MapLocation[] enemyBots)
-    {
-        try
-        {
-            if (enemyBots != null)
-            {
-
-                boolean enemyWalledOff = false;
-                MapLocation current;
-                MapLocation us = rc.getLocation();
-                MapLocation enemy;
-
-                for (int i = enemyBots.length; --i>=0;)
-                {
-                    enemyWalledOff = false;
-                    enemy = enemyBots[i];
-                    current = us;
-                    while (!current.equals(enemy))
-                    {
-                        current = current.add(current.directionTo(enemy));
-                        if (rc.senseTerrainTile(current).equals(TerrainTile.VOID))
-                        {
-                            current = enemy;
-                            enemyWalledOff = true;
-                        }
-                    }
-
-                    if (!enemyWalledOff)
-                    {
-                        i = -1;
-                        return false;
-                    }
-                }
-                return true;
-            }
-        } catch (Exception e) {}
-
-        return false;
-    }
-
-    /**
-     * This method goes to a target location trying to avoid enemy soldiers until it has to engage to get to its goal
-     */
-    public static boolean cloakedMove(RobotController rc, MapLocation target)
-    {
-        if (rc.isActive())
-        {
-            try
-            {
-                Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-                //enemies = findSoldiers(rc, enemies);
-
-                if (enemies.length > 0)
-                {
-                    rc.setIndicatorString(2, ""+enemies[0]);
-                    Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
-
-                    if (nearByEnemies.length > 0)
-                    {
-                        // if we can see enemies then if we have the advantage we attack
-                        // other wise we will retreat
-                        Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam());
-                        MapLocation[] alliedLocs = locationOfBots(rc, nearByAllies);
-
-                        if (nearByAllies.length >= nearByEnemies.length)
-                        {
-                            fire(rc, nearByEnemies, alliedLocs);
-                        }
-                        else if (nearByEnemies.length == 1)
-                        {
-                            fire(rc, nearByEnemies, alliedLocs);
-                        }
-                        else
-                        {
-                            MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies[0])).opposite(), false);
-                        }
-                    }
-                    else
-                    {
-                        if (enemies.length == 1)
-                        {
-                            MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(enemies[0])), false);
-                        }
-                        else
-                        {
-                            MapLocation closestSpot = rc.senseLocationOf(nearByEnemies[nearByEnemies.length-1]);
-                            int smallestDistance = rc.getLocation().distanceSquaredTo(closestSpot);
-                            for (int i = nearByEnemies.length-1; --i>=0;)
-                            {
-                                MapLocation current = rc.senseLocationOf(nearByEnemies[i]);
-                                int dist = rc.getLocation().distanceSquaredTo(current);
-                                if (dist < smallestDistance)
-                                {
-                                    smallestDistance = dist;
-                                    closestSpot = current;
-                                }
-                            }
-
-                            // now we have the closest enemy bot to our location
-                            Direction dir = rc.getLocation().directionTo(closestSpot).opposite();
-                            boolean left;
-                            if (rc.getLocation().add(dir.rotateLeft()).distanceSquaredTo(target) < rc.getLocation().add(dir.rotateRight()).distanceSquaredTo(target))
-                            {
-                                left = true;
-                            }
-                            else
-                            {
-                                left = false;
-                            }
-
-                            if (left)
-                            {
-                                MoveDirection(rc, dir.rotateLeft(), false);
-                            }
-                            else
-                            {
-                                MoveDirection(rc, dir.rotateRight(), false);
-                            }
-                            rc.setIndicatorString(2, ""+dir+", "+left);
-                        }
-                    }
-                    return true;
-                }
-            } catch (Exception e) {}
-        }
-
-        return false;
-    }
-
-    /**
      * This is our old fight micro which is under major renovation
      */
     public static boolean fightMode(RobotController rc, MapLocation endGoal)
@@ -2620,6 +2490,7 @@ public class FightMicro
                      */
                     else if (nearByEnemies2.length > 0)
                     {
+
                         //MapLocation enemySlot = rc.senseLocationOf(nearByEnemies2[0]);
                         //nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, enemySlot, 10, rc.getTeam());
                         //nearByAllies3 = findSoldiers(rc, nearByAllies3);
@@ -2628,11 +2499,7 @@ public class FightMicro
                         //GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
                         Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
                         //Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
-                        if (rc.senseRobotInfo(nearByEnemies2[0]).type == RobotType.NOISETOWER || rc.senseRobotInfo(nearByEnemies2[0]).type == RobotType.PASTR)
-                        {
-                            MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies2[0])), false);
-                        }
-                        else if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
+                        if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
                         {
                             rc.setIndicatorString(1, "Fly you fools");
                         }
@@ -2640,17 +2507,13 @@ public class FightMicro
                         {
                             fire(rc, nearByEnemies10, alliedBots);
                         }
-                        else if (enemiesWalledOff(rc, enemyBotLoc))
-                        {
-                            return false;
-                        }
                         else if (takeDownPastrNearHQ(rc, alliedBots, nearByEnemies10))
                         {
                         }
                         else if (runFromEnemyHQ(rc))
                         {
                         }
-                        else if (endGoal != null && rc.getLocation().add(rc.getLocation().directionTo(endGoal)).distanceSquaredTo(rc.senseLocationOf(nearByEnemies2[0])) > 10)
+                        else if (rc.getLocation().add(rc.getLocation().directionTo(endGoal)).distanceSquaredTo(rc.senseLocationOf(nearByEnemies2[0])) > 10)
                         {
                             return false;
                         }

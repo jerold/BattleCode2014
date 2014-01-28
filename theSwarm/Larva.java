@@ -53,7 +53,7 @@ public class Larva {
 			{
                 //System.out.println("Hello world");
 				// we will only do stuff if we are active
-                if (FightMicro.fightMode(rc, target))
+                if (FightMicro2.fightMode(rc, target))
                 {
                     rc.setIndicatorString(2, "Running fight micro");
                 }

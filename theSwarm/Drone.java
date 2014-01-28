@@ -149,9 +149,9 @@ public class Drone {
 
                                 rc.yield();
                             }
-                    		for(int k = 0; k < type; k++){FightMicro.defenseMicro(rc, rc.getLocation());}
+                    		for(int k = 0; k < type; k++){FightMicro2.defenseMicro(rc, rc.getLocation());}
                     	}
-                    	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){FightMicro.defenseMicro(rc, rc.getLocation());}
+                    	while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){FightMicro2.defenseMicro(rc, rc.getLocation());}
 
                         ourPastrs = rc.sensePastrLocations(rc.getTeam());
                         if (ourPastrs != null)

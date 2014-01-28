@@ -60,44 +60,60 @@ public class Hydralisk {
         {
             try
             {
-                rc.setIndicatorString(2, ""+defense);
-                MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
-                if (!defense)
+                if (FightMicro2.fightMode(rc, target))
                 {
-                    Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-
-                    for (int i = nearByAllies.length; --i>=0;)
+                    rc.setIndicatorString(1, "Attack");
+                }
+                else if (rc.isActive())
+                {
+                    rc.setIndicatorString(2, ""+defense);
+                    MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
+                    if (!defense)
                     {
-                        if (rc.senseRobotInfo(nearByAllies[i]).type == RobotType.NOISETOWER)
+                        Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+
+                        for (int i = nearByAllies.length; --i>=0;)
                         {
-                            defense = true;
+                            if (rc.senseRobotInfo(nearByAllies[i]).type == RobotType.NOISETOWER)
+                            {
+                                defense = true;
+                            }
                         }
-                        /*
-                        else if (rc.senseRobotInfo(nearByAllies[i]).isConstructing)
-                        {
-                            defense = true;
-                        }*/
                     }
-                }
-                if (pastrLoc == 0)
-                {
-                    pastrLoc = rc.readBroadcast(pastLoc);
-                    pastr = Movement.convertIntToMapLocation(pastrLoc);
-                }
-                else if (towerLocation == 0)
-                {
-                    towerLocation = rc.readBroadcast(towerLoc);
-                }
-
-                if (ourPastrs.length > 0 && rc.getLocation().distanceSquaredTo(ourPastrs[0]) < 35)
-                {
-                    defense = true;
-                }
-
-                if (ourPastrs.length > 0)
-                {
-                    if (rc.getLocation().distanceSquaredTo(ourPastrs[0]) > 50)
+                    if (pastrLoc == 0)
                     {
+                        pastrLoc = rc.readBroadcast(pastLoc);
+                        pastr = Movement.convertIntToMapLocation(pastrLoc);
+                    }
+                    else if (towerLocation == 0)
+                    {
+                        towerLocation = rc.readBroadcast(towerLoc);
+                    }
+
+                    if (ourPastrs.length > 0 && rc.getLocation().distanceSquaredTo(ourPastrs[0]) < 35)
+                    {
+                        defense = true;
+                    }
+
+                    if (ourPastrs.length > 0)
+                    {
+                        if (rc.getLocation().distanceSquaredTo(ourPastrs[0]) > 50)
+                        {
+                            if (rc.getLocation().equals(Movement.convertIntToMapLocation(pastrLoc)))
+                            {
+                                Drone drone = new Drone(rc, 1);
+                                drone.run();
+                            }
+                            else if (rc.getLocation().equals(Movement.convertIntToMapLocation(towerLocation)))
+                            {
+                                Extractor extractor = new Extractor(rc, 1);
+                                extractor.run();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        /*
                         if (rc.getLocation().equals(Movement.convertIntToMapLocation(pastrLoc)))
                         {
                             Drone drone = new Drone(rc, 1);
@@ -107,112 +123,100 @@ public class Hydralisk {
                         {
                             Extractor extractor = new Extractor(rc, 1);
                             extractor.run();
-                        }
-                    }
-                }
-                else
-                {
-                    if (rc.getLocation().equals(Movement.convertIntToMapLocation(pastrLoc)))
-                    {
-                        Drone drone = new Drone(rc, 1);
-                        drone.run();
-                    }
-                    else if (rc.getLocation().equals(Movement.convertIntToMapLocation(towerLocation)))
-                    {
-                        Extractor extractor = new Extractor(rc, 1);
-                        extractor.run();
-                    }
-                }
-
-                if ((defense) && FightMicro.defenseMicro(rc, Movement.convertIntToMapLocation(pastrLoc)))
-                {
-                    rc.setIndicatorString(1, "Defense");
-                }
-                else if (FightMicro.fightMode(rc, target))
-                {
-                    rc.setIndicatorString(1, "Attack");
-                }
-                else if (rc.isActive())
-                {
-                    if (!defense)
-                    {
-                        if (rc.readBroadcast(needPastr) == 1)
-                        {
-                            rc.broadcast(needPastr, 0);
-                            Drone drone = new Drone(rc, 1);
-                            drone.run();
-                        }
-                        else if (rc.readBroadcast(needPastr) == -1)
-                        {
-                            rc.broadcast(needPastr, 0);
-                            Drone drone = new Drone(rc, -1);
-                            drone.run();
-                        }
-                        else if (rc.readBroadcast(needNoiseTower) == 1)
-                        {
-                            rc.broadcast(needNoiseTower, 0);
-                            Extractor extractor = new Extractor(rc, 1);
-                            extractor.run();
-                        }
-                        else if (rc.readBroadcast(needNoiseTower) == -1)
-                        {
-                            rc.broadcast(needNoiseTower, 0);
-                            Extractor extractor = new Extractor(rc, -1);
-                            extractor.run();
-                        }
+                        }*/
                     }
 
-                    if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
+                    if ((defense) && FightMicro2.defenseMicro(rc, Movement.convertIntToMapLocation(pastrLoc)))
                     {
-                        if (defense)
+                        rc.setIndicatorString(1, "Defense");
+                    }
+                    else if (FightMicro2.fightMode(rc, target))
+                    {
+                        rc.setIndicatorString(1, "Attack");
+                    }
+                    else if (rc.isActive())
+                    {
+                        if (!defense)
                         {
-                            MapLocation enemyHQ = rc.senseEnemyHQLocation();
-                            target = pastr.add(pastr.directionTo(enemyHQ));
-                            target = target.add(pastr.directionTo(enemyHQ));
-                            target = target.add(pastr.directionTo(enemyHQ));
-                        }
-                        else
-                        {
-                            MapLocation newTarget = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
-                            if (defense && newTarget.distanceSquaredTo(pastr) < 25)
+                            /*
+                            if (rc.readBroadcast(needPastr) == 1)
                             {
-                                //target = newTarget;
+                                rc.broadcast(needPastr, 0);
+                                Drone drone = new Drone(rc, 1);
+                                drone.run();
                             }
-                            else if (defense)
+                            else if (rc.readBroadcast(needPastr) == -1)
                             {
-                                // in this case we stay behind to defend our pastr
+                                rc.broadcast(needPastr, 0);
+                                Drone drone = new Drone(rc, -1);
+                                drone.run();
+                            }
+                            else if (rc.readBroadcast(needNoiseTower) == 1)
+                            {
+                                rc.broadcast(needNoiseTower, 0);
+                                Extractor extractor = new Extractor(rc, 1);
+                                extractor.run();
+                            }
+                            else if (rc.readBroadcast(needNoiseTower) == -1)
+                            {
+                                rc.broadcast(needNoiseTower, 0);
+                                Extractor extractor = new Extractor(rc, -1);
+                                extractor.run();
+                            }*/
+                        }
+
+                        if (rc.getLocation().equals(target) || rc.getLocation().distanceSquaredTo(target) < 10)
+                        {
+                            if (defense)
+                            {
+                                MapLocation enemyHQ = rc.senseEnemyHQLocation();
+                                target = pastr.add(pastr.directionTo(enemyHQ));
+                                target = target.add(pastr.directionTo(enemyHQ));
+                                target = target.add(pastr.directionTo(enemyHQ));
                             }
                             else
                             {
-                                target = newTarget;
-                            }
-                            MapLocation towerSlot = Movement.convertIntToMapLocation(towerLocation);
-                            MapLocation pastrSlot = Movement.convertIntToMapLocation(pastrLoc);
-                            if (rc.getLocation().distanceSquaredTo(towerSlot) <= 10 && rc.senseObjectAtLocation(towerSlot) == null)
-                            {
-                                target = towerSlot;
-                            }
-                            else if (rc.getLocation().distanceSquaredTo(pastrSlot) <= 10 && rc.senseObjectAtLocation(pastrSlot) == null)
-                            {
-                                target = pastrSlot;
+                                MapLocation newTarget = Movement.convertIntToMapLocation(rc.readBroadcast(HQFunctions.rallyPointChannel()));
+                                if (defense && newTarget.distanceSquaredTo(pastr) < 25)
+                                {
+                                    //target = newTarget;
+                                }
+                                else if (defense)
+                                {
+                                    // in this case we stay behind to defend our pastr
+                                }
+                                else
+                                {
+                                    target = newTarget;
+                                }
+                                MapLocation towerSlot = Movement.convertIntToMapLocation(towerLocation);
+                                MapLocation pastrSlot = Movement.convertIntToMapLocation(pastrLoc);
+                                if (rc.getLocation().distanceSquaredTo(towerSlot) <= 10 && rc.senseObjectAtLocation(towerSlot) == null)
+                                {
+                                    target = towerSlot;
+                                }
+                                else if (rc.getLocation().distanceSquaredTo(pastrSlot) <= 10 && rc.senseObjectAtLocation(pastrSlot) == null)
+                                {
+                                    target = pastrSlot;
+                                }
                             }
                         }
+                        if (rc.senseCowsAtLocation(rc.getLocation()) > 500 && rc.sensePastrLocations(rc.getTeam()).length > 0)
+                        {
+                            Direction dir = directions[rand.nextInt(8)];
+                            Movement.MoveDirection(rc, dir, true);
+                        }
+                        if (defense)
+                        {
+                            Movement.MoveMapLocation(rc, target, true, false);
+                        }
+                        else
+                        {
+                            rc.setIndicatorString(1, "Target: "+target);
+                            Movement.MoveMapLocation(rc, target, false, false);
+                        }
+                        rc.setIndicatorString(1, ""+target);
                     }
-                    if (rc.senseCowsAtLocation(rc.getLocation()) > 500 && rc.sensePastrLocations(rc.getTeam()).length > 0)
-                    {
-                        Direction dir = directions[rand.nextInt(8)];
-                        Movement.MoveDirection(rc, dir, true);
-                    }
-                    if (defense)
-                    {
-                        Movement.MoveMapLocation(rc, target, true, false);
-                    }
-                    else
-                    {
-                        rc.setIndicatorString(1, "Target: "+target);
-                        Movement.MoveMapLocation(rc, target, false, false);
-                    }
-                    rc.setIndicatorString(1, ""+target);
                 }
             } catch (Exception e)
             {

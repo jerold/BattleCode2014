@@ -1,26 +1,18 @@
-package theSwarm;
+package Nerazim;
 
 import battlecode.common.*;
 
 /**
- * Created by fredkneeland on 1/19/14.
- *
- * As its name suggests this bot morphs from a larva in the heat of battle and all it does is run toward the enemy line and
- * destroys as many enemies as possible sacrificing itself in the process...
- *
- * FOR THE SWARM
- *
+ * Created by fredkneeland on 1/26/14.
  */
-public class Baneling {
-     RobotController rc;
-
-    public Baneling(RobotController rc)
+public class Archon {
+    RobotController rc;
+    public Archon (RobotController rc)
     {
         this.rc = rc;
-        rc.setIndicatorString(0, "Baneling");
     }
 
-    public  void run()
+    public void run()
     {
         while (true)
         {
@@ -29,7 +21,7 @@ public class Baneling {
                 Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam().opponent());
                 Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam());
                 Robot[] enemiesInRange = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
-                int[] allEnemies = FightMicro.AllEnemyBots(rc);
+                int[] allEnemies = FightMicro2.AllEnemyBots(rc);
 
                 double totalDamage = 0;
                 for (int i = nearByEnemies.length; --i>=0;)
@@ -62,7 +54,7 @@ public class Baneling {
                     {
                         if (rc.senseRobotInfo(nearByEnemies[i]).health <= (40 +rc.getHealth()/2))
                         {
-                            FightMicro.recordEnemyBotKilled(rc, allEnemies, nearByEnemies[i]);
+                            FightMicro2.recordEnemyBotKilled(rc, allEnemies, nearByEnemies[i]);
                         }
                     }
                     rc.selfDestruct();
@@ -73,7 +65,7 @@ public class Baneling {
                     {
                         if (rc.senseRobotInfo(nearByEnemies[i]).health <= (40 +rc.getHealth()/2))
                         {
-                            FightMicro.recordEnemyBotKilled(rc, allEnemies, nearByEnemies[i]);
+                            FightMicro2.recordEnemyBotKilled(rc, allEnemies, nearByEnemies[i]);
                         }
                     }
                     rc.selfDestruct();
@@ -86,7 +78,7 @@ public class Baneling {
                 {
                     Robot[] nearByAllies3 = null;
                     nearByAllies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
-                    MapLocation[] alliedLocs = FightMicro.locationOfBots(rc, nearByAllies3);
+                    MapLocation[] alliedLocs = FightMicro2.locationOfBots(rc, nearByAllies3);
                     Movement.fire(rc, enemiesInRange, alliedLocs);
                 }
 
@@ -97,13 +89,13 @@ public class Baneling {
                     // if we see no enemy soldiers morph back into larva
                     if (allVisibleEnemies.length == 0 || (allVisibleEnemies.length == 1 && rc.senseRobotInfo(allVisibleEnemies[0]).health < 50))
                     {
-                        Larva larva = new Larva(rc);
-                        larva.run();
+                        Zealot zealot = new Zealot(rc);
+                        zealot.run();
                     }
 
-                    MapLocation[] enemies = FightMicro.locationOfBots(rc, allVisibleEnemies);
+                    MapLocation[] enemies = FightMicro2.locationOfBots(rc, allVisibleEnemies);
 
-                    MapLocation center = FightMicro.centerOfEnemies(enemies);
+                    MapLocation center = FightMicro2.centerOfEnemies(enemies);
 
                     Movement.MoveDirection(rc, rc.getLocation().directionTo(center), false);
                 }
