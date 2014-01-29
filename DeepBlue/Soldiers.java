@@ -2,6 +2,8 @@ package DeepBlue;
 
 import DeepBlue.Strategies.UnitStratFrontLiner;
 import DeepBlue.Strategies.UnitStratReinforcement;
+import DeepBlue.Strategies.noiseTowerBuilder;
+import DeepBlue.Strategies.pastrBuilder;
 import battlecode.common.*;
 import theSwarm.*;
 
@@ -16,6 +18,7 @@ public class Soldiers {
     static public Navigator nav;
     static public Engine engine;
     static public UnitStrategyType strategy;
+    static public towerPastrRequest request;
 
     public static enum UnitStrategyType {
         NoType(0),
@@ -45,8 +48,26 @@ public class Soldiers {
         engine = new Engine(rc, cache, map, nav);
         changeStrategy(UnitStrategyType.Reinforcement);
 
+        request = new towerPastrRequest(rc);
+        int[] get = request.checkForNeed();
+        if(get[0] != -1)
+        {
+            if(get[2] == 0)
+            {
+                noiseTowerBuilder.initialize(rc, get);
+                changeStrategy(UnitStrategyType.NoiseTowerBuilder);
+            }
+            else
+            {
+                pastrBuilder.initialize(rc, get);
+                changeStrategy(UnitStrategyType.PastrBuilder);
+            }
+        }
+
         while (true) {
             if (!rc.isActive()) { rc.yield(); continue; }
+
+
 
             updateStrategy();
 
@@ -56,10 +77,8 @@ public class Soldiers {
             // Do unit strategy picker
             // strategy picks destinations and performs special tasks
 
-            /*if (engine.engaging())
-                engine.adjustFire(); // Micro Movements based on enemy contact*/
-            if (FightMicro.fightMode(rc, null))
-            {}
+
+            if (FightMicro.fightMode(rc, null));
             else
                 nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
 
@@ -85,8 +104,10 @@ public class Soldiers {
             case PastrDefense:
                 break;
             case PastrBuilder:
+                pastrBuilder.run();
                 break;
             case NoiseTowerBuilder:
+                noiseTowerBuilder.run();
                 break;
             case Defector:
                 break;
