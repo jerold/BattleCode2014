@@ -48,10 +48,9 @@ public class Soldiers {
         engine = new Engine(rc, cache, map, nav);
         //changeStrategy(UnitStrategyType.Reinforcement);
 
-<<<<<<< HEAD
         request = new towerPastrRequest(rc);
         int[] get = request.checkForNeed();
-        if(get[0] != -1)
+        /*if(get[0] != -1)
         {
             if(get[2] == 0)
             {
@@ -64,17 +63,20 @@ public class Soldiers {
                 changeStrategy(UnitStrategyType.PastrBuilder);
             }
         }
-        else
+        else*/
         {
-            UnitStratPastrKiller.initialize(rc);
-            //changeStrategy(UnitStrategyType.PastrDestroyer);
-            changeStrategy(UnitStrategyType.Scout);
+
+            changeStrategy(UnitStrategyType.PastrDestroyer);
+            //changeStrategy(UnitStrategyType.Scout);
             //changeStrategy(UnitStrategyType.DarkTemplar);
         }
 
         // here we initialize certain types of bots
         switch (strategy)
         {
+            case PastrDestroyer:
+                UnitStratPastrKiller.initialize(rc);
+                break;
             case PastrDefense:
                 UnitStratPastrDefense.initialize(rc);
                 break;
@@ -86,35 +88,13 @@ public class Soldiers {
                 UnitStratDarkTemplar.initialize(rc);
                 break;
         }
-=======
-//        request = new towerPastrRequest(rc);
-//        int[] get = request.checkForNeed();
-//        if(get[0] != -1)
-//        {
-//            if(get[2] == 0)
-//            {
-//                noiseTowerBuilder.initialize(rc, get);
-//                changeStrategy(UnitStrategyType.NoiseTowerBuilder);
-//            }
-//            else
-//            {
-//                pastrBuilder.initialize(rc, get);
-//                changeStrategy(UnitStrategyType.PastrBuilder);
-//            }
-//        }
-//        else
-//        {
-//            UnitStratPastrKiller.initialize(rc);
-//            changeStrategy(UnitStrategyType.PastrDestroyer);
-//        }
-//
-//        switch (strategy)
-//        {
-//            case PastrDefense:
-//                UnitStratPastrDefense.initialize(rc);
-//                break;
-//        }
->>>>>>> 09048093e88764a9b9899d8f96a24a49a9932fd7
+
+        switch (strategy)
+        {
+            case PastrDefense:
+                UnitStratPastrDefense.initialize(rc);
+                break;
+        }
 
         while (true) {
             try
@@ -136,7 +116,7 @@ public class Soldiers {
                     {
                         rc.setIndicatorString(0, "Fighting");
                     }
-                    else
+                    else if (rc.isActive())
                         nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
                 }
             } catch (Exception e) {}
