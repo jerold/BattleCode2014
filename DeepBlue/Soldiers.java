@@ -27,7 +27,8 @@ public class Soldiers {
         Defector(6),
         PastrDestroyer(7),
         Scout(8),
-        DarkTemplar(9);
+        DarkTemplar(9),
+        HQSurround(10);
 
         private final int value;
         private UnitStrategyType(int value) {
@@ -65,10 +66,22 @@ public class Soldiers {
         }
         else
         {
+            int type = rc.readBroadcast(Utilities.unitNeededChannel);
 
-            changeStrategy(UnitStrategyType.PastrDestroyer);
-            //changeStrategy(UnitStrategyType.Scout);
-            //changeStrategy(UnitStrategyType.DarkTemplar);
+            switch (type)
+            {
+                case Utilities.unitNeededScout:
+                    changeStrategy(UnitStrategyType.Scout);
+                    break;
+                case Utilities.unitNeededDarkTemplar:
+                    changeStrategy(UnitStrategyType.DarkTemplar);
+                    break;
+                case Utilities.unitNeededHQSurround:
+                    changeStrategy(UnitStrategyType.HQSurround);
+                    break;
+                default:
+                    changeStrategy(UnitStrategyType.PastrDestroyer);
+            }
         }
 
         // here we initialize certain types of bots
@@ -87,6 +100,10 @@ public class Soldiers {
                 mainFightMicro = false;
                 UnitStratDarkTemplar.initialize(rc);
                 break;
+            case HQSurround:
+                UnitStratHqSurround.initialize(rc);
+                break;
+
         }
         //        request = new towerPastrRequest(rc);
         //        int[] get = request.checkForNeed();
@@ -201,6 +218,9 @@ public class Soldiers {
                 break;
             case DarkTemplar:
                 UnitStratDarkTemplar.upDate();
+                break;
+            case HQSurround:
+                UnitStratHqSurround.upDate();
                 break;
         }
         rc.setIndicatorString(2, "Strategy ["+strategy+"]");

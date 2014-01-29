@@ -10,6 +10,7 @@ public class Headquarter {
     static RobotController rc;
     static UnitCache cache;
     static RoadMap map;
+    static int numbOfSoldiers = 0;
 
     static MapLocation[] rallyPoints = new MapLocation[2];
 
@@ -51,6 +52,7 @@ public class Headquarter {
             for(int i=0;i<8;i++){
                 Direction trialDir = allDirections[(cache.MY_HQ.directionTo(cache.ENEMY_HQ).ordinal()+i)%8];
                 if(rc.canMove(trialDir)){
+                    setUnitNeeded(null);
                     rc.spawn(trialDir);
                     break;
                 }
@@ -67,6 +69,23 @@ public class Headquarter {
 
     public static void setUnitNeeded(Soldiers.UnitStrategyType unitType) throws GameActionException
     {
-        rc.broadcast(Utilities.unitNeededChannel, unitType.getValue());
+        int type = 0;
+        if (numbOfSoldiers < 5)
+        {
+            type = Utilities.unitNeededScout;
+        }
+        else
+        {
+            type = Utilities.unitNeededHQSurround;
+            //type = Utilities.unitNeededPastrKiller;
+        }
+
+        if (numbOfSoldiers > 10)
+        {
+            towerPastrRequest.setInitial(rc);
+        }
+
+        numbOfSoldiers++;
+        rc.broadcast(Utilities.unitNeededChannel, type);
     }
 }
