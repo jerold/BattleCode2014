@@ -2,7 +2,6 @@ package DeepBlue;
 
 import DeepBlue.Strategies.*;
 import battlecode.common.*;
-import theSwarm.*;
 
 /**
  * Created by Jerold Albertson on 1/12/14.
@@ -67,23 +66,33 @@ public class Soldiers {
             changeStrategy(UnitStrategyType.PastrDestroyer);
         }
 
+        switch (strategy)
+        {
+            case PastrDefense:
+                UnitStratPastrDefense.initialize(rc);
+                break;
+        }
+
         while (true) {
-            if (!rc.isActive()) { rc.yield(); continue; }
+            try
+            {
+                if (rc.isActive())
+                {
+
+                    updateStrategy();
+
+                    cache.reset();
+                    map.checkForUpdates();
+
+                    // Do unit strategy picker
+                    // strategy picks destinations and performs special tasks
 
 
-
-            updateStrategy();
-
-            cache.reset();
-            map.checkForUpdates();
-
-            // Do unit strategy picker
-            // strategy picks destinations and performs special tasks
-
-
-            if (FightMicro.fightMode(rc, null));
-            else
-                nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
+                    if (FightMicro.fightMode(rc, null));
+                    else
+                        nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
+                }
+            } catch (Exception e) {}
 
             rc.yield();
         }
@@ -105,6 +114,7 @@ public class Soldiers {
                 UnitStratFrontLiner.run();
                 break;
             case PastrDefense:
+                UnitStratPastrDefense.update();
                 break;
             case PastrBuilder:
                 pastrBuilder.run();

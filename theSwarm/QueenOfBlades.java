@@ -114,19 +114,19 @@ public class QueenOfBlades {
                 }
 
                 int robotCount = rc.senseRobotCount();
-                if ((robotCount > 25) && (enemyPastrs.length == 0) && !build)
+                if ((robotCount > 15) && (enemyPastrs.length == 0) && !build)
                 {
                     build = true;
                 }
                 // if our enemy has built a pastr which we have destroyed we will probably have a military advantage which we should utilize before we loose it
-               /* else if (enemySetUpPastr && enemyPastrs.length == 0 && robotCount > 5)
+                else if (enemySetUpPastr && enemyPastrs.length == 0 && robotCount > 5)
                 {
                     build = true;
                 }
                 else if (enemyPastrs.length > 0 && enemyPastrs[0].distanceSquaredTo(rc.senseEnemyHQLocation()) < 10 && robotCount > 5)
                 {
                     build = true;
-                }*/
+                }
 
                 int towerSpot = rc.readBroadcast(towerLoc);
                 int pastrSpot = rc.readBroadcast(pastLoc);
