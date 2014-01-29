@@ -65,15 +65,18 @@ public class Soldiers {
         }
         else
         {
-            UnitStratPastrKiller.initialize(rc);
-            //changeStrategy(UnitStrategyType.PastrDestroyer);
-            changeStrategy(UnitStrategyType.Scout);
+
+            changeStrategy(UnitStrategyType.PastrDestroyer);
+            //changeStrategy(UnitStrategyType.Scout);
             //changeStrategy(UnitStrategyType.DarkTemplar);
         }
 
         // here we initialize certain types of bots
         switch (strategy)
         {
+            case PastrDestroyer:
+                UnitStratPastrKiller.initialize(rc);
+                break;
             case PastrDefense:
                 UnitStratPastrDefense.initialize(rc);
                 break;
@@ -113,6 +116,13 @@ public class Soldiers {
         //                break;
         //        }
 
+        switch (strategy)
+        {
+            case PastrDefense:
+                UnitStratPastrDefense.initialize(rc);
+                break;
+        }
+
         while (true) {
             try
             {
@@ -148,7 +158,7 @@ public class Soldiers {
                     {
                         //rc.setIndicatorString(0, "Fighting");
                     }
-                    else
+                    else if (rc.isActive())
                         nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
                 }
             } catch (Exception e) {}

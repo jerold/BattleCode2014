@@ -525,6 +525,7 @@ public class FightMicro
      */
     public static void fire(RobotController rc, Robot[] enemies, MapLocation[] allyBots)
     {
+        rc.setIndicatorString(2, "Shooting");
         int radius;
 
         try
@@ -536,6 +537,7 @@ public class FightMicro
 
             if (enemies != null && allyBots != null)
             {
+                rc.setIndicatorString(1, "allyBots present");
                 if (allyBots.length > 1)
                 {
                     int[] alliedBotsCount = new int[enemies.length];
@@ -630,11 +632,13 @@ public class FightMicro
                     }
                 }
             }
-            else if (enemies != null)
+
+            if (enemies != null && target == null || (target != null && rc.getLocation().distanceSquaredTo(rc.senseLocationOf(target)) > 10))
             {
+                rc.setIndicatorString(1, "No allies present");
                 for(int k = 0; k < enemies.length; k++)
                 {
-                    if(target == null)
+                    if(target == null && !rc.senseRobotInfo(enemies[k]).isConstructing)
                     {
                         target = enemies[k];
                     }
@@ -648,7 +652,7 @@ public class FightMicro
                         target = enemies[k];
                         k = enemies.length;
                     }
-                    else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health && !rc.senseRobotInfo(target).isConstructing)
+                    else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health && !rc.senseRobotInfo(target).isConstructing && rc.senseRobotInfo(enemies[k]).location.distanceSquaredTo(rc.getLocation()) <= 10)
                     {
                         target = enemies[k];
                     }

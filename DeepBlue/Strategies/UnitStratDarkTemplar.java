@@ -5,6 +5,13 @@ import battlecode.common.*;
 
 /**
  * Created by fredkneeland on 1/28/14.
+ *
+ *
+ * This bot is a pastr killer that gathers at a rally point
+ * 1/2 map height 1/3 map width or 2/3 map width
+ *
+ * It tries to avoid action with enemies and attempts to circle around behind enemy pastrs
+ * while avoiding their soldiers until it can kill an enemy
  */
 public abstract class UnitStratDarkTemplar extends UnitStrategy {
     static RobotController rc;
