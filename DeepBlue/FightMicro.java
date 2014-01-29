@@ -630,8 +630,7 @@ public class FightMicro
                     }
                 }
             }
-
-            if (enemies != null)
+            else if (enemies != null)
             {
                 for(int k = 0; k < enemies.length; k++)
                 {
@@ -679,7 +678,7 @@ public class FightMicro
 
     public static boolean MapLocationInRangeOfEnemyHQ(RobotController rc, MapLocation target)
     {
-        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 0)//24)
+        if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 24)
         {
             return true;
         }
@@ -2485,7 +2484,7 @@ public class FightMicro
             nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
             //nearByEnemies4 = nearByEnemies3;
             nearByEnemies10 = nearByEnemies3;
-            //nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
+            nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
             //nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
             //nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
             nearByEnemies4 = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());

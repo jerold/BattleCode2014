@@ -15,6 +15,7 @@ public class Soldiers {
     static public Engine engine;
     static public UnitStrategyType strategy;
     static public towerPastrRequest request;
+    static public boolean mainFightMicro = true;
 
     public static enum UnitStrategyType {
         NoType(0),
@@ -24,7 +25,9 @@ public class Soldiers {
         PastrBuilder(4),
         NoiseTowerBuilder(5),
         Defector(6),
-        PastrDestroyer(7);
+        PastrDestroyer(7),
+        Scout(8),
+        DarkTemplar(9);
 
         private final int value;
         private UnitStrategyType(int value) {
@@ -43,7 +46,7 @@ public class Soldiers {
         map = new RoadMap(rc, cache);
         nav = new Navigator(rc,cache, map);
         engine = new Engine(rc, cache, map, nav);
-        changeStrategy(UnitStrategyType.Reinforcement);
+        //changeStrategy(UnitStrategyType.Reinforcement);
 
         request = new towerPastrRequest(rc);
         int[] get = request.checkForNeed();
@@ -63,13 +66,23 @@ public class Soldiers {
         else
         {
             UnitStratPastrKiller.initialize(rc);
-            changeStrategy(UnitStrategyType.PastrDestroyer);
+            //changeStrategy(UnitStrategyType.PastrDestroyer);
+            changeStrategy(UnitStrategyType.Scout);
+            //changeStrategy(UnitStrategyType.DarkTemplar);
         }
 
+        // here we initialize certain types of bots
         switch (strategy)
         {
             case PastrDefense:
                 UnitStratPastrDefense.initialize(rc);
+                break;
+            case Scout:
+                UnitStratScout.initialize(rc);
+                break;
+            case DarkTemplar:
+                mainFightMicro = false;
+                UnitStratDarkTemplar.initialize(rc);
                 break;
         }
 
@@ -88,7 +101,11 @@ public class Soldiers {
                     // strategy picks destinations and performs special tasks
 
 
-                    if (FightMicro.fightMode(rc, null));
+                    rc.setIndicatorString(0, "Not fighting");
+                    if (mainFightMicro && FightMicro.fightMode(rc, null))
+                    {
+                        rc.setIndicatorString(0, "Fighting");
+                    }
                     else
                         nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
                 }
@@ -126,6 +143,12 @@ public class Soldiers {
                 break;
             case PastrDestroyer:
                 UnitStratPastrKiller.upDate();
+                break;
+            case Scout:
+                UnitStratScout.upDate();
+                break;
+            case DarkTemplar:
+                UnitStratDarkTemplar.upDate();
                 break;
         }
         rc.setIndicatorString(2, "Strategy ["+strategy+"]");
