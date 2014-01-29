@@ -235,12 +235,12 @@ public class TowerUtil
     	if(width * height <= 450)
     	{
     		skip = 1;
-    		minDist = 100;
+    		minDist = 200;
     	}
     	else if(width * height <= 1000)
     	{
     		skip = 2;
-    		minDist = 200;
+    		minDist = 250;
     	}
     	else if(width * height <= 3000)
     	{

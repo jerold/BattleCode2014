@@ -143,6 +143,24 @@ public class Soldiers {
         while (true) {
             try
             {
+            	if(strategy == UnitStrategyType.NoiseTowerBuilder)
+            	{
+            		if(rc.getHealth() < 50)
+                    {
+                    	rc.setIndicatorString(0, "Help");
+                    	request.sendRequest(TowerUtil.convertIntToMapLocation(get[0]), false);
+                		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                    }
+            	}
+            	else if(strategy == UnitStrategyType.PastrBuilder)
+            	{
+            		if(rc.getHealth() < 50)
+                    {
+                    	rc.setIndicatorString(0, "Help");
+                    	request.sendRequest(TowerUtil.convertIntToMapLocation(get[0]), true);
+                		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                    }
+            	}
                 if (rc.isActive())
                 {
 

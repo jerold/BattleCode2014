@@ -48,15 +48,55 @@ public abstract class pastrBuilder extends UnitStrategy {
             }
             else if(type > 3)
             {
-                while(!towerNear(rc)){rc.yield();}
+                while(!towerNear(rc))
+                {
+                	if(rc.getHealth() < 50)
+                	{
+                		rc.setIndicatorString(0, "Help");
+                		request.sendRequest(pastrSpot, true);
+                		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                		break;
+                	}
+                	rc.yield();
+                }
                 for(int k = 0; k < type; k++){rc.yield();}
             }
             else
             {
-                while(!towerNear(rc)){rc.yield();}
-                for(int k = 0; k < type; k++){rc.yield();}
+                while(!towerNear(rc))
+                {
+                	if(rc.getHealth() < 50)
+                	{
+                		rc.setIndicatorString(0, "Help");
+                		request.sendRequest(pastrSpot, true);
+                		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                		break;
+                	}
+                	rc.yield();
+                }
+                for(int k = 0; k < type; k++)
+                {
+                	if(rc.getHealth() < 50)
+                	{
+                		rc.setIndicatorString(0, "Help");
+                		request.sendRequest(pastrSpot, true);
+                		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                		break;
+                	}
+                	rc.yield();
+                }
             }
-            while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0){rc.yield();}
+            while(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0)
+            {
+            	if(rc.getHealth() < 50)
+            	{
+            		rc.setIndicatorString(0, "Help");
+            		request.sendRequest(pastrSpot, true);
+            		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+            		break;
+            	}
+            	rc.yield();
+            }
             request.madeIt(true);
             rc.construct(RobotType.PASTR);
         }
