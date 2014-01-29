@@ -72,11 +72,7 @@ public class RobotPlayer
             
             if (rc.getType() == RobotType.PASTR)
             {
-            	rc.selfDestruct();
-            	if (rc.getHealth() < 30)
-            	{
-            		divideByZero();
-            	}
+            	
             }
         }
     }
