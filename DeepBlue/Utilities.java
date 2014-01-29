@@ -21,7 +21,12 @@ public class Utilities
 
     static final public int unitNeededChannel = 20000;
 
+
     static final public int startRallyPointChannels = 20001;
+    static final public int FrontLineRally = 0;
+    static final public int ReinforcementRally = 1;
+
+
 
     static final public int bestPastrLocationChannel1 = 20200;
     static final public int bestPastrLocationChannel2 = 20201;

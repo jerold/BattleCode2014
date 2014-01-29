@@ -11,7 +11,7 @@ public class Headquarter {
     static UnitCache cache;
     static RoadMap map;
 
-    static MapLocation currentRallyPoint;
+    static MapLocation[] rallyPoints = new MapLocation[2];
 
     static Direction allDirections[] = Direction.values();
     static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
@@ -23,10 +23,11 @@ public class Headquarter {
         map = new RoadMap(rc, cache);
         System.out.println("My HQ:" + cache.MY_HQ + ", Enemy HQ:" + cache.ENEMY_HQ);
 
-        currentRallyPoint = cache.MY_HQ;
-
         // TEST RALLY POINT
-        setRallyPoint(new MapLocation(map.MAP_WIDTH/2, map.MAP_HEIGHT/2), 0);
+        setRallyPoint(new MapLocation(map.MAP_WIDTH/2, map.MAP_HEIGHT/2), Utilities.FrontLineRally);
+        setRallyPoint(cache.ENEMY_HQ, Utilities.ReinforcementRally);
+
+        setUnitNeeded(Soldiers.UnitStrategyType.PastrBuilder);
 
         while (true) {
             if (!rc.isActive()) { rc.yield(); continue; }
@@ -34,7 +35,6 @@ public class Headquarter {
 
 //            if (Clock.getRoundNum()%200==0)
 //                setRallyPoint(new MapLocation((int)(Math.random()*map.MAP_WIDTH), (int)(Math.random()*map.MAP_HEIGHT)), 0);
-
 
 
             cache.reset();
@@ -60,15 +60,9 @@ public class Headquarter {
 
     public static void setRallyPoint(MapLocation rally, int rpNumber) throws GameActionException
     {
-        int newRallyFirstStep = RoadMap.NO_PATH_EXISTS;
-        if (map.mapUploaded) newRallyFirstStep = map.idForNodeNearOldRallyPointInDirectionOfNewRallyPoint(currentRallyPoint, rally);
-
-        System.out.println("New Rally: "+map.idForNearestNode(rally)+"["+rally+"]  Old Rally: "+map.idForNearestNode(currentRallyPoint)+"["+currentRallyPoint+"] -> "+newRallyFirstStep+"["+map.locationForNode(newRallyFirstStep)+"]");
-
+        if (rallyPoints[rpNumber] != null) System.out.println("New Rally: "+map.idForNearestNode(rally)+"["+rally+"]  Old Rally: "+map.idForNearestNode(rallyPoints[rpNumber])+"["+rallyPoints[rpNumber]+"]");
         rc.broadcast(Utilities.startRallyPointChannels+rpNumber*2, VectorFunctions.locToInt(rally));
-        rc.broadcast(Utilities.startRallyPointChannels+rpNumber*2+1, newRallyFirstStep);
-
-        currentRallyPoint = rally;
+        rallyPoints[rpNumber] = rally;
     }
 
     public static void setUnitNeeded(Soldiers.UnitStrategyType unitType) throws GameActionException

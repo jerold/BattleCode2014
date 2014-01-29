@@ -48,6 +48,7 @@ public class Soldiers {
         engine = new Engine(rc, cache, map, nav);
         //changeStrategy(UnitStrategyType.Reinforcement);
 
+<<<<<<< HEAD
         request = new towerPastrRequest(rc);
         int[] get = request.checkForNeed();
         if(get[0] != -1)
@@ -85,6 +86,35 @@ public class Soldiers {
                 UnitStratDarkTemplar.initialize(rc);
                 break;
         }
+=======
+//        request = new towerPastrRequest(rc);
+//        int[] get = request.checkForNeed();
+//        if(get[0] != -1)
+//        {
+//            if(get[2] == 0)
+//            {
+//                noiseTowerBuilder.initialize(rc, get);
+//                changeStrategy(UnitStrategyType.NoiseTowerBuilder);
+//            }
+//            else
+//            {
+//                pastrBuilder.initialize(rc, get);
+//                changeStrategy(UnitStrategyType.PastrBuilder);
+//            }
+//        }
+//        else
+//        {
+//            UnitStratPastrKiller.initialize(rc);
+//            changeStrategy(UnitStrategyType.PastrDestroyer);
+//        }
+//
+//        switch (strategy)
+//        {
+//            case PastrDefense:
+//                UnitStratPastrDefense.initialize(rc);
+//                break;
+//        }
+>>>>>>> 09048093e88764a9b9899d8f96a24a49a9932fd7
 
         while (true) {
             try
