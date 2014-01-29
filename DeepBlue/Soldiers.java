@@ -1,9 +1,6 @@
 package DeepBlue;
 
-import DeepBlue.Strategies.UnitStratFrontLiner;
-import DeepBlue.Strategies.UnitStratReinforcement;
-import DeepBlue.Strategies.noiseTowerBuilder;
-import DeepBlue.Strategies.pastrBuilder;
+import DeepBlue.Strategies.*;
 import battlecode.common.*;
 import theSwarm.*;
 
@@ -27,7 +24,8 @@ public class Soldiers {
         PastrDefense(3),
         PastrBuilder(4),
         NoiseTowerBuilder(5),
-        Defector(6);
+        Defector(6),
+        PastrDestroyer(7);
 
         private final int value;
         private UnitStrategyType(int value) {
@@ -62,6 +60,11 @@ public class Soldiers {
                 pastrBuilder.initialize(rc, get);
                 changeStrategy(UnitStrategyType.PastrBuilder);
             }
+        }
+        else
+        {
+            UnitStratPastrKiller.initialize(rc);
+            changeStrategy(UnitStrategyType.PastrDestroyer);
         }
 
         while (true) {
@@ -110,6 +113,9 @@ public class Soldiers {
                 noiseTowerBuilder.run();
                 break;
             case Defector:
+                break;
+            case PastrDestroyer:
+                UnitStratPastrKiller.upDate();
                 break;
         }
         rc.setIndicatorString(2, "Strategy ["+strategy+"]");
