@@ -42,6 +42,13 @@ public class RoadMap {
         MacroPath
     }
 
+    public static enum SymmetryType {
+        Horizontal,
+        Vertical,
+        Diagonal
+    }
+
+    SymmetryType symmetry;
     PathingStrategy pathingStrat;
     Navigator observingNavigator;
     double voidDensity;
@@ -82,8 +89,10 @@ public class RoadMap {
         macroPathDistance = new int[nodeCount][nodeCount];
 
         // Initialize Map and Pathing signal Flags
-        if (rc.getType() == RobotType.HQ)
+        if (rc.getType() == RobotType.HQ) {
+            discoverSymmetry();
             broadcastFlags();
+        }
     }
 
 
@@ -92,6 +101,18 @@ public class RoadMap {
     //================================================================================
     // Facilitator Methods
     //================================================================================
+
+    public void discoverSymmetry() throws GameActionException
+    {
+        if (cache.MY_HQ.x == MAP_WIDTH-cache.ENEMY_HQ.x-1 && cache.MY_HQ.y == MAP_HEIGHT-cache.ENEMY_HQ.y-1) symmetry = SymmetryType.Diagonal;
+        if (cache.MY_HQ.x == cache.ENEMY_HQ.x) {
+            if (MAP_WIDTH%2==0) symmetry = SymmetryType.Horizontal;
+        }
+        if (cache.MY_HQ.y == cache.ENEMY_HQ.y) {
+            if (MAP_HEIGHT%2==0) symmetry = SymmetryType.Vertical;
+        }
+        System.out.println("Symmetry: "+symmetry);
+    }
 
     public void checkForUpdates() throws GameActionException
     {
@@ -154,7 +175,6 @@ public class RoadMap {
         return dir.opposite();
     }
 
-
     public MapLocation locationForNode(int nodeId) {
 //        if ((nodeId%nodesInLine) >= nodesInLine/2) {
 //            MapLocation mirrorLocation = locationForNode(oppositeNodeId(nodeId));
@@ -168,7 +188,7 @@ public class RoadMap {
 //        return nodeId == NO_PATH_EXISTS ? NO_PATH_EXISTS : nodeCount - nodeId - 1;
 //    }
 
-    public int idForNearestNode(MapLocation loc) throws GameActionException
+    public int idForNearestNode(MapLocation loc)
     {
 //        int nodeX = (loc.x-nodePadding)/(MAP_WIDTH/nodesInLine);
 //        int nodeY = (loc.y-nodePadding)/(MAP_HEIGHT/nodesInLine);
@@ -415,7 +435,6 @@ public class RoadMap {
         rc.setIndicatorString(1, "Done with Macro");
 
 //        printMacro();
-        printCows();
 //        printMap();
 
         macroPathingUploaded = true;
@@ -499,6 +518,8 @@ public class RoadMap {
 
             Headquarter.tryToSpawn();
         }
+
+        printCows();
 
         voidDensity=(voidDensity*2)/(MAP_HEIGHT*MAP_WIDTH);
         System.out.println("Void Density: " + voidDensity);

@@ -34,10 +34,12 @@ public class UnitCache {
         this.rc = rc;
         MY_HQ = rc.senseHQLocation();
         ENEMY_HQ = rc.senseEnemyHQLocation();
-        SLOPE = (double)(MY_HQ.y - ENEMY_HQ.y) / (MY_HQ.x - ENEMY_HQ.x);
+        if (MY_HQ.x != ENEMY_HQ.x)
+            SLOPE = (double)(MY_HQ.y - ENEMY_HQ.y) / (MY_HQ.x - ENEMY_HQ.x);
+        else
+            SLOPE = MY_HQ.y > ENEMY_HQ.y ? (1<<30) : -(1<<30);
         DISTANCE_BETWEEN_HQS = Utilities.distanceBetweenTwoPoints(MY_HQ, ENEMY_HQ);
         rcType = rc.getType();
-
     }
 
     // Like all up on.
