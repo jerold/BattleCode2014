@@ -48,7 +48,6 @@ public class Soldiers {
         engine = new Engine(rc, cache, map, nav);
         //changeStrategy(UnitStrategyType.Reinforcement);
 
-<<<<<<< HEAD
         request = new towerPastrRequest(rc);
         int[] get = request.checkForNeed();
         if(get[0] != -1)
@@ -86,35 +85,33 @@ public class Soldiers {
                 UnitStratDarkTemplar.initialize(rc);
                 break;
         }
-=======
-//        request = new towerPastrRequest(rc);
-//        int[] get = request.checkForNeed();
-//        if(get[0] != -1)
-//        {
-//            if(get[2] == 0)
-//            {
-//                noiseTowerBuilder.initialize(rc, get);
-//                changeStrategy(UnitStrategyType.NoiseTowerBuilder);
-//            }
-//            else
-//            {
-//                pastrBuilder.initialize(rc, get);
-//                changeStrategy(UnitStrategyType.PastrBuilder);
-//            }
-//        }
-//        else
-//        {
-//            UnitStratPastrKiller.initialize(rc);
-//            changeStrategy(UnitStrategyType.PastrDestroyer);
-//        }
-//
-//        switch (strategy)
-//        {
-//            case PastrDefense:
-//                UnitStratPastrDefense.initialize(rc);
-//                break;
-//        }
->>>>>>> 09048093e88764a9b9899d8f96a24a49a9932fd7
+        //        request = new towerPastrRequest(rc);
+        //        int[] get = request.checkForNeed();
+        //        if(get[0] != -1)
+        //        {
+        //            if(get[2] == 0)
+        //            {
+        //                noiseTowerBuilder.initialize(rc, get);
+        //                changeStrategy(UnitStrategyType.NoiseTowerBuilder);
+        //            }
+        //            else
+        //            {
+        //                pastrBuilder.initialize(rc, get);
+        //                changeStrategy(UnitStrategyType.PastrBuilder);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            UnitStratPastrKiller.initialize(rc);
+        //            changeStrategy(UnitStrategyType.PastrDestroyer);
+        //        }
+        //
+        //        switch (strategy)
+        //        {
+        //            case PastrDefense:
+        //                UnitStratPastrDefense.initialize(rc);
+        //                break;
+        //        }
 
         while (true) {
             try
@@ -126,15 +123,30 @@ public class Soldiers {
 
                     cache.reset();
                     map.checkForUpdates();
+                    
+                    if(strategy == UnitStrategyType.PastrBuilder || strategy == UnitStrategyType.NoiseTowerBuilder)
+                    {
+                    	if(rc.getLocation().equals(TowerUtil.convertIntToMapLocation(get[0])))
+                    	{
+                    		if(strategy == UnitStrategyType.PastrBuilder)
+                    		{
+                    			request.madeIt(true);
+                    		}
+                    		else
+                    		{
+                    			request.madeIt(false);
+                    		}
+                    	}
+                    }
 
                     // Do unit strategy picker
                     // strategy picks destinations and performs special tasks
 
 
-                    rc.setIndicatorString(0, "Not fighting");
+                    //rc.setIndicatorString(0, "Not fighting");
                     if (mainFightMicro && FightMicro.fightMode(rc, null))
                     {
-                        rc.setIndicatorString(0, "Fighting");
+                        //rc.setIndicatorString(0, "Fighting");
                     }
                     else
                         nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units

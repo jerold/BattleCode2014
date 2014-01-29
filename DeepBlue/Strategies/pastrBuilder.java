@@ -1,6 +1,7 @@
 package DeepBlue.Strategies;
 
 import DeepBlue.*;
+import DeepBlue.Soldiers.UnitStrategyType;
 import battlecode.common.*;
 
 /**
@@ -33,7 +34,17 @@ public abstract class pastrBuilder extends UnitStrategy {
             if(rc.senseTeamMilkQuantity(rc.getTeam()) > 9000000){}
             else if(type == 2)
             {
-                while(!towerNear(rc)){rc.yield();}
+                while(!towerNear(rc))
+                {
+                	if(rc.getHealth() < 50)
+                	{
+                		rc.setIndicatorString(0, "Help");
+                		request.sendRequest(pastrSpot, true);
+                		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                		break;
+                	}
+                	rc.yield();
+                }
             }
             else if(type > 3)
             {
@@ -51,7 +62,13 @@ public abstract class pastrBuilder extends UnitStrategy {
         }
         else
         {
-
+        	if(rc.getHealth() < 50)
+        	{
+        		rc.setIndicatorString(0, "Help");
+        		request.sendRequest(pastrSpot, true);
+        		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+        	}
+        	rc.yield();
         }
     }
 

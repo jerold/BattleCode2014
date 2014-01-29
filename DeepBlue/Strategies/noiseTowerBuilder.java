@@ -23,7 +23,8 @@ public abstract class noiseTowerBuilder extends UnitStrategy {
         {
             while (!rc.isActive())
                 rc.yield();
-
+            
+            
             rc.construct(RobotType.NOISETOWER);
         }
     }
