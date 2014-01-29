@@ -119,6 +119,17 @@ public class towerPastrRequest
 			{
 				if(locs[k].distanceSquaredTo(target) <= 16)
 				{
+					if(rc.getType() == RobotType.SOLDIER)
+					{
+						if(!pastr && rc.readBroadcast(start + (k * 3) + 1) != 1)
+						{
+							rc.broadcast(start + (k * 3) + 1, 1);
+						}
+						else if(rc.readBroadcast(start + (k * 3) + 2) != 1)
+						{
+							rc.broadcast(start + (k * 3) + 2, 2);
+						}
+					}
 					if(!pastr && rc.readBroadcast(start + (k * 3) + 1) == 0)
 					{
 						rc.broadcast(start + (k * 3) + 1, 1);

@@ -1,6 +1,7 @@
 package DeepBlue.Strategies;
 
 import DeepBlue.*;
+import DeepBlue.Soldiers.UnitStrategyType;
 import battlecode.common.*;
 
 /**
@@ -9,10 +10,12 @@ import battlecode.common.*;
 public abstract class noiseTowerBuilder extends UnitStrategy {
     static RobotController rc;
     static MapLocation towerSpot;
+    static towerPastrRequest request;
 
     public static void initialize(RobotController rcIn, int get[]) throws GameActionException
     {
         rc = rcIn;
+        request = new towerPastrRequest(rc);
         towerSpot = TowerUtil.convertIntToMapLocation(get[0]);
         Soldiers.nav.setDestination(towerSpot);
     }
@@ -21,11 +24,16 @@ public abstract class noiseTowerBuilder extends UnitStrategy {
     {
         if (rc.getLocation().equals(towerSpot))
         {
-            while (!rc.isActive())
-                rc.yield();
-            
-            
-            rc.construct(RobotType.NOISETOWER);
+        	if(rc.isActive())
+        	{
+        		rc.construct(RobotType.NOISETOWER);
+        	}
+        }
+        if(rc.getHealth() < 50)
+        {
+        	rc.setIndicatorString(0, "Help");
+        	request.sendRequest(towerSpot, false);
+    		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
         }
     }
 }
