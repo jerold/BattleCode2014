@@ -315,6 +315,7 @@ public class TowerUtil
     
     public static int getSpotScore(RobotController rc, MapLocation target)
     {
+<<<<<<< HEAD
         try
         {
             if (rc != null)
@@ -391,6 +392,33 @@ public class TowerUtil
             }
         } catch (Exception e) {e.printStackTrace();}
         return -100;
+=======
+    	double[][] cows = rc.senseCowGrowth();
+    	int total = 0;
+    	int scope = 8;
+    	int k = target.x;
+    	int a = target.y;
+		for(int t = 0; t < scope; t += 1)
+		{
+			for(int i = 0; i < scope; i += 1)
+			{
+				if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
+				{
+					total -= 2;
+				}
+				else if((k - (scope/2)) + t >= 0 && (a - (scope / 2)) + i >= 0)
+				{
+					total += (int)cows[(k - (scope / 2)) + t][(a - (scope / 2)) + i];
+				}
+				else
+				{
+					total = total;
+				}
+			}
+    	}
+    	
+    	return total;
+>>>>>>> 3312e2c044ceccf6b9fcc6c36a6eb8ef0a62fa41
     }
     
     public static boolean[] goodSpokeDirs(RobotController rc, MapLocation target)

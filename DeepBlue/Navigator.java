@@ -32,6 +32,8 @@ public class Navigator {
     boolean bugLeft;
     int bugStartDistanceFromDestination;
 
+    boolean sneaking;
+
     Navigator(RobotController inRc,UnitCache inCache,RoadMap inMap)
     {
         rc = inRc;
@@ -50,6 +52,8 @@ public class Navigator {
         bugging = false;
         bugLeft = false;
         bugStartDistanceFromDestination = 0;
+
+        sneaking = false;
     }
 
     /*
@@ -68,7 +72,20 @@ public class Navigator {
 //        rc.setIndicatorString(1, "["+map.pathingStrat+"] NextStep("+nextStepNodeId+")["+nextStep.x+","+nextStep.y+"] Dest("+destinationNodeId+")["+destination.x+","+destination.y+"] @["+hasArrived+"] bug["+bugging+"]["+bugLeft+"]");
     }
 
+    private void setSneak(boolean setting)
+    {
+        sneaking = setting;
+    }
 
+    public void tryMove(Direction heading) throws GameActionException
+    {
+        if(rc.canMove(heading)) {
+            if (!rc.isActive()) rc.yield();
+
+            if (sneaking) rc.sneak(heading);
+            else rc.move(heading);
+        }
+    }
 
 
     //================================================================================
@@ -182,14 +199,13 @@ public class Navigator {
         if (bugLeft) {
             if (map.valueForLocation(rc.getLocation().add(heading.opposite().rotateRight())) == RoadMap.TILE_VOID) heading = heading.rotateLeft().rotateLeft();
             while (!rc.canMove(heading)) heading = heading.rotateRight();
-            if (rc.canMove(heading)) rc.move(heading);
+            tryMove(heading);
         } else {
             if (map.valueForLocation(rc.getLocation().add(heading.opposite().rotateLeft())) == RoadMap.TILE_VOID) heading = heading.rotateRight().rotateRight();
             while (!rc.canMove(heading)) heading = heading.rotateLeft();
-            if (rc.canMove(heading)) rc.move(heading);
+            tryMove(heading);
         }
     }
-
 
 
 
@@ -201,10 +217,7 @@ public class Navigator {
     {
         if (!atFinalDestination()) {
             heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc);
-            if(rc.canMove(heading)) {
-                if (!rc.isActive()) rc.yield();
-                rc.move(heading);
-            }
+            tryMove(heading);
         }
     }
 
@@ -234,8 +247,7 @@ public class Navigator {
             if (!bugging) {
                 heading = MicroPathing.getNextDirection(map.directionTo(rc.getLocation(), destination), true, rc);
 
-                if (!rc.isActive()) rc.yield();
-                if(rc.canMove(heading)) rc.move(heading);
+                tryMove(heading);
 
                 if (shouldBug()) {
                     bugging = true;
@@ -248,8 +260,7 @@ public class Navigator {
                 bugMove();
         } else {
             heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination).rotateRight(), true, rc);
-            if (!rc.isActive()) rc.yield();
-            if(rc.canMove(heading)) rc.move(heading);
+            tryMove(heading);
         }
     }
 
@@ -301,14 +312,10 @@ public class Navigator {
             heading = map.directionTo(rc.getLocation(), dog); // Heading is either a straight shot or a path built from the pre-computed breadth-first node paths
             heading = MicroPathing.getNextDirection(map.directionTo(rc.getLocation(), dog), false, rc);
 
-            if(rc.canMove(heading)) {
-                if (!rc.isActive()) rc.yield();
-                rc.move(heading);
-            }
+            tryMove(heading);
         }else {
             heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination).rotateRight(), true, rc);
-            if (!rc.isActive()) rc.yield();
-            if(rc.canMove(heading)) rc.move(heading);
+            tryMove(heading);
         }
 
 

@@ -26,6 +26,7 @@ public class RoadMap {
     static final int MAX_NODES_IN_LINE = 8;
     static final int MAP_PADDING = 1;
     static final int COW_GROWTH_MAP_RESOLUTION = 4;
+    static final int MIN_SAFE_ENEMY_HQ_RANGE = 8;
 
     int nodeCount;
     int usableNodeCount;
@@ -138,8 +139,9 @@ public class RoadMap {
     public int valueForLocation(MapLocation loc) throws GameActionException
     {
         if (loc.y < MAP_HEIGHT && loc.y > 0 && loc.x < MAP_WIDTH && loc.x > 0) {
+            if (cache.getDistanceToENEMY_HQ() < MIN_SAFE_ENEMY_HQ_RANGE+1) return Utilities.distanceBetweenTwoPoints(cache.ENEMY_HQ, loc) < MIN_SAFE_ENEMY_HQ_RANGE ? TILE_VOID : 0;
             if (mapUploaded) return roadMap[loc.x][loc.y];
-            else return rc.readBroadcast(Utilities.startMapChannels+loc.x*MAP_WIDTH+loc.y) > 1 ? TILE_VOID : 0;
+            else return rc.senseTerrainTile(loc).ordinal() > 1 ? TILE_VOID : 0;
         } else return TILE_VOID;
     }
 

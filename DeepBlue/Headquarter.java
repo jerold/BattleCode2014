@@ -27,27 +27,32 @@ public class Headquarter {
             map = new RoadMap(rc, cache);
             System.out.println("My HQ:" + cache.MY_HQ + ", Enemy HQ:" + cache.ENEMY_HQ);
 
+<<<<<<< HEAD
             // TEST RALLY POINT
             setRallyPoint(new MapLocation(map.MAP_WIDTH/2, map.MAP_HEIGHT/2), Utilities.FrontLineRally);
             setRallyPoint(cache.ENEMY_HQ, Utilities.ReinforcementRally);
 
             //setUnitNeeded(Soldiers.UnitStrategyType.PastrBuilder);
 
+=======
+>>>>>>> 3312e2c044ceccf6b9fcc6c36a6eb8ef0a62fa41
             while (true) {
                 try
                 {
                     if (rc.isActive())
                     {
-                        setRallyPoint(new MapLocation((int)(Math.random()*map.MAP_WIDTH), (int)(Math.random()*map.MAP_HEIGHT)), 0);
-
                         cache.reset();
                         map.checkForUpdates();
 
                         tryToSpawn();
                     }
+<<<<<<< HEAD
 
 
                 } catch (Exception e) {e.printStackTrace();}
+=======
+                } catch (Exception e) {}
+>>>>>>> 3312e2c044ceccf6b9fcc6c36a6eb8ef0a62fa41
                 rc.yield();
             }
         } catch (Exception e) {e.printStackTrace();}

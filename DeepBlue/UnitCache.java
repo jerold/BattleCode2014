@@ -28,6 +28,7 @@ public class UnitCache {
     public MapLocation ENEMY_HQ;
     double DISTANCE_BETWEEN_HQS;
     public RobotType rcType;
+    public int distanceToENEMY_HQ;
 
     UnitCache(RobotController rc)
     {
@@ -84,9 +85,17 @@ public class UnitCache {
         return nearbyAlliesCache;
     }
 
+    public int getDistanceToENEMY_HQ()
+    {
+        if (distanceToENEMY_HQ > 0) return distanceToENEMY_HQ;
+        distanceToENEMY_HQ = (int) Utilities.distanceBetweenTwoPoints(rc.getLocation(), ENEMY_HQ);
+        return distanceToENEMY_HQ;
+    }
+
     public void reset()
     {
         nearbyAlliesCache = null;
         nearbyEnemiesCache = null;
+        getDistanceToENEMY_HQ();
     }
 }
