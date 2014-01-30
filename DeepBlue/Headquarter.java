@@ -11,6 +11,7 @@ public class Headquarter {
     static UnitCache cache;
     static RoadMap map;
     static int numbOfSoldiers = 0;
+    static boolean started = false;
 
     static MapLocation[] rallyPoints = new MapLocation[2];
 
@@ -76,14 +77,17 @@ public class Headquarter {
         }
         else
         {
-            type = Utilities.unitNeededHQSurround;
-            //type = Utilities.unitNeededPastrKiller;
+            //type = Utilities.unitNeededHQSurround;
+            type = Utilities.unitNeededPastrKiller;
         }
 
         if (numbOfSoldiers > 10)
         {
-            towerPastrRequest.startBuilding(rc);
-            //towerPastrRequest.setInitial(rc);
+            if (!started)
+            {
+                started = true;
+                towerPastrRequest.startBuilding(rc);
+            }
             type = Utilities.unitNeededOurPastrKiller;
         }
 
