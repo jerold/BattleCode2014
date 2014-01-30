@@ -27,6 +27,8 @@ public class Utilities
     static final public int unitNeededDarkTemplar = 4;
     static final public int unitNeededHQSurround = 5;
     static final public int unitNeededOurPastrKiller = 6;
+    static final public int unitNeededHQPastr = 7;
+    static final public int unitNeededHQTower = 8;
 
     static final public int startRallyPointChannels = 20001;
     static final public int FrontLineRally = 0;
@@ -191,6 +193,23 @@ public class Utilities
     public static double distanceBetweenTwoPoints(
             double p_x, double p_y, double q_x, double q_y){
         return Math.sqrt((p_x - q_x)*(p_x-q_x) + (p_y-q_y)*(p_y-q_y));
+    }
+
+    public static boolean checkHQTower(RobotController rc){//returns true if an HQ tower should be set up
+        try{
+            MapLocation HQ = rc.senseHQLocation();
+            if(TowerUtil.getHQSpotScore(rc, HQ) >= 10){
+                rc.setIndicatorString(0, "HQ Tower");
+                System.out.println("HQ tower build");
+                return true;
+
+            } else {
+                return false;
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+            return false;
+        }
     }
 }
 

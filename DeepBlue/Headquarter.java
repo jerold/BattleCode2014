@@ -27,6 +27,13 @@ public class Headquarter {
             map = new RoadMap(rc, cache);
             System.out.println("My HQ:" + cache.MY_HQ + ", Enemy HQ:" + cache.ENEMY_HQ);
 
+
+            // TEST RALLY POINT
+            setRallyPoint(new MapLocation(map.MAP_WIDTH/2, map.MAP_HEIGHT/2), Utilities.FrontLineRally);
+            setRallyPoint(cache.ENEMY_HQ, Utilities.ReinforcementRally);
+
+            //setUnitNeeded(Soldiers.UnitStrategyType.PastrBuilder);
+
             while (true) {
                 try
                 {
@@ -37,10 +44,12 @@ public class Headquarter {
 
                         tryToSpawn();
                     }
-                } catch (Exception e) {}
+
+                } catch (Exception e) {e.printStackTrace();}
+
                 rc.yield();
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {e.printStackTrace();}
     }
 
     public static void tryToSpawn() throws GameActionException {
@@ -48,7 +57,7 @@ public class Headquarter {
             for(int i=0;i<8;i++){
                 Direction trialDir = allDirections[(cache.MY_HQ.directionTo(cache.ENEMY_HQ).ordinal()+i)%8];
                 if(rc.canMove(trialDir)){
-                    setUnitNeeded(null);
+                    setUnitNeeded(null, rc);
                     rc.spawn(trialDir);
                     break;
                 }
@@ -58,35 +67,64 @@ public class Headquarter {
 
     public static void setRallyPoint(MapLocation rally, int rpNumber) throws GameActionException
     {
-        if (rallyPoints[rpNumber] != null) System.out.println("New Rally: "+map.idForNearestNode(rally)+"["+rally+"]  Old Rally: "+map.idForNearestNode(rallyPoints[rpNumber])+"["+rallyPoints[rpNumber]+"]");
+        //if (rallyPoints[rpNumber] != null) System.out.println("New Rally: "+map.idForNearestNode(rally)+"["+rally+"]  Old Rally: "+map.idForNearestNode(rallyPoints[rpNumber])+"["+rallyPoints[rpNumber]+"]");
         rc.broadcast(Utilities.startRallyPointChannels+rpNumber*2, VectorFunctions.locToInt(rally));
         rallyPoints[rpNumber] = rally;
     }
 
-    public static void setUnitNeeded(Soldiers.UnitStrategyType unitType) throws GameActionException
+    public static void setUnitNeeded(Soldiers.UnitStrategyType unitType, RobotController rc) throws GameActionException
     {
         int type = 0;
-        if (numbOfSoldiers < 5)
-        {
-            type = Utilities.unitNeededScout;
-        }
-        else
-        {
-            //type = Utilities.unitNeededHQSurround;
-            type = Utilities.unitNeededPastrKiller;
-        }
 
-        if (numbOfSoldiers > 10)
+        if (rc!= null)
         {
-            if (!started)
+            rc.setIndicatorString(0, ""+numbOfSoldiers);
+            rc.setIndicatorString(2, ""+TowerUtil.getHQSpotScore(rc, rc.senseHQLocation()));
+
+
+            if (numbOfSoldiers < 2 && Utilities.checkHQTower(rc))
             {
-                started = true;
-                towerPastrRequest.startBuilding(rc);
+                if (numbOfSoldiers == 0)
+                {
+                    type = Utilities.unitNeededHQTower;
+                }
+                else if (numbOfSoldiers == 1)
+                {
+                    type = Utilities.unitNeededHQPastr;
+                }
+                else
+                {
+                    type = Utilities.unitNeededPastrKiller;
+                }
             }
-            type = Utilities.unitNeededOurPastrKiller;
-        }
+            else
+            {
+                if (numbOfSoldiers < 5)
+                {
+                    type = Utilities.unitNeededScout;
+                }
+                else
+                {
+                    //type = Utilities.unitNeededHQSurround;
+                    type = Utilities.unitNeededPastrKiller;
+                }
 
-        numbOfSoldiers++;
-        rc.broadcast(Utilities.unitNeededChannel, type);
+                if (numbOfSoldiers > 10)
+                {
+                    if (!started)
+                    {
+                        started = true;
+                        towerPastrRequest.startBuilding(rc);
+                    }
+                    type = Utilities.unitNeededOurPastrKiller;
+                }
+            }
+
+            if (rc.senseRobotCount() > 0)
+            {
+                numbOfSoldiers++;
+            }
+            rc.broadcast(Utilities.unitNeededChannel, type);
+        }
     }
 }
