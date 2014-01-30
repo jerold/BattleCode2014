@@ -18,7 +18,7 @@ import battlecode.common.*;
 public class towerPastrRequest
 {
 	public static final int start = 60000;
-	public static final int numSpots = 3;
+	private static int numSpots;
 	
 	private MapLocation[] locs;
 	private RobotController rc;
@@ -28,6 +28,7 @@ public class towerPastrRequest
 		try
 		{
 			this.rc = rc;
+			numSpots = howManyPastrs(rc);
 			
 			if(rc.readBroadcast(start) == 0)
 			{
@@ -169,8 +170,10 @@ public class towerPastrRequest
 		catch(Exception e){}
 	}
 	
-	public static void setInitial(RobotController rc)
+	public static void startBuilding(RobotController rc)
 	{
+		int numSpots = howManyPastrs(rc);
+		rc.setIndicatorString(0, "" + numSpots);
 		for(int k = 0; k < numSpots; k++)
 		{
 			try
@@ -179,6 +182,39 @@ public class towerPastrRequest
 				rc.broadcast(start + (k * 3) + 2, 2);
 			}
 			catch(Exception e){}
+		}
+	}
+	
+	public static void endBuilding(RobotController rc)
+	{
+		int numSpots = howManyPastrs(rc);
+		rc.setIndicatorString(0, "" + numSpots);
+		for(int k = 0; k < numSpots; k++)
+		{
+			try
+			{
+				rc.broadcast(start + (k * 3) + 1, 0);
+				rc.broadcast(start + (k * 3) + 2, 0);
+			}
+			catch(Exception e){}
+		}
+	}
+	
+	private static int howManyPastrs(RobotController rc)
+	{
+		int size = rc.getMapWidth() * rc.getMapHeight();
+		
+		if(size <= 500)
+		{
+			return 1;
+		}
+		else if(size <= 1600)
+		{
+			return 2;
+		}
+		else
+		{
+			return 3;
 		}
 	}
 }

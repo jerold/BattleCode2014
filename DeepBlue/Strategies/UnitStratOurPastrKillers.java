@@ -19,20 +19,32 @@ public abstract class UnitStratOurPastrKillers extends UnitStrategy {
     static int pastr1Count = 0;
     static int pastr2Count = 0;
     static MapLocation[] ourPastrs;
+    static int type;
 
-    public static void initialize(RobotController rcIn, MapLocation pastr)
+    public static void initialize(RobotController rcIn, MapLocation pastr, int ourType)
     {
         rc = rcIn;
         pastrToDefend = pastr;
+        type = ourType;
     }
 
     public static void upDate() throws GameActionException
     {
+        if (rc.getHealth() < 10)
+        {
+            rc.broadcast(type, 0);
+        }
+        else
+        {
+            rc.broadcast(type, 1);
+        }
+
         target = rc.getLocation();
         if (rc.isActive())
         {
             if (!madeIt)
-            {if (rc.isActive())
+            {
+                if (rc.isActive())
                 {
                     if (rc.getLocation().isAdjacentTo(pastrToDefend) || rc.getLocation().equals(pastrToDefend))
                     {

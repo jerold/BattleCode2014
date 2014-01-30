@@ -26,6 +26,7 @@ public class Utilities
     static final public int unitNeededPastrDefense = 3;
     static final public int unitNeededDarkTemplar = 4;
     static final public int unitNeededHQSurround = 5;
+    static final public int unitNeededOurPastrKiller = 6;
 
     static final public int startRallyPointChannels = 20001;
     static final public int FrontLineRally = 0;
@@ -36,6 +37,8 @@ public class Utilities
 
     static final public int startPastrChannels = 30002;
     static final public int PastrDetailCount = 5; // [LastActiveRound, DefenderCount, EnemyCount, CowCount, PastrLocation]
+
+    static final public int ourPastrKillerStart = 40000;
 
     //================================================================================
     // PASTR Communication Methods

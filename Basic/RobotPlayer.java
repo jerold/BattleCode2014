@@ -29,12 +29,17 @@ public class RobotPlayer {
 	static boolean initializeRoads = false;
 	static MapLocation cRoad;
 	static int roadsIndex = 0;
-	static int allIndex = 0;
 	static boolean onRoad = false;
+	
+	//Need these variables for the methods I wrote
+	static int allIndex = 0;
 	static MapLocation[] allPastrs = new MapLocation[100];
 	static MapLocation[] currentPastrs;
 	static MapLocation[] previousPastrs;
-	
+	static MapLocation sameLoc;
+	static boolean waitOutSideRange = false;
+	static boolean found = false;
+	static long[] teamMemory;
 	
 	
 	public static void run(RobotController rcin){
@@ -43,39 +48,45 @@ public class RobotPlayer {
 		while(true){
 			try{
 				if(rc.getType() == RobotType.HQ){
+					//will also need these variables
+					long[] teamMemory = rc.getTeamMemory();
 					MapLocation test = Basic.TowerUtil.bestSpot3(rc);
 					MapLocation testOpposite = Basic.TowerUtil.getOppositeSpot(rc, test);
 					MapLocation[] currentPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
-					
-					//all Headquarters methods
-					/*if(Basic.Utilities.checkRush(rc) == true){
-						System.out.println("RUSH!");
-					}else{
-						System.out.println("Dont rush");
+					Robot[] robots  = rc.senseBroadcastingRobots();
+					if(robots.length > 0){
+						//System.out.println(robots[0].getID());
 					}
-					*/
+					
+					if(Basic.Utilities.checkRush(rc) == true){
+						//System.out.println("RUSH!");
+					}else{
+						//System.out.println("Dont rush");
+					}
 					if(Basic.Utilities.checkDoublePastr(rc, test, testOpposite) == true){
-						System.out.println("Double Pastr: Best spot: " + test.x + ", " + test.y);
+						//System.out.println("Double Pastr: Best spot: " + test.x + ", " + test.y);
 					} else {
-						System.out.println("no pastr: Best spot: " + test.x + ", " + test.y);
+						//System.out.println("No double pastr: Best spot: " + test.x + ", " + test.y);
 					}
 					int score = Basic.TowerUtil.getSpotScore(rc, rc.senseHQLocation());
 					if(Basic.Utilities.checkHQTower(rc) == true){
-						System.out.println("HQ tower");
+						//System.out.println("HQ tower!");
 					} else {
-						System.out.println("no HQ tower, score = " + score);
+						//System.out.println("No HQ tower, score = " + score);
 					}
 					//PASTR finder
 					if(currentPastrs.length > 0 && currentPastrs.length > previousPastrs.length){
 						if(previousPastrs.length == 0){
 							for(int k = 0; k < currentPastrs.length; k++){
 								allPastrs[allIndex] = currentPastrs[k];
+								//System.out.println("pastr added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
 								allIndex++;
 							}
 							previousPastrs = currentPastrs;
 						} else {
-							for(int i = currentPastrs.length - previousPastrs.length; i < currentPastrs.length; i++){
+							for(int i = previousPastrs.length; i < currentPastrs.length; i++){
 								allPastrs[allIndex] = currentPastrs[i];
+								//System.out.println("PASTR added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
 								allIndex++;
 							}
 							previousPastrs = currentPastrs;
@@ -84,17 +95,26 @@ public class RobotPlayer {
 						previousPastrs = currentPastrs;
 					}
 					
-					if(Clock.getRoundNum() > 1998){
+					if(allPastrs.length > 0 && sameLoc == null){
 						for(int j = 0; j < allIndex; j++){
 							MapLocation search = allPastrs[j];
 							for(int n = 0; n < allIndex; n++){
 								if(search.equals(allPastrs[n]) && j != n){
-									System.out.println("Found same pastr loc @: " + search.x + ", " + search.y);
+									sameLoc = search;
 								}
 							}
 						}
 					}
-					//end PASTR finder
+					if(sameLoc != null && !found){
+						//System.out.println("Found same pastr loc @: " + sameLoc.x + ", " + sameLoc.y);
+						found = true;
+						rc.setTeamMemory(0, 1);
+					}
+					if(teamMemory[0] == 1){
+						//System.out.println("Setting Location...");
+						waitOutSideRange = true;
+					}
+					//end PASTR finder/ other useful stuff
 					
 					tryToShoot();
 					tryToSpawn();
@@ -150,11 +170,32 @@ public class RobotPlayer {
 	}
 	private static void readBroadcast() throws GameActionException {
 		if(rc.isActive()){
-			MapLocation target = rc.senseEnemyHQLocation();
+			MapLocation[] targetPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+			Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
+			
+			Direction toHQ = rc.getLocation().directionTo(rc.senseHQLocation());
+			
+			if(waitOutSideRange == true){
+				System.out.println("Waiting for prey");
+				dir = rc.getLocation().directionTo(targetPastrs[0].add(toHQ).add(toHQ).add(toHQ).add(toHQ).add(toHQ));
+			} else if(targetPastrs.length > 0){
+				MapLocation target = targetPastrs[0];
+				dir = rc.getLocation().directionTo(target);
+			} else {
+				dir = rc.getLocation().directionTo(rc.senseHQLocation());
+			}
+			
 			int roadLocation = rc.readBroadcast(1);
 			if(Basic.Utilities.fightMode(rc)){
 				
-			} 
+			} else if(dir != Direction.OMNI && dir != Direction.NONE){
+					if(rc.canMove(dir)){
+						rc.move(dir);
+					}
+				}
+			}
+			
+			/*
 			else if(onRoad == false){
 				MapLocation road = Basic.Utilities.convertIntToMapLocation(roadLocation);
 				Direction dir = rc.getLocation().directionTo(road);
@@ -212,6 +253,7 @@ public class RobotPlayer {
 				}
 			}
 		}
+		*/
 	}
 
 

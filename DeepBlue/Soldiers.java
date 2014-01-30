@@ -16,6 +16,10 @@ public class Soldiers {
     static public UnitStrategyType strategy;
     static public towerPastrRequest request;
     static public boolean mainFightMicro = true;
+    static public MapLocation ourPastr;
+    static int type;
+    static public boolean defenseMicro = false;
+    static MapLocation defenseSpot;
 
     public static enum UnitStrategyType {
         NoType(0),
@@ -28,7 +32,8 @@ public class Soldiers {
         PastrDestroyer(7),
         Scout(8),
         DarkTemplar(9),
-        HQSurround(10);
+        HQSurround(10),
+        OurPastrKiller(11);
 
         private final int value;
         private UnitStrategyType(int value) {
@@ -67,77 +72,50 @@ public class Soldiers {
         else
         {
             int type = rc.readBroadcast(Utilities.unitNeededChannel);
-
             switch (type)
             {
                 case Utilities.unitNeededScout:
                     changeStrategy(UnitStrategyType.Scout);
+                    UnitStratScout.initialize(rc);
                     break;
                 case Utilities.unitNeededDarkTemplar:
                     changeStrategy(UnitStrategyType.DarkTemplar);
+                    UnitStratDarkTemplar.initialize(rc);
                     break;
                 case Utilities.unitNeededHQSurround:
                     changeStrategy(UnitStrategyType.HQSurround);
+                    UnitStratHqSurround.initialize(rc);
                     break;
+                case Utilities.unitNeededPastrDefense:
+                    changeStrategy(UnitStrategyType.PastrDefense);
+                    UnitStratPastrDefense.initialize(rc);
+                    break;
+                case Utilities.unitNeededOurPastrKiller:
+                    changeStrategy(UnitStrategyType.OurPastrKiller);
+                    // here we must set our pastr which we should watch over to kill
+                    if (rc.readBroadcast(60002) != 0 && rc.readBroadcast(Utilities.ourPastrKillerStart) == 0)
+                    {
+                        ourPastr = TowerUtil.convertIntToMapLocation(rc.readBroadcast(60002));
+                        rc.broadcast(Utilities.ourPastrKillerStart, 1);
+                        type = Utilities.ourPastrKillerStart;
+                    }
+                    else if (rc.readBroadcast(60005) != 0 && rc.readBroadcast(Utilities.ourPastrKillerStart+1) == 0)
+                    {
+                        ourPastr = TowerUtil.convertIntToMapLocation(rc.readBroadcast(60005));
+                        rc.broadcast(Utilities.ourPastrKillerStart+1, 1);
+                        type = Utilities.ourPastrKillerStart+1;
+                    }
+                    else
+                    {
+                        changeStrategy(UnitStrategyType.PastrDestroyer);
+                        UnitStratPastrKiller.initialize(rc);
+                    }
+                    UnitStratOurPastrKillers.initialize(rc, ourPastr, type);
+
                 default:
                     changeStrategy(UnitStrategyType.PastrDestroyer);
+                    UnitStratPastrKiller.initialize(rc);
             }
-        }
-
-        // here we initialize certain types of bots
-        switch (strategy)
-        {
-            case PastrDestroyer:
-                UnitStratPastrKiller.initialize(rc);
-                break;
-            case PastrDefense:
-                UnitStratPastrDefense.initialize(rc);
-                break;
-            case Scout:
-                UnitStratScout.initialize(rc);
-                break;
-            case DarkTemplar:
-                mainFightMicro = false;
-                UnitStratDarkTemplar.initialize(rc);
-                break;
-            case HQSurround:
-                UnitStratHqSurround.initialize(rc);
-                break;
-
-        }
-        //        request = new towerPastrRequest(rc);
-        //        int[] get = request.checkForNeed();
-        //        if(get[0] != -1)
-        //        {
-        //            if(get[2] == 0)
-        //            {
-        //                noiseTowerBuilder.initialize(rc, get);
-        //                changeStrategy(UnitStrategyType.NoiseTowerBuilder);
-        //            }
-        //            else
-        //            {
-        //                pastrBuilder.initialize(rc, get);
-        //                changeStrategy(UnitStrategyType.PastrBuilder);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            UnitStratPastrKiller.initialize(rc);
-        //            changeStrategy(UnitStrategyType.PastrDestroyer);
-        //        }
-        //
-        //        switch (strategy)
-        //        {
-        //            case PastrDefense:
-        //                UnitStratPastrDefense.initialize(rc);
-        //                break;
-        //        }
-
-        switch (strategy)
-        {
-            case PastrDefense:
-                UnitStratPastrDefense.initialize(rc);
-                break;
         }
 
         while (true) {
@@ -192,6 +170,10 @@ public class Soldiers {
                     if (mainFightMicro && FightMicro.fightMode(rc, null))
                     {
                         //rc.setIndicatorString(0, "Fighting");
+                    }
+                    else if (!mainFightMicro && defenseMicro && FightMicro.defenseMicro(rc, defenseSpot))
+                    {
+
                     }
                     else if (rc.isActive())
                         nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
