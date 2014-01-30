@@ -18,34 +18,39 @@ public class Headquarter {
     static Direction allDirections[] = Direction.values();
     static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
 
-    public static void run(RobotController inRc) throws GameActionException
+    public static void run(RobotController inRc)
     {
-        rc = inRc;
-        cache = new UnitCache(rc);
-        map = new RoadMap(rc, cache);
-        System.out.println("My HQ:" + cache.MY_HQ + ", Enemy HQ:" + cache.ENEMY_HQ);
+        try
+        {
+            rc = inRc;
+            cache = new UnitCache(rc);
+            map = new RoadMap(rc, cache);
+            System.out.println("My HQ:" + cache.MY_HQ + ", Enemy HQ:" + cache.ENEMY_HQ);
 
-        // TEST RALLY POINT
-        setRallyPoint(new MapLocation(map.MAP_WIDTH/2, map.MAP_HEIGHT/2), Utilities.FrontLineRally);
-        setRallyPoint(cache.ENEMY_HQ, Utilities.ReinforcementRally);
+            // TEST RALLY POINT
+            setRallyPoint(new MapLocation(map.MAP_WIDTH/2, map.MAP_HEIGHT/2), Utilities.FrontLineRally);
+            setRallyPoint(cache.ENEMY_HQ, Utilities.ReinforcementRally);
 
-        setUnitNeeded(Soldiers.UnitStrategyType.PastrBuilder);
+            setUnitNeeded(Soldiers.UnitStrategyType.PastrBuilder);
 
-        while (true) {
-            if (!rc.isActive()) { rc.yield(); continue; }
+            while (true) {
+                try
+                {
+                    if (rc.isActive())
+                    {
+                        setRallyPoint(new MapLocation((int)(Math.random()*map.MAP_WIDTH), (int)(Math.random()*map.MAP_HEIGHT)), 0);
+
+                        cache.reset();
+                        map.checkForUpdates();
+
+                        tryToSpawn();
+                    }
 
 
-//            if (Clock.getRoundNum()%200==0)
-//                setRallyPoint(new MapLocation((int)(Math.random()*map.MAP_WIDTH), (int)(Math.random()*map.MAP_HEIGHT)), 0);
-
-
-            cache.reset();
-            map.checkForUpdates();
-
-            tryToSpawn();
-
-            rc.yield();
-        }
+                } catch (Exception e) {}
+                rc.yield();
+            }
+        } catch (Exception e) {}
     }
 
     public static void tryToSpawn() throws GameActionException {

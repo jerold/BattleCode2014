@@ -58,9 +58,11 @@ public class RobotPlayer {
 						//System.out.println(robots[0].getID());
 					}
 					
-					if(Basic.Utilities.checkRush(rc) == true){
+					if(Basic.Utilities.checkRush(rc) == true)
+                    {
 						//System.out.println("RUSH!");
-					}else{
+					}else
+                    {
 						//System.out.println("Dont rush");
 					}
 					if(Basic.Utilities.checkDoublePastr(rc, test, testOpposite) == true){

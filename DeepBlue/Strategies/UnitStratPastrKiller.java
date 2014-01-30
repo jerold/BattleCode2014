@@ -18,6 +18,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
     public static void upDate() throws GameActionException
     {
         MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+        MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
 
         if (enemyPastrs.length > 0)
         {
@@ -36,6 +37,30 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
             }
 
             target = closest;
+        }
+        else if (ourPastrs.length > 0)
+        {
+            MapLocation closest = ourPastrs[ourPastrs.length-1];
+            int smallestDist = rc.getLocation().distanceSquaredTo(closest);
+
+            for (int i = ourPastrs.length - 1; --i>=0;)
+            {
+                MapLocation current = ourPastrs[i];
+                int currentDist = rc.getLocation().distanceSquaredTo(current);
+                if (currentDist < smallestDist)
+                {
+                    smallestDist = currentDist;
+                    closest = current;
+                }
+            }
+
+
+
+            target = closest;
+
+            target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
+            target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
+            target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         }
         else
         {
