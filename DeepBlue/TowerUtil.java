@@ -268,7 +268,7 @@ public class TowerUtil
     				{
     					if(spots[t].x != 0 || spots[t].y != 0)
     					{
-		    				if(spot.distanceSquaredTo(spots[t]) < minDist || spot.distanceSquaredTo(rc.senseEnemyHQLocation()) < 200)
+		    				if(spot.distanceSquaredTo(spots[t]) < minDist || spot.distanceSquaredTo(rc.senseEnemyHQLocation()) < 300)
 		    				{
 		    					go  = false;
 		    				}
