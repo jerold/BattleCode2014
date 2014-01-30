@@ -82,7 +82,8 @@ public class Headquarter {
 
         if (numbOfSoldiers > 10)
         {
-            towerPastrRequest.setInitial(rc);
+            towerPastrRequest.startBuilding(rc);
+            //towerPastrRequest.setInitial(rc);
             type = Utilities.unitNeededOurPastrKiller;
         }
 
