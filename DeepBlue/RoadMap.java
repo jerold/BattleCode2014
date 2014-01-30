@@ -31,8 +31,11 @@ public class RoadMap {
     int nodeCount;
     int usableNodeCount;
     int nodesInLine;
-    int nodeSpacing;
-    int nodePadding;
+    int nodeSpacingX;
+    int nodeSpacingY;
+    int nodePaddingX;
+    int nodePaddingY;
+
     int[][] macroNextNode;
     boolean[] macroUsableNode;
     int[][] macroPathDistance;
@@ -182,7 +185,7 @@ public class RoadMap {
 //            MapLocation mirrorLocation = locationForNode(oppositeNodeId(nodeId));
 //            return new MapLocation(MAP_WIDTH-mirrorLocation.x-1, MAP_HEIGHT-mirrorLocation.y-1);
 //        }
-        return new MapLocation((nodeId/nodesInLine) * nodeSpacing + nodePadding, (nodeId%nodesInLine) * nodeSpacing + nodePadding);
+        return new MapLocation((nodeId/nodesInLine) * nodeSpacingX + nodePaddingX, (nodeId%nodesInLine) * nodeSpacingY + nodePaddingY);
     }
 
 //    public int oppositeNodeId(int nodeId) {
@@ -194,7 +197,7 @@ public class RoadMap {
     {
 //        int nodeX = (loc.x-nodePadding)/(MAP_WIDTH/nodesInLine);
 //        int nodeY = (loc.y-nodePadding)/(MAP_HEIGHT/nodesInLine);
-        return ((loc.x-nodePadding)/(MAP_WIDTH/nodesInLine))*nodesInLine+((loc.y-nodePadding)/(MAP_HEIGHT/nodesInLine));
+        return ((loc.x-nodePaddingX)/(MAP_WIDTH/nodesInLine))*nodesInLine+((loc.y-nodePaddingY)/(MAP_HEIGHT/nodesInLine));
 
 //        if (Path.canSimplyPath(this, loc, locationForNode(nearestNodeId)))
 //            return nearestNodeId;
@@ -255,13 +258,22 @@ public class RoadMap {
     private void calibrateNodeStructure()
     {
         nodesInLine = MAX_NODES_IN_LINE;
-        nodeSpacing = (MAP_WIDTH-MAP_PADDING)/(nodesInLine-1);
-        while (nodeSpacing < MIN_NODE_SPACING) {
-            nodesInLine-=2;
-            nodeSpacing = (MAP_WIDTH-MAP_PADDING)/(nodesInLine-1);
+        nodeSpacingX = (MAP_WIDTH-MAP_PADDING)/(nodesInLine-1);
+        nodeSpacingY = (MAP_HEIGHT-MAP_PADDING)/(nodesInLine-1);
+        if (MAP_WIDTH > MAP_HEIGHT) {
+            while (nodeSpacingY < MIN_NODE_SPACING) {
+                nodesInLine-=2;
+                nodeSpacingY = (MAP_HEIGHT-MAP_PADDING)/(nodesInLine-1);
+            }
+        } else {
+            while (nodeSpacingX < MIN_NODE_SPACING) {
+                nodesInLine-=2;
+                nodeSpacingX = (MAP_WIDTH-MAP_PADDING)/(nodesInLine-1);
+            }
         }
         nodeCount = nodesInLine * nodesInLine;
-        nodePadding = (MAP_WIDTH - nodeSpacing*(nodesInLine-1))/2;
+        nodePaddingX = (MAP_WIDTH - nodeSpacingX*(nodesInLine-1))/2;
+        nodePaddingY = (MAP_HEIGHT - nodeSpacingY*(nodesInLine-1))/2;
     }
 
     public boolean locationIsVoid(MapLocation loc)
@@ -335,7 +347,6 @@ public class RoadMap {
                 updatePathsToIncludeNodesReachableByAccessibleNeighbors(origNodeId);
             Headquarter.tryToSpawn();
         }
-        System.out.println("Usable Nodes: " + usableNodeCount + "/" + nodeCount);
     }
 
     /*
@@ -427,12 +438,13 @@ public class RoadMap {
     private void assessMacroPathing() throws GameActionException
     {
         System.out.println("Map Size: " + MAP_WIDTH + ", " + MAP_HEIGHT);
-        System.out.println("Macro Matrix Even Split Size: " + nodesInLine + "x" + nodesInLine + " (" + nodeCount + " nodes spaced by " + nodeSpacing + ")");
+        System.out.println("Macro Matrix Even Split Size: " + nodesInLine + "x" + nodesInLine + " (" + nodeCount + " nodes spaced by " + nodeSpacingX + "," + nodeSpacingY + ")");
         System.out.println("START MACRO ASSESSMENT");
         rc.setIndicatorString(1, "Working On Macro");
 
         initMacroArrays();
 
+        System.out.println("Usable Nodes: " + usableNodeCount + "/" + nodeCount);
         System.out.println("FINISH MACRO ASSESSMENT");
         rc.setIndicatorString(1, "Done with Macro");
 
