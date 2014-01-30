@@ -33,7 +33,9 @@ public class Soldiers {
         Scout(8),
         DarkTemplar(9),
         HQSurround(10),
-        OurPastrKiller(11);
+        OurPastrKiller(11),
+        HQPastr(12),
+        HQTower(13);
 
         private final int value;
         private UnitStrategyType(int value) {
@@ -111,7 +113,15 @@ public class Soldiers {
                         UnitStratPastrKiller.initialize(rc);
                     }
                     UnitStratOurPastrKillers.initialize(rc, ourPastr, type);
-
+                    break;
+                case Utilities.unitNeededHQPastr:
+                    changeStrategy(UnitStrategyType.HQPastr);
+                    UnitStratHQPastr.initialize(rc);
+                    break;
+                case Utilities.unitNeededHQTower:
+                    changeStrategy(UnitStrategyType.HQTower);
+                    UnitStratHQTower.initialize(rc);
+                    break;
                 default:
                     changeStrategy(UnitStrategyType.PastrDestroyer);
                     UnitStratPastrKiller.initialize(rc);
@@ -191,7 +201,8 @@ public class Soldiers {
 
     public static void updateStrategy() throws GameActionException
     {
-        switch (strategy) {
+        switch (strategy)
+        {
             case Reinforcement:
                 UnitStratReinforcement.update();
                 break;
@@ -222,6 +233,13 @@ public class Soldiers {
             case HQSurround:
                 UnitStratHqSurround.upDate();
                 break;
+            case HQPastr:
+                UnitStratHQPastr.upDate();
+                break;
+            case HQTower:
+                UnitStratHQTower.upDate();
+                break;
+
         }
         rc.setIndicatorString(2, "Strategy ["+strategy+"]");
     }

@@ -127,7 +127,8 @@ public class RobotPlayer {
 						for(int i = rc.getLocation().x - 5; i < rc.getLocation().x + 5; i++){//For all X values
 							for(int j = rc.getLocation().y - 5; j < rc.getLocation().y + 5; j++){
 								MapLocation current = new MapLocation(i,j);
-								if(rc.senseTerrainTile(current).equals(TerrainTile.ROAD)){
+								if(rc.senseTerrainTile(current).equals(TerrainTile.ROAD))
+                                {
 									roads[roadsIndex] = current;
 									roadsIndex++;
 								}

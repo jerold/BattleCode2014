@@ -315,27 +315,82 @@ public class TowerUtil
     
     public static int getSpotScore(RobotController rc, MapLocation target)
     {
-    	double[][] cows = rc.senseCowGrowth();
-    	int total = 0;
-    	int scope = 8;
-    	int k = target.x;
-    	int a = target.y;
-		for(int t = 0; t < scope; t += 1)
-		{
-			for(int i = 0; i < scope; i += 1)
-			{
-				if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
-				{
-					total -= 2;
-				}
-				else
-				{
-					total += (int)cows[k - scope / 2 + t][a - scope / 2 + i];
-				}
-			}
-    	}
-    	
-    	return total;
+        try
+        {
+            if (rc != null)
+            {
+                if (target != null)
+                {
+                    double[][] cows = rc.senseCowGrowth();
+                    int total = 0;
+                    int scope = 8;
+                    int k = target.x;
+                    int a = target.y;
+                    for(int t = 0; t < scope; t += 1)
+                    {
+                        for(int i = 0; i < scope; i += 1)
+                        {
+                            if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
+                            {
+                                total -= 2;
+                            }
+                            else
+                            {
+                                int x = k - scope / 2 + t;
+                                int y = a-scope /2 + i;
+                                if (x >= 0 && y >= 0 && x < cows.length && y < cows[0].length)
+                                {
+                                    total += (int)cows[x][y];
+                                }
+                            }
+                        }
+                    }
+
+                    return total;
+                }
+            }
+        } catch (Exception e) {e.printStackTrace();}
+        return -100;
+    }
+
+    public static int getHQSpotScore(RobotController rc, MapLocation target)
+    {
+        try
+        {
+            if (rc != null)
+            {
+                if (target != null)
+                {
+                    double[][] cows = rc.senseCowGrowth();
+                    int total = 0;
+                    int scope = 15;
+                    int k = target.x;
+                    int a = target.y;
+                    for(int t = 0; t < scope; t += 1)
+                    {
+                        for(int i = 0; i < scope; i += 1)
+                        {
+                            if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
+                            {
+                                total -= 2;
+                            }
+                            else
+                            {
+                                int x = k - scope / 2 + t;
+                                int y = a-scope /2 + i;
+                                if (x >= 0 && y >= 0 && x < cows.length && y < cows[0].length)
+                                {
+                                    total += (int)cows[x][y];
+                                }
+                            }
+                        }
+                    }
+
+                    return total;
+                }
+            }
+        } catch (Exception e) {e.printStackTrace();}
+        return -100;
     }
     
     public static boolean[] goodSpokeDirs(RobotController rc, MapLocation target)
