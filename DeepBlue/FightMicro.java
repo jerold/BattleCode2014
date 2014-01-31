@@ -652,7 +652,7 @@ public class FightMicro
                         target = enemies[k];
                         k = enemies.length;
                     }
-                    else if(rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health && !rc.senseRobotInfo(target).isConstructing && rc.senseRobotInfo(enemies[k]).location.distanceSquaredTo(rc.getLocation()) <= 10)
+                    else if(target != null && rc.senseRobotInfo(enemies[k]).health < rc.senseRobotInfo(target).health && !rc.senseRobotInfo(target).isConstructing && rc.senseRobotInfo(enemies[k]).location.distanceSquaredTo(rc.getLocation()) <= 10)
                     {
                         target = enemies[k];
                     }
@@ -797,7 +797,7 @@ public class FightMicro
                     }
                 }
 
-                if (rc.canAttackSquare(location))
+                if (location != null && rc.canAttackSquare(location))
                 {
                     rc.attackSquare(location);
                 }

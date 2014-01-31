@@ -117,7 +117,6 @@ public class Headquarter {
                     }
 
                 } catch (Exception e) {e.printStackTrace();}
-
                 rc.yield();
             }
         } catch (Exception e) {e.printStackTrace();}
@@ -146,7 +145,6 @@ public class Headquarter {
     public static void setUnitNeeded(Soldiers.UnitStrategyType unitType, RobotController rc) throws GameActionException
     {
         int type = 0;
-
         if (rc!= null)
         {
             rc.setIndicatorString(0, ""+numbOfSoldiers);
