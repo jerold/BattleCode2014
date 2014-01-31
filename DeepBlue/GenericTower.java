@@ -11,6 +11,7 @@ public class GenericTower
     private boolean troll, first;
     private towerPastrRequest request;
     MapLocation[] lines;
+    Direction[] dirs = Direction.values();
 
     public GenericTower(RobotController rc, boolean troll)
     {
@@ -108,8 +109,46 @@ public class GenericTower
 		            	{
 		            		if(type == 1)
 		                	{
+		            			int[] enemyInts = FightMicro.AllEnemyBots(rc);
+		            			MapLocation[] enemyPastrLocs = rc.sensePastrLocations(rc.getTeam().opponent());
+		            			int[] closest = new int[8];
+		            			MapLocation tempLoc;
+		            			for(int k = 0; k < enemyInts.length; k++)
+		            			{
+		            				tempLoc = FightMicro.getBotLocation(enemyInts[k]);
+		            				for(int a = 0; a < 8; a++)
+		            				{
+		            					if(target.directionTo(tempLoc) == dirs[a])
+		            					{
+		            						int dist = target.distanceSquaredTo(tempLoc);
+		            						if(closest[a] == 0 || dist < closest[a])
+		            						{
+		            							closest[a] = dist;
+		            						}
+		            					}
+		            				}
+		            			}
+		            			for(int k = 0; k < enemyPastrLocs.length; k++)
+		            			{
+		            				for(int a = 0; a < 8; a++)
+		            				{
+		            					if(target.directionTo(enemyPastrLocs[k]) == dirs[a])
+		            					{
+		            						int dist = target.distanceSquaredTo(enemyPastrLocs[k]);
+		            						if(closest[a] == 0 || dist < closest[a])
+		            						{
+		            							closest[a] = dist;
+		            						}
+		            					}
+		            				}
+		            			}
 		                		for(int k = 0; k < 8; k++)
 		                		{
+		                			MapLocation start = lines[k * 2];
+		                			while(closest[k] != 0 && start.distanceSquaredTo(target) > closest[k])
+		                			{
+		                				start = start.add(start.directionTo(lines[k * 2 + 1]));
+		                			}
 		                			TowerUtil.fireLine(rc, lines[k * 2], lines[k * 2 + 1], 1, request);
 		                			if(k == 4)
 		                			{
