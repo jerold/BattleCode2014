@@ -19,6 +19,10 @@ public class RoadMap {
     double[][] cowGrowthMap;
     int[][] pathingTestMap;
 
+    int mapPacket;
+    int packedValues;
+    int packetNumber;
+
     static final double MACRO_PATH_MAX_VOID_DENSITY = .45;
     public static final int TILE_VOID = 999;
     public static final int NO_PATH_EXISTS = -1;
@@ -75,6 +79,10 @@ public class RoadMap {
         lowResCowMap = new int[COW_GROWTH_MAP_RESOLUTION][COW_GROWTH_MAP_RESOLUTION];
         cowGrowthMap = new double[MAP_WIDTH][MAP_HEIGHT];
         pathingTestMap = new int[MAP_WIDTH][MAP_HEIGHT];
+
+        packetNumber = 0;
+        newPacket();
+
         voidDensity = 0.0;
         pathingStrat = PathingStrategy.DefaultBug;
 
@@ -94,6 +102,7 @@ public class RoadMap {
 
         // Initialize Map and Pathing signal Flags
         if (rc.getType() == RobotType.HQ) {
+            System.out.println("Map Size: " + MAP_WIDTH + ", " + MAP_HEIGHT + "  (" + MAP_WIDTH*MAP_HEIGHT + ")");
             discoverSymmetry();
             broadcastFlags();
         }
@@ -195,42 +204,7 @@ public class RoadMap {
 
     public int idForNearestNode(MapLocation loc)
     {
-//        int nodeX = (loc.x-nodePadding)/(MAP_WIDTH/nodesInLine);
-//        int nodeY = (loc.y-nodePadding)/(MAP_HEIGHT/nodesInLine);
         return ((loc.x-nodePaddingX)/(MAP_WIDTH/nodesInLine))*nodesInLine+((loc.y-nodePaddingY)/(MAP_HEIGHT/nodesInLine));
-
-//        if (Path.canSimplyPath(this, loc, locationForNode(nearestNodeId)))
-//            return nearestNodeId;
-//
-//        // Nearest Node could not be easily pathed to.  Grab best pathable neighbor
-//        int nearestNeighborNodeId = NO_PATH_EXISTS;
-//        int nearestNeighborDistance = TILE_VOID;
-//        int[] neighborIdOffeset = neighborOffsetsForNode(nearestNodeId);
-//        for (int nOffset:neighborIdOffeset) {
-//            int neighborNodeId = nearestNodeId+nOffset;
-//            if (neighborNodeId >= 0 && neighborNodeId < nodeCount && Path.canSimplyPath(this, loc, locationForNode(neighborNodeId))) {
-//                return neighborNodeId;
-//            }
-//        }
-//        return nearestNeighborNodeId;
-
-//        int nodeId = NO_PATH_EXISTS;
-//        int nodeDist = TILE_VOID;
-//        for (int i=0;i<nodeCount;i++) {
-//            MapLocation nodeLoc = locationForNode(i);
-//            if (!locationIsVoid(nodeLoc)) {
-//                int dist = (int)Utilities.distanceBetweenTwoPoints(loc, nodeLoc);
-//                if (dist < nodeDist) {
-//                    MapLocation[] path = Path.getSimplePath(this, loc, nodeLoc);
-//                    if (path != null && path.length < nodeDist) {
-//                        nodeDist = path.length;
-//                        nodeId = i;
-//                    }
-//                }
-//            }
-//        }
-//        System.out.println(loc.x+","+loc.y+" near node["+nodeId+"] ("+nodeDist+") "+locationForNode(nodeId).x+", "+locationForNode(nodeId).y+", guess="+(nodeX*nodesInLine+nodeY));
-//        return nodeId;
     }
 
     public int idForNodeNearOldRallyPointInDirectionOfNewRallyPoint(MapLocation oldloc, MapLocation newLoc) throws GameActionException
@@ -437,7 +411,6 @@ public class RoadMap {
 
     private void assessMacroPathing() throws GameActionException
     {
-        System.out.println("Map Size: " + MAP_WIDTH + ", " + MAP_HEIGHT);
         System.out.println("Macro Matrix Even Split Size: " + nodesInLine + "x" + nodesInLine + " (" + nodeCount + " nodes spaced by " + nodeSpacingX + "," + nodeSpacingY + ")");
         System.out.println("START MACRO ASSESSMENT");
         rc.setIndicatorString(1, "Working On Macro");
@@ -548,40 +521,94 @@ public class RoadMap {
         broadcastMap();
     }
 
+//    public void readBroadcastMap() throws GameActionException
+//    {
+//        mapUploaded = rc.readBroadcast(Utilities.mapUploadedChannel) == 1;
+//
+//        if (mapUploaded) {
+//            pathingStrat = PathingStrategy.SmartBug;
+//            rc.setIndicatorString(1, "Pulling Map");
+//            System.out.println("BEGIN Reading in Map");
+//
+//            for (int x=0; x<MAP_WIDTH;x++) {
+//                for (int y=0; y<MAP_HEIGHT;y++) {
+//                    int channel = Utilities.startMapChannels + y*MAP_HEIGHT+x;
+//                    MapLocation signal = VectorFunctions.intToLoc(rc.readBroadcast(channel));
+//                    roadMap[x][y] = signal.x;
+//                    cowGrowthMap[x][y] = signal.y;
+//                }
+//            }
+//
+//            System.out.println("FINISH Reading in Map");
+//            rc.setIndicatorString(1, "Finished Pulling Map");
+//            if (observingNavigator != null)
+//                observingNavigator.pathingStrategyChanged();
+//        }
+//    }
+//
+//    public void broadcastMap() throws GameActionException
+//    {
+//        rc.setIndicatorString(1, "Broadcasting Map");
+//        System.out.println("BEGIN Broadcasting Map");
+//
+//        for (int y=0; y<MAP_HEIGHT;y++) {
+//            for (int x=0; x<MAP_WIDTH;x++) {
+//                int channel = Utilities.startMapChannels + y*MAP_HEIGHT+x;
+//                int signal = VectorFunctions.locToInt(new MapLocation(roadMap[x][y], (int)cowGrowthMap[x][y]));
+//                rc.broadcast(channel, signal);
+//                Headquarter.tryToSpawn();
+//            }
+//        }
+//
+//        System.out.println("FINISH Broadcasting Map");
+//        rc.setIndicatorString(1, "Finished Broadcasting Map");
+//        broadcastFlags();
+//    }
+
+    public static int MAX_PACKED_VALUES = 31;
     public void readBroadcastMap() throws GameActionException
     {
         mapUploaded = rc.readBroadcast(Utilities.mapUploadedChannel) == 1;
-
         if (mapUploaded) {
             pathingStrat = PathingStrategy.SmartBug;
             rc.setIndicatorString(1, "Pulling Map");
+            System.out.println("BEGIN Reading in Map");
 
-            for (int x=0; x<MAP_WIDTH;x++) {
-                for (int y=0; y<MAP_HEIGHT;y++) {
-                    int channel = Utilities.startMapChannels + y*MAP_HEIGHT+x;
-                    MapLocation signal = VectorFunctions.intToLoc(rc.readBroadcast(channel));
-                    roadMap[x][y] = signal.x;
-                    cowGrowthMap[x][y] = signal.y;
+            for (int p=0; p<=(MAP_WIDTH*MAP_HEIGHT)/MAX_PACKED_VALUES; p++) {
+                int packet = readPacket(p);
+                for (int i=0; i<MAX_PACKED_VALUES; i++) {
+//                    Utilities.packetPeek(packet);
+//                    packet = Utilities.packetPitch(packet);
+
+                    int tileNumber = p*MAX_PACKED_VALUES+(MAX_PACKED_VALUES-i-1);
+//                    System.out.println("    Tile "+tileNumber+"   x:"+tileNumber%MAP_WIDTH+", y:"+tileNumber/MAP_WIDTH+"   ["+Utilities.packetPeek(packet)+"]");
+                    if (tileNumber < MAP_WIDTH*MAP_HEIGHT) roadMap[tileNumber%MAP_WIDTH][tileNumber/MAP_WIDTH] = Utilities.packetPeek(packet) ? 0 : TILE_VOID;
+                    packet = Utilities.packetPitch(packet);
                 }
             }
 
+//            printMap();
+
+            System.out.println("FINISH Reading in Map");
             rc.setIndicatorString(1, "Finished Pulling Map");
-            if (observingNavigator != null)
-                observingNavigator.pathingStrategyChanged();
+            if (observingNavigator != null) observingNavigator.pathingStrategyChanged();
+
         }
     }
 
     public void broadcastMap() throws GameActionException
     {
         rc.setIndicatorString(1, "Broadcasting Map");
-        for (int y=0; y<MAP_HEIGHT;y++) {
-            for (int x=0; x<MAP_WIDTH;x++) {
-                int channel = Utilities.startMapChannels + y*MAP_HEIGHT+x;
-                int signal = VectorFunctions.locToInt(new MapLocation(roadMap[x][y], (int)cowGrowthMap[x][y]));
-                rc.broadcast(channel, signal);
-                Headquarter.tryToSpawn();
+        System.out.println("BEGIN Broadcasting Map");
+
+        for (int y=0; y<MAP_HEIGHT; y++) {
+            for (int x=0; x<MAP_WIDTH; x++) {
+                addToPacket(roadMap[x][y]);
             }
         }
+        sendLastPacket();
+
+        System.out.println("FINISH Broadcasting Map");
         rc.setIndicatorString(1, "Finished Broadcasting Map");
         broadcastFlags();
     }
@@ -590,6 +617,69 @@ public class RoadMap {
     {
         rc.broadcast(Utilities.mapUploadedChannel, mapUploaded ? 1 : 0);
     }
+
+
+
+
+    //================================================================================
+    // Packing Methods
+    //================================================================================
+
+    public void addToPacket(int tileValue) throws GameActionException
+    {
+        mapPacket = Utilities.packetPush(mapPacket, tileValue != TILE_VOID);
+        packedValues++;
+        if (packedValues == MAX_PACKED_VALUES) sendPacket();
+    }
+
+    public void newPacket()
+    {
+        mapPacket = 0;
+        packedValues = 0;
+    }
+
+    public void sendPacket() throws GameActionException
+    {
+//        System.out.println("Sending:"+packetNumber+" ["+mapPacket+"]");
+
+        rc.broadcast(Utilities.startMapChannels+packetNumber, mapPacket);
+        packetNumber++;
+        newPacket();
+    }
+
+    public void sendLastPacket() throws GameActionException
+    {
+        while (packedValues < MAX_PACKED_VALUES-1) addToPacket(TILE_VOID);
+        addToPacket(TILE_VOID);
+    }
+
+    public int readPacket(int packetNumber) throws GameActionException
+    {
+//        int packet = rc.readBroadcast(Utilities.startMapChannels + packetNumber);
+//        System.out.println("Receiving:"+packetNumber+" ["+packet+"]");
+//        return packet;
+
+        return rc.readBroadcast(Utilities.startMapChannels+packetNumber);
+    }
+
+
+//    boolean[] vals = new boolean[32];
+//    boolean ha = false;
+//
+//    for (int i=0; i<vals.length; i++) {
+//        vals[i] = ha;
+//        ha = !ha;
+//        System.out.print(vals[i] ? 1 : 0);
+//    }
+//    System.out.println("");
+//
+//    int packet = Utilities.packedMap(vals);
+//    vals = Utilities.unpackedMap(packet);
+//
+//    for (boolean val:vals) {
+//        System.out.print(val ? 1 : 0);
+//    }
+//    System.out.println("");
 
 
 
