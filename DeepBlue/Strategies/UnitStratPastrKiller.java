@@ -23,7 +23,6 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
     {
         MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
         MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
-<<<<<<< HEAD
 
         if (enemyPastrs.length > 0)
         {
@@ -32,11 +31,6 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
             int smallestDist = rc.getLocation().distanceSquaredTo(closest);
 
             for (int i = enemyPastrs.length - 1; --i>=0;)
-=======
-        if(rc.readBroadcast(35675)==1){
-        	
-        	if (enemyPastrs.length > 0)
->>>>>>> 519a5814b3bea8999879c51b543d11692e4fa428
             {
                 MapLocation closest = enemyPastrs[enemyPastrs.length-1];
                 int smallestDist = rc.getLocation().distanceSquaredTo(closest);
@@ -66,7 +60,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
             } else {
             	target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
             }
-<<<<<<< HEAD
+
             target = closest;
 
             if (rc.getLocation().distanceSquaredTo(target) < 50)
@@ -81,55 +75,6 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
             target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
             target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
             target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
-=======
-        } else {
-        	if (enemyPastrs.length > 0)
-        	{
-        		MapLocation closest = enemyPastrs[enemyPastrs.length-1];
-        		int smallestDist = rc.getLocation().distanceSquaredTo(closest);
-
-        		for (int i = enemyPastrs.length - 1; --i>=0;)
-        		{
-        			MapLocation current = enemyPastrs[i];
-        			int currentDist = rc.getLocation().distanceSquaredTo(current);
-        			if (currentDist < smallestDist)
-        			{
-        				smallestDist = currentDist;
-        				closest = current;
-        			}
-        		}
-        		
-        		target = closest;
-        	}
-        	else if (ourPastrs.length > 0 && ourPastrs[0].distanceSquaredTo(rc.senseHQLocation()) > 10)
-        	{
-        		MapLocation closest = ourPastrs[ourPastrs.length-1];
-        		int smallestDist = rc.getLocation().distanceSquaredTo(closest);
-        		
-        		for (int i = ourPastrs.length - 1; --i>=0;)
-        		{
-        			MapLocation current = ourPastrs[i];
-        			int currentDist = rc.getLocation().distanceSquaredTo(current);
-        			if (currentDist < smallestDist && current.distanceSquaredTo(rc.senseHQLocation()) > 10)
-        			{
-        				smallestDist = currentDist;
-        				closest = current;
-        			}
-        		}
-        		
-        		
-
-        		target = closest;
-
-        		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
-        		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
-        		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
-        	}
-        	else
-        	{
-        		target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
-        	}
->>>>>>> 519a5814b3bea8999879c51b543d11692e4fa428
         }
         
         Soldiers.nav.setDestination(target);
