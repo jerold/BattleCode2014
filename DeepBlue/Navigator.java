@@ -31,6 +31,7 @@ public class Navigator {
     boolean bugging;
     boolean bugLeft;
     int bugStartDistanceFromDestination;
+    MapLocation bugTerminal;
 
     boolean sneaking;
 
@@ -41,6 +42,9 @@ public class Navigator {
         map = inMap;
         map.observingNavigator = this;
 
+        dog = rc.getLocation();
+        dogHeading = Direction.NORTH;
+
         destination = rc.getLocation();
         destinationNodeId = 0;
         nextStep = destination;
@@ -49,9 +53,11 @@ public class Navigator {
 
         stayPut = 999;
         pathStrat = RoadMap.PathingStrategy.DefaultBug;
+
         bugging = false;
         bugLeft = false;
         bugStartDistanceFromDestination = 0;
+        bugTerminal = rc.getLocation();
 
         sneaking = false;
     }
@@ -68,7 +74,7 @@ public class Navigator {
         if (map.pathingStrat == RoadMap.PathingStrategy.MacroPath) {
             macroMovement();
         }
-        rc.setIndicatorString(1, "["+map.pathingStrat+"] NextStep("+nextStep+") Dest("+destination+") @["+hasArrived+"]["+Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination)+"]");
+        rc.setIndicatorString(1, "["+map.pathingStrat+"] NextStep("+nextStep+") Dest("+destination+") B//"+bugging+"// @["+hasArrived+"]["+Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination)+"]");
 //        rc.setIndicatorString(1, "["+map.pathingStrat+"] NextStep("+nextStepNodeId+")["+nextStep.x+","+nextStep.y+"] Dest("+destinationNodeId+")["+destination.x+","+destination.y+"] @["+hasArrived+"] bug["+bugging+"]["+bugLeft+"]");
     }
 
@@ -81,7 +87,6 @@ public class Navigator {
     {
         if(rc.canMove(heading)) {
             if (!rc.isActive()) rc.yield();
-
             if (sneaking) rc.sneak(heading);
             else rc.move(heading);
         }
@@ -101,7 +106,7 @@ public class Navigator {
 
     public void setDestination(MapLocation location) throws GameActionException
     {
-        bugging = false;
+        if (rc.getLocation().directionTo(location) != rc.getLocation().directionTo(destination)) bugging = false;
         destination = location;
         depart();
     }
@@ -194,17 +199,50 @@ public class Navigator {
         return MicroPathing.doubledBack() && map.valueForLocation(rc.getLocation().add(rc.getLocation().directionTo(destination))) == RoadMap.TILE_VOID;
     }
 
-    private void bugMove() throws GameActionException
+    private Direction bugMoveHeading() throws GameActionException
     {
+        Direction newHeading = heading;
         if (bugLeft) {
             if (map.valueForLocation(rc.getLocation().add(heading.opposite().rotateRight())) == RoadMap.TILE_VOID) heading = heading.rotateLeft().rotateLeft();
-            while (!rc.canMove(heading)) heading = heading.rotateRight();
-            tryMove(heading);
+            else if (map.valueForLocation(rc.getLocation().add(heading.rotateLeft().rotateLeft())) == RoadMap.TILE_VOID) heading = heading.rotateLeft().rotateLeft();
+//            while (!rc.canMove(heading)) heading = heading.rotateRight();
+            while (map.valueForLocation(rc.getLocation().add(heading)) == RoadMap.TILE_VOID) heading = heading.rotateRight();
+            return newHeading;
         } else {
             if (map.valueForLocation(rc.getLocation().add(heading.opposite().rotateLeft())) == RoadMap.TILE_VOID) heading = heading.rotateRight().rotateRight();
-            while (!rc.canMove(heading)) heading = heading.rotateLeft();
-            tryMove(heading);
+            else if (map.valueForLocation(rc.getLocation().add(heading.rotateRight().rotateRight())) == RoadMap.TILE_VOID) heading = heading.rotateRight().rotateRight();
+//            while (!rc.canMove(heading)) heading = heading.rotateLeft();
+            while (map.valueForLocation(rc.getLocation().add(heading)) == RoadMap.TILE_VOID) heading = heading.rotateLeft();
+            return newHeading;
         }
+    }
+
+    private Direction bugMoveHeading(MapLocation origin, Direction heading) throws GameActionException
+    {
+        Direction newHeading = heading;
+        if (bugLeft) {
+            if (map.valueForLocation(origin.add(heading.opposite().rotateRight())) == RoadMap.TILE_VOID) heading = heading.rotateLeft().rotateLeft();
+            else if (map.valueForLocation(origin.add(heading.rotateLeft().rotateLeft())) == RoadMap.TILE_VOID) heading = heading.rotateLeft().rotateLeft();
+            while (map.valueForLocation(origin.add(heading)) == RoadMap.TILE_VOID) heading = heading.rotateRight();
+            return newHeading;
+        } else {
+            if (map.valueForLocation(origin.add(heading.opposite().rotateLeft())) == RoadMap.TILE_VOID) heading = heading.rotateRight().rotateRight();
+            else if (map.valueForLocation(origin.add(heading.rotateRight().rotateRight())) == RoadMap.TILE_VOID) heading = heading.rotateRight().rotateRight();
+            while (map.valueForLocation(origin.add(heading)) == RoadMap.TILE_VOID) heading = heading.rotateLeft();
+            return newHeading;
+        }
+    }
+
+    private MapLocation getBugTerminal(MapLocation origin, MapLocation destination) throws GameActionException
+    {
+        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
+            return null;
+
+        MapLocation bugEnd = origin.add(origin.directionTo(destination));
+        while (map.valueForLocation(bugEnd) == RoadMap.TILE_VOID) {
+            bugEnd = bugEnd.add(bugEnd.directionTo(destination));
+        }
+        return bugEnd;
     }
 
 
@@ -216,6 +254,7 @@ public class Navigator {
     public void defaultMovement() throws GameActionException
     {
         if (!atFinalDestination()) {
+            dog = rc.getLocation();
             heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc);
             tryMove(heading);
         }
@@ -231,35 +270,97 @@ public class Navigator {
     public void smartMovement() throws GameActionException
     {
 //        if (!atFinalDestination()) {
+//            System.out.println("0");
+//            MapLocation newDog = new MapLocation(dog.x, dog.y);
+//            Direction newDogHeading = dogHeading.opposite().opposite();
 //
+//            System.out.println("1");
+//            if (!bugging) {
+//                int stepCount = 4;
+//                for (int i=0; i<stepCount; i++) {
+//                    System.out.println("2");
+//                    if (map.valueForLocation(newDog.add(newDog.directionTo(destination))) != RoadMap.TILE_VOID) {
+//                        System.out.println("3");
+//                        newDogHeading = newDog.directionTo(destination);
+//                        newDog = newDog.add(newDogHeading);
+//                    } else {
+//                        System.out.println("4");
+//                        bugging = true;
+//                        bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(newDog, destination);
+//                        bugTerminal = getBugTerminal(newDog, destination);
+//                        bugLeft = Path.shouldBugLeft(map, newDog, destination);
+//                        System.out.println("4.1");
+//                        break;
+//                    }
+//                }
+//            } else {
+//                System.out.println("5");
+//                int stepCount = 4;
+//                for (int i=0; i<stepCount; i++) {
+//                    System.out.println("6");
+//                    newDogHeading = bugMove(newDog, newDogHeading);
+//                    if (map.valueForLocation(newDog.add(newDogHeading)) != RoadMap.TILE_VOID) {
+//                        System.out.println("7");
+//                        newDog = newDog.add(newDogHeading);
+//                        if (newDog.x == bugTerminal.x && newDog.y == bugTerminal.y) {
+//                            System.out.println("8");
+//                            bugging = false;
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if (Path.canSimplyPath(map, rc.getLocation(), newDog)) {
+//                System.out.println("9");
+//                dog = newDog;
+//                dogHeading = newDogHeading;
+////                heading = map.directionFromRC(dog);
+//                heading = MicroPathing.getNextDirection(map.directionFromRC(dog), true, rc);
+//                tryMove(heading);
+//            }
 //
 //        } else {
-//            heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination).rotateRight(), true, rc);
-//            if (!rc.isActive()) rc.yield();
-//            if(rc.canMove(heading)) rc.move(heading);
+//            heading = MicroPathing.getNextDirection(map.directionFromRC(destination).rotateRight(), true, rc);
+//            tryMove(heading);
 //        }
-
-
-
-
 
         if (!atFinalDestination()) {
             if (!bugging) {
                 heading = MicroPathing.getNextDirection(map.directionTo(rc.getLocation(), destination), true, rc);
-
                 tryMove(heading);
 
                 if (shouldBug()) {
                     bugging = true;
                     bugStartDistanceFromDestination = (int)Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination);
+                    bugTerminal = getBugTerminal(rc.getLocation(), destination);
                     bugLeft = !bugLeft; // bugging direction is a basic flip-flop
+
+                    dog = rc.getLocation();
+                    dogHeading = rc.getLocation().directionTo(destination);
+                    MicroPathing.resetTrail();
                 }
-            } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
+            } else if (Utilities.distanceBetweenTwoPoints(rc.getLocation(), bugTerminal) < NEAR_WAYPOINT_DISTANCE || Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination) < bugStartDistanceFromDestination)
                 bugging = false;
-            if (rc.isActive() && bugging)
-                bugMove();
+
+            if (bugging) {
+//                MapLocation newDog = new MapLocation(dog.x, dog.y);
+//                Direction newDogHeading = dogHeading.opposite().opposite();
+//                int stepCount = 4;
+//                for (int i=0; i<stepCount; i++) {
+//                    newDog = newDog.add(bugMoveHeading(newDog, newDogHeading));
+//                }
+//                if (Utilities.distanceBetweenTwoPoints(newDog, rc.getLocation()) < 5) {
+//                    dog = newDog;
+//                    dogHeading = newDogHeading;
+//                    heading = map.directionFromRC(dog);
+//                    tryMove(heading);
+//                }
+
+                tryMove(bugMoveHeading());
+            }
         } else {
-            heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination).rotateRight(), true, rc);
+            heading = MicroPathing.getNextDirection(rc.getLocation().directionTo(destination), true, rc);
             tryMove(heading);
         }
     }

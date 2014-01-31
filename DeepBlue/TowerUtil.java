@@ -121,8 +121,43 @@ public class TowerUtil
         }
     }
     
+    public static MapLocation[] generatePullLines(RobotController rc, MapLocation center)
+    {
+    	MapLocation[] lines = new MapLocation[16];
+    	int numVoids = 8;
+    	int distAway = 36;
+        int radius = 17;
+    	
+    	for(int k = 0; k < directions.length; k++)
+        {
+            int voids = 0;
+            MapLocation toFire = center;
+            for(int a = 0; a < radius && voids < numVoids; a++)
+            {
+            	toFire = toFire.add(directions[k]);
+            	if(rc.senseTerrainTile(toFire) == TerrainTile.VOID)
+            	{
+            		voids++;
+            	}
+            }
+            while(toFire.x < -2 || toFire.x >= rc.getMapWidth() + 2 || toFire.y < -2 || toFire.y >= rc.getMapHeight() + 2 || !rc.canAttackSquare(toFire))
+            {
+            	toFire = toFire.add(toFire.directionTo(center));
+            }
+            lines[k * 2] = toFire;
+            do
+            {
+                toFire = toFire.add(toFire.directionTo(center));
+            }
+            while(toFire.distanceSquaredTo(center) > distAway);
+            lines[k * 2 + 1] = toFire;
+        }
+    	
+    	return lines;
+    }
+    
     //skip is how far it goes before firing again, like 1 would do every one and 2 would do every other one
-    public static void fireLine(RobotController rc, MapLocation start, MapLocation end, int skip)
+    public static void fireLine(RobotController rc, MapLocation start, MapLocation end, int skip, towerPastrRequest request)
     {
     	MapLocation toFire = start;
     	
@@ -130,7 +165,14 @@ public class TowerUtil
     	{
 	    	do
 	    	{
-	    		while(!rc.isActive()){rc.yield();}
+	    		while(!rc.isActive())
+	    		{
+	    			if(rc.getHealth() < 50)
+	    			{
+	    				request.sendRequest(rc.getLocation(), false);
+	    			}
+	    			rc.yield();
+	    		}
 	    		if(rc.canAttackSquare(toFire))
 	            {
 	                try
@@ -146,83 +188,7 @@ public class TowerUtil
     	catch(Exception e){}
     }
     
-    public static MapLocation bestSpot3(RobotController rc)
-    {
-    	double[][] cows = rc.senseCowGrowth();
-    	int width = rc.getMapWidth();
-    	int height = rc.getMapHeight();
-    	MapLocation start = new MapLocation(0, 0);
-    	MapLocation target = new MapLocation(0, 0);
-    	int total = 0;
-    	
-    	for(int k = 0; k < 3; k++)
-    	{
-    		for(int a = 0; a < 3; a++)
-    		{
-    			if(a < 3 - k)
-    			{
-	    			int temp = 0;
-	    			for(int t = 0; t < width / 3; t++)
-	    			{
-	    				for(int i = 0; i < height / 3; i++)
-	    				{
-	    					if(rc.senseTerrainTile(new MapLocation((k * width / 3) + t, (a * height / 3) + i)) == TerrainTile.VOID)
-	    					{
-	    						temp--;
-	    					}
-	    					else
-	    					{
-	    						temp += cows[(k * width / 3) + t][(a * height / 3) + i];
-	    					}
-	    				}
-	    			}
-	    			
-	    			if(temp > total)
-	    			{
-	    				total = temp;
-	    				start = new MapLocation(k * width / 3, a * height / 3);
-	    			}
-    			}
-    		}
-    	}
-    	
-    	total = 0;
-    	int scope = 8;
-    	int skip = 2;
-    	int begin = 4;
-    	for(int k = start.x + begin; k < start.x + width / 3 - begin && k < width; k += skip)
-    	{
-    		for(int a = start.y + begin; a < start.y + height / 3 - begin && a < height; a += skip)
-    		{
-    			int score = 0;
-    			for(int t = 0; t < scope; t += 1)
-    			{
-    				for(int i = 0; i < scope; i += 1)
-    				{
-    					if(rc.senseTerrainTile(new MapLocation(k - scope / 2 + t, a - scope / 2 + i)) == TerrainTile.VOID)
-    					{
-    						score -= 2;
-    					}
-    					else
-    					{
-    						score += (int)cows[k - scope / 2 + t][a - scope / 2 + i];
-    					}
-    				}
-    			}
-    			
-    			if(score > total)
-    			{
-    				total = score;
-    				target = new MapLocation(k, a);
-    				rc.setIndicatorString(1, "Calculating:"+target.toString());
-    			}
-    		}
-    	}
-    	
-    	return target;
-    }
-    
-    //finds the 3 best spots on the map
+    //finds the spotCount best spots on the map
     public static MapLocation[] findBestSpots(RobotController rc, int spotCount)
     {
     	MapLocation[] spots = new MapLocation[spotCount];
@@ -296,7 +262,7 @@ public class TowerUtil
     	return spots;
     }
     
-  //finds the spotCount best spots on the map
+    //finds the spotCount best spots on the map
     public static MapLocation[] findBestSpots2(RobotController rc, int spotCount)
     {
     	MapLocation[] spots = new MapLocation[spotCount];
@@ -304,6 +270,7 @@ public class TowerUtil
     	for(int k = spotScores.length - 1; k >= 0; k--)
     	{
     		spotScores[k] = 20;
+    		spots[k] = new MapLocation(0,0);
     	}
     	int width = rc.getMapWidth();
     	int height = rc.getMapHeight();

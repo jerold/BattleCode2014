@@ -2,7 +2,6 @@ package DeepBlue.Strategies;
 
 import DeepBlue.*;
 import battlecode.common.*;
-import firstjoshua.Soldier;
 
 /**
  * Created by fredkneeland on 1/28/14.
@@ -10,9 +9,7 @@ import firstjoshua.Soldier;
 public abstract class UnitStratPastrKiller extends UnitStrategy {
     public static RobotController rc;
     public static MapLocation target;
-    public static MapLocation firstPastr = null;
-    public static boolean found = false;
-    public static long[] teamMem;
+    static final int samePastr = 35675;
 
     public static void initialize(RobotController rcIn) throws GameActionException
     {
@@ -23,71 +20,15 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
     {
         MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
         MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
-<<<<<<< HEAD
-
-        if (enemyPastrs.length > 0)
-        {
-            Soldiers.nav.setSneak(false);
-            MapLocation closest = enemyPastrs[enemyPastrs.length-1];
-            int smallestDist = rc.getLocation().distanceSquaredTo(closest);
-
-            for (int i = enemyPastrs.length - 1; --i>=0;)
-=======
-        if(rc.readBroadcast(35675)==1){
+        if(rc.readBroadcast(samePastr)==1){
         	
-        	if (enemyPastrs.length > 0)
->>>>>>> 519a5814b3bea8999879c51b543d11692e4fa428
-            {
-                MapLocation closest = enemyPastrs[enemyPastrs.length-1];
-                int smallestDist = rc.getLocation().distanceSquaredTo(closest);
-
-                for (int i = enemyPastrs.length - 1; --i>=0;)
-                {
-                    MapLocation current = enemyPastrs[i];
-                    int currentDist = rc.getLocation().distanceSquaredTo(current);
-                    if (currentDist < smallestDist)
-                    {
-                        smallestDist = currentDist;
-                        closest = current;
-                        if(found == false){
-                        	firstPastr = closest;
-                        	found = true;
-                        }
-                    }
-                }
-                target = closest;
-            } else if(firstPastr != null){
-            	Direction dir = firstPastr.directionTo(new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2));
-            	for(int i = 0; i < 6; i++){
-        			firstPastr = firstPastr.add(dir);
-        			System.out.println("loc: " + firstPastr.x + ", " + firstPastr.y);
-        		}
-            	target = firstPastr;
-            } else {
-            	target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
-            }
-<<<<<<< HEAD
-            target = closest;
-
-            if (rc.getLocation().distanceSquaredTo(target) < 50)
-            {
-                Soldiers.nav.setSneak(true);
-            }
-            else
-            {
-                Soldiers.nav.setSneak(false);
-            }
-
-            target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
-            target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
-            target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
-=======
         } else {
         	if (enemyPastrs.length > 0)
         	{
+        		Soldiers.nav.setSneak(false);
         		MapLocation closest = enemyPastrs[enemyPastrs.length-1];
         		int smallestDist = rc.getLocation().distanceSquaredTo(closest);
-
+        		
         		for (int i = enemyPastrs.length - 1; --i>=0;)
         		{
         			MapLocation current = enemyPastrs[i];
@@ -116,11 +57,17 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         				closest = current;
         			}
         		}
-        		
-        		
-
         		target = closest;
-
+        		
+        		if (rc.getLocation().distanceSquaredTo(target) < 50)
+        		{
+        			Soldiers.nav.setSneak(true);
+        		}
+        		else
+        		{
+        			Soldiers.nav.setSneak(false);
+        		}
+        		
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
@@ -129,11 +76,8 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         	{
         		target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
         	}
->>>>>>> 519a5814b3bea8999879c51b543d11692e4fa428
         }
-        
+
         Soldiers.nav.setDestination(target);
     }
-
-
 }

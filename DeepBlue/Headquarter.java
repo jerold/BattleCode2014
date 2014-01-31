@@ -49,10 +49,10 @@ public class Headquarter {
             setRallyPoint(cache.ENEMY_HQ, Utilities.ReinforcementRally);
 
             //setUnitNeeded(Soldiers.UnitStrategyType.PastrBuilder);
-            while (!rc.isActive()) rc.yield();
-            Direction dir = Direction.NORTH;
-            while (!rc.canMove(dir)) dir = dir.rotateRight();
-            rc.spawn(dir);
+//            while (!rc.isActive()) rc.yield();
+//            Direction dir = Direction.NORTH;
+//            while (!rc.canMove(dir)) dir = dir.rotateRight();
+//            rc.spawn(dir);
 
             while (true) {
                 try
@@ -113,10 +113,7 @@ public class Headquarter {
                         cache.reset();
                         map.checkForUpdates();
 
-                        if (rc.isActive())
-                        {
-                            tryToSpawn();
-                        }
+                        tryToSpawn(); // The first thing checked is rc.isActive()
                     }
 
                 } catch (Exception e) {e.printStackTrace();}
