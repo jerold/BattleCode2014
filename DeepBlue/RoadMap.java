@@ -137,8 +137,8 @@ public class RoadMap {
         } else {
             if (!mapUploaded)
                 readBroadcastMap();
-            else if (expectMacroPathing && !macroPathingUploaded)
-                readBroadcastMacro();
+            /*else if (expectMacroPathing && !macroPathingUploaded)
+                readBroadcastMacro();*/
         }
     }
 

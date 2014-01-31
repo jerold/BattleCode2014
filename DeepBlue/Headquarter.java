@@ -25,7 +25,15 @@ public class Headquarter {
 
     static Direction allDirections[] = Direction.values();
     static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
-
+    static int allIndex = 0;
+	static MapLocation[] allPastrs = new MapLocation[100];
+	static MapLocation[] currentPastrs;
+	static MapLocation[] previousPastrs;
+	static MapLocation sameLoc;
+	static boolean waitOutSideRange = false;
+	static boolean found = false;
+	static final int samePastr = 35675;
+	
     public static void run(RobotController inRc)
     {
         try
@@ -51,6 +59,43 @@ public class Headquarter {
                 {
                     if (rc.isActive())
                     {
+                    	MapLocation[] currentPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                        if(currentPastrs.length > 0 && currentPastrs.length > previousPastrs.length){
+            				if(previousPastrs.length == 0){
+            					for(int k = 0; k < currentPastrs.length; k++){
+            						allPastrs[allIndex] = currentPastrs[k];
+            						System.out.println("pastr added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
+            						allIndex++;
+            					}
+            					previousPastrs = currentPastrs;
+            				} else {
+            					for(int i = previousPastrs.length; i < currentPastrs.length; i++){
+            						allPastrs[allIndex] = currentPastrs[i];
+            						System.out.println("PASTR added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
+            						allIndex++;
+            					}
+            					previousPastrs = currentPastrs;
+            				}		
+            			} else {
+            				previousPastrs = currentPastrs;
+            			}
+            			
+            			if(allPastrs.length > 0 && sameLoc == null){
+            				for(int j = 0; j < allIndex; j++){
+            					MapLocation search = allPastrs[j];
+            					for(int n = 0; n < allIndex; n++){
+            						if(search.equals(allPastrs[n]) && j != n){
+            							sameLoc = search;
+            						}
+            					}
+            				}
+            			}
+            			if(sameLoc != null && !found){
+            				System.out.println("Found same pastr loc @: " + sameLoc.x + ", " + sameLoc.y);
+            				found = true;
+            				rc.setTeamMemory(0, 1);
+            				rc.broadcast(samePastr, 1);
+            			}
                         Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                         int counter = 0;
 
@@ -85,8 +130,7 @@ public class Headquarter {
         if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){ // if(rc.isActive()&&rc.senseRobotCount()<2){
             for(int i=0;i<8;i++){
                 Direction trialDir = allDirections[(cache.MY_HQ.directionTo(cache.ENEMY_HQ).ordinal()+i)%8];
-                if(rc.canMove(trialDir))
-                {
+                if(rc.canMove(trialDir)){
                     setUnitNeeded(null, rc);
                     rc.spawn(trialDir);
                     break;
@@ -97,7 +141,7 @@ public class Headquarter {
 
     public static void setRallyPoint(MapLocation rally, int rpNumber) throws GameActionException
     {
-        //if (rallyPoints[rpNumber] != null) System.out.println("New Rally: "+map.idForNearestNode(rally)+"["+rally+"]  Old Rally: "+map.idForNearestNode(rallyPoints[rpNumber])+"["+rallyPoints[rpNumber]+"]");
+        if (rallyPoints[rpNumber] != null) System.out.println("New Rally: "+map.idForNearestNode(rally)+"["+rally+"]  Old Rally: "+map.idForNearestNode(rallyPoints[rpNumber])+"["+rallyPoints[rpNumber]+"]");
         rc.broadcast(Utilities.startRallyPointChannels+rpNumber*2, VectorFunctions.locToInt(rally));
         rallyPoints[rpNumber] = rally;
     }
@@ -274,6 +318,8 @@ public class Headquarter {
             {
                 numbOfSoldiers++;
             }
+            
+            //type = Utilities.unitNeededPastrKiller;
             rc.broadcast(Utilities.unitNeededChannel, type);
         }
     }

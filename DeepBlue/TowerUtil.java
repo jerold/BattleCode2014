@@ -296,6 +296,80 @@ public class TowerUtil
     	return spots;
     }
     
+  //finds the spotCount best spots on the map
+    public static MapLocation[] findBestSpots2(RobotController rc, int spotCount)
+    {
+    	MapLocation[] spots = new MapLocation[spotCount];
+    	int[] spotScores = new int[spotCount];
+    	int width = rc.getMapWidth();
+    	int height = rc.getMapHeight();
+    	int start = 5;
+    	int skip;
+    	int minDist;
+    	if(width * height <= 450)
+    	{
+    		skip = 1;
+    		minDist = 200;
+    	}
+    	else if(width * height <= 1000)
+    	{
+    		skip = 2;
+    		minDist = 250;
+    	}
+    	else if(width * height <= 3000)
+    	{
+    		skip = 3;
+    		minDist = 300;
+    	}
+    	else
+    	{
+    		skip = 3;
+    		minDist = 400;
+    	}
+    	
+    	MapLocation spot;
+    	int score, minLoc;
+    	
+    	for(int k = start; k < width - start; k += skip)
+    	{
+    		for(int a = start; a < height - start; a += skip)
+    		{
+    			spot = new MapLocation(k, a);
+    			boolean go = true;
+    			for(int t = 0; t < spots.length; t++)
+    			{
+    				try
+    				{
+    					if(spots[t].x != 0 || spots[t].y != 0)
+    					{
+		    				if(spot.distanceSquaredTo(spots[t]) < minDist || spot.distanceSquaredTo(rc.senseEnemyHQLocation()) < 300)
+		    				{
+		    					go  = false;
+		    				}
+    					}
+    				}
+    				catch(Exception e){}
+    			}
+    			if(go)
+    			{
+	    			if(rc.senseTerrainTile(spot) != TerrainTile.VOID)
+	    			{
+		    			score = getSpotScore(rc, spot);
+		    			minLoc = findMin(spotScores);
+		    			
+		    			if(score > spotScores[minLoc])
+		    			{
+		    				spots[minLoc] = spot;
+		    				spotScores[minLoc] = score;
+		    			}
+	    			}
+    			}
+    		}
+    	}
+    	
+    	return spots;
+    }
+    
     private static int findMin(int[] nums)
     {
     	int temp = nums[0];
