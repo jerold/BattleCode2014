@@ -680,6 +680,131 @@ public class FightMicro
         }
     }
 
+    /**
+     * This method is for the hq shooting
+     */
+    public static void hqFire(RobotController rc) throws GameActionException
+    {
+        if (rc.isActive())
+        {
+            int radius = 15;
+            Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, radius, rc.getTeam().opponent());
+            Robot[] enemies2 = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
+            Direction[] dirs = Direction.values();
+            Robot target = null;
+            int maxValue = 0;
+
+            for(int k = 0; k < enemies.length; k++)
+            {
+                MapLocation loc = rc.senseRobotInfo(enemies[k]).location;
+                int value = 2;
+                for (int a = 0; a < 8; a++)
+                {
+                    try
+                    {
+                        if (rc.canSenseSquare(loc.add(dirs[a])))
+                        {
+                            if (rc.senseObjectAtLocation(loc.add(dirs[a])) != null)
+                            {
+                                if(rc.senseObjectAtLocation(loc.add(dirs[a])).getTeam() == rc.getTeam().opponent())
+                                {
+                                    value++;
+                                }
+                                else if(rc.senseObjectAtLocation(loc.add(dirs[a])).getTeam() == rc.getTeam())
+                                {
+                                    value--;
+                                }
+                            }
+                        }
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+
+                if(value > maxValue)
+                {
+                    maxValue = value;
+                    target = enemies[k];
+                }
+            }
+
+            if(target != null)
+            {
+                if (rc.canAttackSquare(rc.senseRobotInfo(target).location))
+                {
+                    rc.attackSquare(rc.senseRobotInfo(target).location);
+                }
+
+            }
+            else if (enemies2.length > 0)
+            {
+                MapLocation location = null;
+                MapLocation loc = null;
+                maxValue = 0;
+                for (int j = 0; j < enemies2.length; j++)
+                {
+
+                    int value = 0;
+                    MapLocation loc2 = rc.senseRobotInfo(enemies2[j]).location;
+                    Direction dir = rc.getLocation().directionTo(loc2).rotateRight().rotateRight();
+
+                    for (int l = 0; l < 3; l++)
+                    {
+                        loc = loc2.subtract(dir);
+                        dir = dir.rotateLeft();
+                        if (rc.getLocation().distanceSquaredTo(loc) <= 15)
+                        {
+                            for (int k = 0; k < 8; k++)
+                            {
+                                try
+                                {
+                                    if (rc.canSenseSquare(loc.add(dirs[k])))
+                                    {
+                                        GameObject enemy = rc.senseObjectAtLocation(loc.add(dirs[k]));
+
+                                        if (enemy != null)
+                                        {
+                                            if(enemy.getTeam() == rc.getTeam().opponent())
+                                            {
+                                                value++;
+                                            }
+                                            else if(enemy.getTeam() == rc.getTeam())
+                                            {
+                                                value--;
+                                            }
+                                        }
+                                    }
+                                }
+                                catch(Exception e)
+                                {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+
+                        if (value > 0)
+                        {
+                            location = loc;
+                            l = 3;
+                            j = enemies2.length;
+                        }
+                    }
+                    if (maxValue < value)
+                    {
+                        maxValue = value;
+                        location = loc;
+                    }
+                }
+
+                if (rc.canAttackSquare(location))
+                {
+                    rc.attackSquare(location);
+                }
+            }
+        }
+    }
+
     public static boolean MapLocationInRangeOfEnemyHQ(RobotController rc, MapLocation target)
     {
         if (target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 24)

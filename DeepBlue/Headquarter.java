@@ -43,10 +43,15 @@ public class Headquarter {
                 {
                     if (rc.isActive())
                     {
+                        FightMicro.hqFire(rc);
+
                         cache.reset();
                         map.checkForUpdates();
 
-                        tryToSpawn();
+                        if (rc.isActive())
+                        {
+                            tryToSpawn();
+                        }
                     }
 
                 } catch (Exception e) {e.printStackTrace();}
@@ -86,7 +91,7 @@ public class Headquarter {
             rc.setIndicatorString(2, ""+TowerUtil.getHQSpotScore(rc, rc.senseHQLocation()));
 
 
-            if (numbOfSoldiers < 2 && Utilities.checkHQTower(rc))
+            if (Utilities.checkHQTower(rc))
             {
                 if (numbOfSoldiers == 0)
                 {
@@ -95,6 +100,10 @@ public class Headquarter {
                 else if (numbOfSoldiers == 1)
                 {
                     type = Utilities.unitNeededHQPastr;
+                }
+                else if (numbOfSoldiers % 2 == 0)
+                {
+                    type = Utilities.unitNeededHQSurround;
                 }
                 else
                 {
