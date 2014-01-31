@@ -149,6 +149,66 @@ public class Utilities
 
 
 
+
+    //================================================================================
+    // Packing Methods
+    //================================================================================
+
+//    /*
+//    Packs a set of boolean values into a single int
+//     */
+//    public static int packedMap(boolean[] values)
+//    {
+//        if (values.length != 32) System.out.println("PACKING THE WRONG NUMBER OF VALUES!!!");
+//        int packet = 0;
+//        for (int i=0; i < values.length; i++) {
+//            packet = (packet<<1) + (values[i] ? 1 : 0);
+//        }
+//        return packet;
+//    }
+//
+//    /*
+//    Unpacks a set of boolean values from within an single int
+//     */
+//    public static boolean[] unpackedMap(int packet)
+//    {
+//        boolean[] values = new boolean[32];
+//        for (int i=0; i < values.length; i++) {
+//            values[values.length-i-1] = packet%2 == 1 ? true : false;
+//            packet = packet>>1;
+//        }
+//        return values;
+//    }
+
+    public static int packetPush(int packet, boolean value)
+    {
+        return (packet<<1) + (value ? 1 : 0);
+    }
+
+    public static boolean packetPeek(int packet)
+    {
+//        int packetCopy = packet;
+//        for (int i=0; i < RoadMap.MAX_PACKED_VALUES; i++) {
+//            System.out.print(packetCopy%2 == 1 ? 1 : 0);
+//            packetCopy = packetCopy>>1;
+//        }
+//        System.out.println("");
+        return packet%2 == 1;
+    }
+
+    public static int packetPitch(int packet)
+    {
+//        int packetCopy = packet;
+//        for (int i=0; i < RoadMap.MAX_PACKED_VALUES; i++) {
+//            System.out.print(packetCopy%2 == 1 ? 1 : 0);
+//            packetCopy = packetCopy>>1;
+//        }
+//        System.out.println("");
+        return packet>>1;
+    }
+
+
+
     //================================================================================
     // Helper Methods
     //================================================================================

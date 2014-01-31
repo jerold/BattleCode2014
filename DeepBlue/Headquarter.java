@@ -33,6 +33,10 @@ public class Headquarter {
             setRallyPoint(cache.ENEMY_HQ, Utilities.ReinforcementRally);
 
             //setUnitNeeded(Soldiers.UnitStrategyType.PastrBuilder);
+            while (!rc.isActive()) rc.yield();
+            Direction dir = Direction.NORTH;
+            while (!rc.canMove(dir)) dir = dir.rotateRight();
+            rc.spawn(dir);
 
             while (true) {
                 try
@@ -53,16 +57,16 @@ public class Headquarter {
     }
 
     public static void tryToSpawn() throws GameActionException {
-        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){ // if(rc.isActive()&&rc.senseRobotCount()<2){
-            for(int i=0;i<8;i++){
-                Direction trialDir = allDirections[(cache.MY_HQ.directionTo(cache.ENEMY_HQ).ordinal()+i)%8];
-                if(rc.canMove(trialDir)){
-                    setUnitNeeded(null, rc);
-                    rc.spawn(trialDir);
-                    break;
-                }
-            }
-        }
+//        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){ // if(rc.isActive()&&rc.senseRobotCount()<2){
+//            for(int i=0;i<8;i++){
+//                Direction trialDir = allDirections[(cache.MY_HQ.directionTo(cache.ENEMY_HQ).ordinal()+i)%8];
+//                if(rc.canMove(trialDir)){
+//                    setUnitNeeded(null, rc);
+//                    rc.spawn(trialDir);
+//                    break;
+//                }
+//            }
+//        }
     }
 
     public static void setRallyPoint(MapLocation rally, int rpNumber) throws GameActionException
