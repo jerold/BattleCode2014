@@ -43,6 +43,11 @@ public abstract class UnitStratPastrDefense extends UnitStrategy {
                     closest = current;
                 }
             }
+
+            if (rc.getLocation().distanceSquaredTo(target) < 50)
+            {
+                Soldiers.nav.setSneak(true);
+            }
             target = closest;
             pastr = closest;
             MapLocation enemyHQ = rc.senseEnemyHQLocation();

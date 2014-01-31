@@ -5,27 +5,50 @@ import DeepBlue.Soldiers;
 import DeepBlue.UnitStrategy;
 import DeepBlue.Utilities;
 import battlecode.common.*;
+import firstjoshua.Soldier;
 
 /**
  * Created by AfterHours on 1/22/14.
  */
-public abstract class UnitStratReinforcement extends UnitStrategy {
+public abstract class UnitStratReinforcement extends UnitStrategy
+{
+    static RobotController rc;
+    static MapLocation target;
+    static MapLocation rallyPoint;
 
-    static int rallyChannelMod = Utilities.ReinforcementRally;
+    public static void initialize(RobotController rcIn)
+    {
+        rc = rcIn;
+        rallyPoint = rc.senseHQLocation().add(rc.senseEnemyHQLocation().directionTo(rc.senseHQLocation()), 10);
+    }
 
     public static void update() throws GameActionException
     {
-        UnitStrategy.fetchRally(rallyChannelMod);
+        MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+        int[] get = Soldiers.request.checkForNeed();
 
-        // Reinforement will become what the team needs or if nothing is needed become a frontliner by default
+        if (enemyPastrs.length > 0)
+        {
+            Soldiers.changeStrategy(Soldiers.UnitStrategyType.PastrDestroyer);
+        }
+        else if(get[0] != -1)
+        {
+            if(get[2] == 0)
+            {
+                noiseTowerBuilder.initialize(rc, get);
+                Soldiers.changeStrategy(Soldiers.UnitStrategyType.NoiseTowerBuilder);
+            }
+            else
+            {
+                pastrBuilder.initialize(rc, get);
+                Soldiers.changeStrategy(Soldiers.UnitStrategyType.PastrBuilder);
+            }
+        }
+        else
+        {
+            target = rallyPoint;
+        }
 
-//        if (Soldiers.cache.nearbyAllies().length > 8) {
-            Soldiers.UnitStrategyType type = Soldiers.UnitStrategyType.values()[Soldiers.rc.readBroadcast(Utilities.unitNeededChannel)];
-            if (type == Soldiers.UnitStrategyType.NoType) Soldiers.changeStrategy(Soldiers.UnitStrategyType.FrontLiner);
-            else Soldiers.changeStrategy(type);
-            Soldiers.rc.broadcast(Utilities.unitNeededChannel, Soldiers.UnitStrategyType.NoType.getValue());
-//        }
+        Soldiers.nav.setDestination(target);
     }
-
-    public static void run() throws GameActionException {} // The life of a reinforcement unit is short...
 }

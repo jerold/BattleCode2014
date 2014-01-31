@@ -2,6 +2,7 @@ package DeepBlue.Strategies;
 
 import DeepBlue.*;
 import battlecode.common.*;
+import firstjoshua.Soldier;
 
 /**
  * Created by fredkneeland on 1/28/14.
@@ -22,6 +23,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
 
         if (enemyPastrs.length > 0)
         {
+            Soldiers.nav.setSneak(false);
             MapLocation closest = enemyPastrs[enemyPastrs.length-1];
             int smallestDist = rc.getLocation().distanceSquaredTo(closest);
 
@@ -53,10 +55,16 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
                     closest = current;
                 }
             }
-
-
-
             target = closest;
+
+            if (rc.getLocation().distanceSquaredTo(target) < 50)
+            {
+                Soldiers.nav.setSneak(true);
+            }
+            else
+            {
+                Soldiers.nav.setSneak(false);
+            }
 
             target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
             target = target.add(target.directionTo(rc.senseEnemyHQLocation()));

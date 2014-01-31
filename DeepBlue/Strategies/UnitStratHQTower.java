@@ -26,13 +26,31 @@ public abstract class UnitStratHQTower extends UnitStrategy {
             if (!rc.senseTerrainTile(current).equals(TerrainTile.OFF_MAP) && !rc.senseTerrainTile(current).equals(TerrainTile.VOID))
             {
                 int currentDist = current.distanceSquaredTo(enemyHQ);
-
                 if (currentDist < closestDist)
                 {
                     closestDist = currentDist;
                     target = current;
                 }
             }
+
+            Robot botAtSpot = null;
+            if (target != null)
+            {
+                botAtSpot = (Robot) rc.senseObjectAtLocation(target);
+            }
+
+            if (botAtSpot != null)
+            {
+                if (rc.senseRobotInfo(botAtSpot).type == RobotType.NOISETOWER)
+                {
+                    Soldiers.changeStrategy(UnitStrategyType.PastrDestroyer);
+                }
+                else if (rc.senseRobotInfo(botAtSpot).isConstructing)
+                {
+                    Soldiers.changeStrategy(UnitStrategyType.PastrDestroyer);
+                }
+            }
+
         }
         Soldiers.nav.setDestination(target);
     }

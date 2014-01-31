@@ -36,6 +36,20 @@ public abstract class UnitStratHQPastr extends UnitStrategy {
             }
         }
 
+        Robot botAtSpot = (Robot) rc.senseObjectAtLocation(target);
+
+        if (botAtSpot != null)
+        {
+            if (rc.senseRobotInfo(botAtSpot).type == RobotType.PASTR)
+            {
+                Soldiers.changeStrategy(UnitStrategyType.PastrDestroyer);
+            }
+            else if (rc.senseRobotInfo(botAtSpot).isConstructing)
+            {
+                Soldiers.changeStrategy(UnitStrategyType.PastrDestroyer);
+            }
+        }
+
         Soldiers.nav.setDestination(target);
     }
 
