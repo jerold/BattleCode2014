@@ -35,7 +35,8 @@ public class Soldiers {
         HQSurround(10),
         OurPastrKiller(11),
         HQPastr(12),
-        HQTower(13);
+        HQTower(13),
+        BlockadeRunner(14);
 
         private final int value;
         private UnitStrategyType(int value) {
@@ -121,6 +122,10 @@ public class Soldiers {
                 case Utilities.unitNeededHQTower:
                     changeStrategy(UnitStrategyType.HQTower);
                     UnitStratHQTower.initialize(rc);
+                    break;
+                case Utilities.unitNeededBlockadeRunner:
+                    BlockadeRunner.initialize(rc);
+                    changeStrategy(UnitStrategyType.BlockadeRunner);
                     break;
                 default:
                     changeStrategy(UnitStrategyType.PastrDestroyer);
@@ -238,6 +243,9 @@ public class Soldiers {
                 break;
             case HQTower:
                 UnitStratHQTower.upDate();
+                break;
+            case BlockadeRunner:
+                BlockadeRunner.upDate();
                 break;
 
         }

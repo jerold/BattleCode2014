@@ -78,7 +78,7 @@ public class Navigator {
 //        rc.setIndicatorString(1, "["+map.pathingStrat+"] NextStep("+nextStepNodeId+")["+nextStep.x+","+nextStep.y+"] Dest("+destinationNodeId+")["+destination.x+","+destination.y+"] @["+hasArrived+"] bug["+bugging+"]["+bugLeft+"]");
     }
 
-    private void setSneak(boolean setting)
+    public void setSneak(boolean setting)
     {
         sneaking = setting;
     }

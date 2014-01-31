@@ -29,15 +29,18 @@ public class towerPastrRequest
 		{
 			this.rc = rc;
 			numSpots = howManyPastrs(rc);
+			rc.setIndicatorString(0, "" + numSpots);
 			
 			if(rc.readBroadcast(start) == 0)
 			{
 				rc.broadcast(start, -1);
-				MapLocation[] locs = TowerUtil.findBestSpots(rc, numSpots);
+				MapLocation[] locs = TowerUtil.findBestSpots2(rc, numSpots);
 				this.locs = locs;
 				for(int k = 0; k < numSpots; k++)
 				{
-					rc.broadcast(start + k * 3, TowerUtil.convertMapLocationToInt(locs[k]));
+					try{
+						rc.broadcast(start + k * 3, TowerUtil.convertMapLocationToInt(locs[k]));
+					} catch (Exception e){e.printStackTrace();}
 				}
 			}
 			else
@@ -188,7 +191,6 @@ public class towerPastrRequest
 	public static void endBuilding(RobotController rc)
 	{
 		int numSpots = howManyPastrs(rc);
-		rc.setIndicatorString(0, "" + numSpots);
 		for(int k = 0; k < numSpots; k++)
 		{
 			try
@@ -204,11 +206,11 @@ public class towerPastrRequest
 	{
 		int size = rc.getMapWidth() * rc.getMapHeight();
 		
-		if(size <= 500)
+		if(size <= 900)
 		{
 			return 1;
 		}
-		else if(size <= 1600)
+		else if(size <= 2500)
 		{
 			return 2;
 		}

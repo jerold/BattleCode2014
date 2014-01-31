@@ -29,6 +29,9 @@ public class Utilities
     static final public int unitNeededOurPastrKiller = 6;
     static final public int unitNeededHQPastr = 7;
     static final public int unitNeededHQTower = 8;
+    static final public int unitNeededReinforcement = 9;
+    static final public int unitNeededSurroundTester = 10;
+    static final public int unitNeededBlockadeRunner = 11;
 
     static final public int startRallyPointChannels = 20001;
     static final public int FrontLineRally = 0;
