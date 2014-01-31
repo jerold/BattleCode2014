@@ -29,6 +29,7 @@ public class towerPastrRequest
 		{
 			this.rc = rc;
 			numSpots = howManyPastrs(rc);
+			rc.setIndicatorString(0, "" + numSpots);
 			
 			if(rc.readBroadcast(start) == 0)
 			{
@@ -188,7 +189,6 @@ public class towerPastrRequest
 	public static void endBuilding(RobotController rc)
 	{
 		int numSpots = howManyPastrs(rc);
-		rc.setIndicatorString(0, "" + numSpots);
 		for(int k = 0; k < numSpots; k++)
 		{
 			try
@@ -204,11 +204,11 @@ public class towerPastrRequest
 	{
 		int size = rc.getMapWidth() * rc.getMapHeight();
 		
-		if(size <= 500)
+		if(size <= 900)
 		{
 			return 1;
 		}
-		else if(size <= 1600)
+		else if(size <= 2000)
 		{
 			return 2;
 		}

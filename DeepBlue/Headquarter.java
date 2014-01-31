@@ -75,21 +75,21 @@ public class Headquarter {
     }
 
     public static void tryToSpawn() throws GameActionException {
-//        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){ // if(rc.isActive()&&rc.senseRobotCount()<2){
-//            for(int i=0;i<8;i++){
-//                Direction trialDir = allDirections[(cache.MY_HQ.directionTo(cache.ENEMY_HQ).ordinal()+i)%8];
-//                if(rc.canMove(trialDir)){
-//                    setUnitNeeded(null, rc);
-//                    rc.spawn(trialDir);
-//                    break;
-//                }
-//            }
-//        }
+        if(rc.isActive()&&rc.senseRobotCount()<GameConstants.MAX_ROBOTS){ // if(rc.isActive()&&rc.senseRobotCount()<2){
+            for(int i=0;i<8;i++){
+                Direction trialDir = allDirections[(cache.MY_HQ.directionTo(cache.ENEMY_HQ).ordinal()+i)%8];
+                if(rc.canMove(trialDir)){
+                    setUnitNeeded(null, rc);
+                    rc.spawn(trialDir);
+                    break;
+                }
+            }
+        }
     }
 
     public static void setRallyPoint(MapLocation rally, int rpNumber) throws GameActionException
     {
-        //if (rallyPoints[rpNumber] != null) System.out.println("New Rally: "+map.idForNearestNode(rally)+"["+rally+"]  Old Rally: "+map.idForNearestNode(rallyPoints[rpNumber])+"["+rallyPoints[rpNumber]+"]");
+        if (rallyPoints[rpNumber] != null) System.out.println("New Rally: "+map.idForNearestNode(rally)+"["+rally+"]  Old Rally: "+map.idForNearestNode(rallyPoints[rpNumber])+"["+rallyPoints[rpNumber]+"]");
         rc.broadcast(Utilities.startRallyPointChannels+rpNumber*2, VectorFunctions.locToInt(rally));
         rallyPoints[rpNumber] = rally;
     }
