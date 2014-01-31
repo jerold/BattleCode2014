@@ -149,9 +149,14 @@ public class GenericTower
 		                			{
 		                				start = start.add(start.directionTo(lines[k * 2 + 1]));
 		                			}
-		                			TowerUtil.fireLine(rc, lines[k * 2], lines[k * 2 + 1], 1, request);
+		                			TowerUtil.fireLine(rc, start, lines[k * 2 + 1], 1, request);
 		                			if(k == 4)
 		                			{
+                                        start = lines[(k + 2) * 2];
+                                        while(closest[k] != 0 && start.distanceSquaredTo(target) > closest[k])
+                                        {
+                                            start = start.add(start.directionTo(lines[(k + 2) * 2 + 1]));
+                                        }
 		                				TowerUtil.fireLine(rc, lines[(k + 2) * 2], lines[(k + 2) * 2 + 1], 1, request);
 		                			}
 		                		}
