@@ -301,6 +301,10 @@ public class TowerUtil
     {
     	MapLocation[] spots = new MapLocation[spotCount];
     	int[] spotScores = new int[spotCount];
+    	for(int k = spotScores.length - 1; k >= 0; k--)
+    	{
+    		spotScores[k] = 20;
+    	}
     	int width = rc.getMapWidth();
     	int height = rc.getMapHeight();
     	int start = 5;
@@ -324,7 +328,7 @@ public class TowerUtil
     	else
     	{
     		skip = 3;
-    		minDist = 400;
+    		minDist = 1000;
     	}
     	
     	MapLocation spot;
@@ -355,12 +359,15 @@ public class TowerUtil
 	    			if(rc.senseTerrainTile(spot) != TerrainTile.VOID)
 	    			{
 		    			score = getSpotScore(rc, spot);
-		    			minLoc = findMin(spotScores);
-		    			
-		    			if(score > spotScores[minLoc])
+		    			if(spot.distanceSquaredTo(rc.senseHQLocation()) <= spot.distanceSquaredTo(rc.senseEnemyHQLocation()) + 3)
 		    			{
-		    				spots[minLoc] = spot;
-		    				spotScores[minLoc] = score;
+		    				minLoc = findMin(spotScores);
+			    			
+			    			if(score > spotScores[minLoc])
+			    			{
+			    				spots[minLoc] = spot;
+			    				spotScores[minLoc] = score;
+			    			}
 		    			}
 	    			}
     			}

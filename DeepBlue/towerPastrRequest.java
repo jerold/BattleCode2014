@@ -34,7 +34,7 @@ public class towerPastrRequest
 			if(rc.readBroadcast(start) == 0)
 			{
 				rc.broadcast(start, -1);
-				MapLocation[] locs = TowerUtil.findBestSpots(rc, numSpots);
+				MapLocation[] locs = TowerUtil.findBestSpots2(rc, numSpots);
 				this.locs = locs;
 				for(int k = 0; k < numSpots; k++)
 				{
@@ -208,7 +208,7 @@ public class towerPastrRequest
 		{
 			return 1;
 		}
-		else if(size <= 2000)
+		else if(size <= 2500)
 		{
 			return 2;
 		}
