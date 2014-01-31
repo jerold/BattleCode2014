@@ -100,6 +100,13 @@ public abstract class pastrBuilder extends UnitStrategy {
             request.madeIt(true);
             rc.construct(RobotType.PASTR);
         }
+        else if (rc.getLocation().isAdjacentTo(pastrSpot))
+        {
+            if (rc.canMove(rc.getLocation().directionTo(pastrSpot)))
+            {
+                rc.move(rc.getLocation().directionTo(pastrSpot));
+            }
+        }
         else
         {
         	if(rc.getHealth() < 50)

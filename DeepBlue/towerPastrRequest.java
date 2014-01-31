@@ -38,7 +38,9 @@ public class towerPastrRequest
 				this.locs = locs;
 				for(int k = 0; k < numSpots; k++)
 				{
-					rc.broadcast(start + k * 3, TowerUtil.convertMapLocationToInt(locs[k]));
+					try{
+						rc.broadcast(start + k * 3, TowerUtil.convertMapLocationToInt(locs[k]));
+					} catch (Exception e){e.printStackTrace();}
 				}
 			}
 			else
