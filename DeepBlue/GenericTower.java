@@ -10,6 +10,7 @@ public class GenericTower
     private int type;
     private boolean troll, first;
     private towerPastrRequest request;
+    MapLocation[] lines;
 
     public GenericTower(RobotController rc, boolean troll)
     {
@@ -42,7 +43,12 @@ public class GenericTower
 	        	{
 	        		try
 	        		{
-		        		if(rc.senseRobotInfo(bot).type == RobotType.PASTR || rc.senseRobotInfo(bot).type == RobotType.SOLDIER)
+		        		if(rc.senseRobotInfo(bot).type == RobotType.PASTR)
+		        		{
+		        			target = rc.senseRobotInfo(bot).location;
+		        			foundPastr = true;
+		        		}
+		        		else if(rc.senseRobotInfo(bot).type == RobotType.SOLDIER)
 		        		{
 		        			target = rc.senseRobotInfo(bot).location;
 		        			foundPastr = true;
@@ -55,6 +61,8 @@ public class GenericTower
         }
         
         type = 1;
+        
+        lines = TowerUtil.generatePullLines(rc, target);
     }
 
     public void run()
@@ -100,7 +108,14 @@ public class GenericTower
 		            	{
 		            		if(type == 1)
 		                	{
-		                		TowerUtil.pullInto(rc, 17, target, request);
+		                		for(int k = 0; k < 8; k++)
+		                		{
+		                			TowerUtil.fireLine(rc, lines[k * 2], lines[k * 2 + 1], 1, request);
+		                			if(k == 4)
+		                			{
+		                				TowerUtil.fireLine(rc, lines[(k + 2) * 2], lines[(k + 2) * 2 + 1], 1, request);
+		                			}
+		                		}
 		                	}
 		            		first = false;
 		            	}

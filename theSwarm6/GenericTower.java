@@ -42,7 +42,12 @@ public class GenericTower
 	        	{
 	        		try
 	        		{
-		        		if(rc.senseRobotInfo(bot).type == RobotType.PASTR || rc.senseRobotInfo(bot).type == RobotType.SOLDIER)
+		        		if(rc.senseRobotInfo(bot).type == RobotType.PASTR)
+		        		{
+		        			target = rc.senseRobotInfo(bot).location;
+		        			foundPastr = true;
+		        		}
+		        		else if(rc.senseRobotInfo(bot).type == RobotType.SOLDIER)
 		        		{
 		        			target = rc.senseRobotInfo(bot).location;
 		        			foundPastr = true;

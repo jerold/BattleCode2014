@@ -38,9 +38,12 @@ public class towerPastrRequest
 				this.locs = locs;
 				for(int k = 0; k < numSpots; k++)
 				{
-					try{
+					try
+					{
+						rc.setIndicatorString(0, "" + locs[0]);
 						rc.broadcast(start + k * 3, TowerUtil.convertMapLocationToInt(locs[k]));
-					} catch (Exception e){e.printStackTrace();}
+					}
+					catch(Exception e){e.printStackTrace();}
 				}
 			}
 			else
