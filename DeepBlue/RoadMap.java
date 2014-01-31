@@ -19,6 +19,9 @@ public class RoadMap {
     double[][] cowGrowthMap;
     int[][] pathingTestMap;
 
+    static Direction allDirections[] = Direction.values();
+    static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
+
     int mapPacket;
     int packedValues;
     int packetNumber;
@@ -31,6 +34,7 @@ public class RoadMap {
     static final int MAP_PADDING = 1;
     static final int COW_GROWTH_MAP_RESOLUTION = 4;
     static final int MIN_SAFE_ENEMY_HQ_RANGE = 8;
+    public static int MAX_PACKED_VALUES = 31;
 
     int nodeCount;
     int usableNodeCount;
@@ -91,7 +95,7 @@ public class RoadMap {
         mapProgress = 0;
         macroPathingUploaded = false;
         macroPathingProgress = 0;
-        expectMacroPathing = true;
+        expectMacroPathing = false;
 
         // Initialize Macro Path Variables and Direction Arrays
         usableNodeCount = 0;
@@ -155,6 +159,20 @@ public class RoadMap {
             if (mapUploaded) return roadMap[loc.x][loc.y];
             else return rc.senseTerrainTile(loc).ordinal() > 1 ? TILE_VOID : 0;
         } else return TILE_VOID;
+    }
+
+    public Direction directionFromRC(MapLocation destination) throws GameActionException
+    {
+        Direction dir = rc.getLocation().directionTo(destination);
+        for (int ordDir:directionalLooks) {
+            dir = allDirections[(dir.ordinal()+8+ordDir)%8];
+            if (rc.canMove(dir)) { // Can move in direction
+                if (valueForLocation(rc.getLocation().add(dir)) != TILE_VOID) {
+                    return dir;
+                }
+            }
+        }
+        return Direction.NONE;
     }
 
     public Direction directionTo(MapLocation origin, MapLocation destination) throws GameActionException
@@ -221,7 +239,7 @@ public class RoadMap {
         for (int nOffset:neighborIdOffeset) {
             int neighborNodeId = nearestNodeIdForOldLoc+nOffset;
             int dist = macroPathDistance[neighborNodeId][nearestNodeIdForNewLoc];
-            if (neighborNodeId >= 0 && neighborNodeId < nodeCount && dist < nearestNeighborDistance && Path.canSimplyPath(this, oldloc, locationForNode(nearestNeighborNodeId))) {
+            if (neighborNodeId >= 0 && neighborNodeId < nodeCount && dist < nearestNeighborDistance && (nearestNeighborNodeId == NO_PATH_EXISTS || Path.canSimplyPath(this, oldloc, locationForNode(nearestNeighborNodeId)))) {
                 nearestNeighborDistance = dist;
                 nearestNeighborNodeId = neighborNodeId;
             }
@@ -565,16 +583,16 @@ public class RoadMap {
 //        broadcastFlags();
 //    }
 
-    public static int MAX_PACKED_VALUES = 31;
     public void readBroadcastMap() throws GameActionException
     {
         mapUploaded = rc.readBroadcast(Utilities.mapUploadedChannel) == 1;
         if (mapUploaded) {
             pathingStrat = PathingStrategy.SmartBug;
             rc.setIndicatorString(1, "Pulling Map");
-            System.out.println("BEGIN Reading in Map");
+//            System.out.println("BEGIN Reading in Map ("+((MAP_WIDTH*MAP_HEIGHT)/MAX_PACKED_VALUES)+" packets)");
 
-            for (int p=0; p<=(MAP_WIDTH*MAP_HEIGHT)/MAX_PACKED_VALUES; p++) {
+            int totalTiles = MAP_WIDTH*MAP_HEIGHT;
+            for (int p=0; p<=(totalTiles/MAX_PACKED_VALUES); p++) {
                 int packet = readPacket(p);
                 for (int i=0; i<MAX_PACKED_VALUES; i++) {
 //                    Utilities.packetPeek(packet);
@@ -582,14 +600,15 @@ public class RoadMap {
 
                     int tileNumber = p*MAX_PACKED_VALUES+(MAX_PACKED_VALUES-i-1);
 //                    System.out.println("    Tile "+tileNumber+"   x:"+tileNumber%MAP_WIDTH+", y:"+tileNumber/MAP_WIDTH+"   ["+Utilities.packetPeek(packet)+"]");
-                    if (tileNumber < MAP_WIDTH*MAP_HEIGHT) roadMap[tileNumber%MAP_WIDTH][tileNumber/MAP_WIDTH] = Utilities.packetPeek(packet) ? 0 : TILE_VOID;
+                    if (tileNumber < totalTiles) roadMap[tileNumber%MAP_WIDTH][tileNumber/MAP_WIDTH] = Utilities.packetPeek(packet) ? 0 : TILE_VOID;
+                    else break;
                     packet = Utilities.packetPitch(packet);
                 }
             }
 
 //            printMap();
 
-            System.out.println("FINISH Reading in Map");
+//            System.out.println("FINISH Reading in Map");
             rc.setIndicatorString(1, "Finished Pulling Map");
             if (observingNavigator != null) observingNavigator.pathingStrategyChanged();
 
@@ -599,7 +618,7 @@ public class RoadMap {
     public void broadcastMap() throws GameActionException
     {
         rc.setIndicatorString(1, "Broadcasting Map");
-        System.out.println("BEGIN Broadcasting Map");
+//        System.out.println("BEGIN Broadcasting Map");
 
         for (int y=0; y<MAP_HEIGHT; y++) {
             for (int x=0; x<MAP_WIDTH; x++) {
@@ -608,7 +627,7 @@ public class RoadMap {
         }
         sendLastPacket();
 
-        System.out.println("FINISH Broadcasting Map");
+//        System.out.println("FINISH Broadcasting Map");
         rc.setIndicatorString(1, "Finished Broadcasting Map");
         broadcastFlags();
     }

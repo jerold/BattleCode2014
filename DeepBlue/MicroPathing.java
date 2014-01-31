@@ -29,6 +29,11 @@ public class MicroPathing {
         return true;
     }
 
+    public static void resetTrail()
+    {
+        trail = new MapLocation[MAX_TRAIL_LENGTH];
+    }
+
     public static Direction getNextDirection(MapLocation origin, Direction chosenDirection, RoadMap map) throws GameActionException
     {
         while(trailLength<2)

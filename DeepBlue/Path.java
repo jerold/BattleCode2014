@@ -10,23 +10,22 @@ public class Path {
 
     public static boolean canSimplyPath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
     {
-        if (origin.x > 0 && origin.x < map.MAP_WIDTH && origin.y > 0 && origin.y < map.MAP_HEIGHT)
-            return false;
-
-        if (destination.x > 0 && destination.x < map.MAP_WIDTH && destination.y > 0 && destination.y < map.MAP_HEIGHT)
-            return false;
-
-        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
-            return false;
+        if (origin.x < 0 || origin.x >= map.MAP_WIDTH || origin.y < 0 || origin.y >= map.MAP_HEIGHT) return false;
+        if (destination.x < 0 || destination.x >= map.MAP_WIDTH || destination.y < 0 || destination.y >= map.MAP_HEIGHT) return false;
+        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID) return false;
 
         MapLocation stepLocation = origin;
-        MapLocation lastStep = destination;
+        MapLocation lastStep = new MapLocation(-1, -1);
         while (!(stepLocation.x == destination.x && stepLocation.y == destination.y)) {
             MapLocation nextStepLocation = stepLocation.add(map.directionTo(stepLocation, destination));
+//            System.out.print("L[x:"+lastStep.x+", y:"+lastStep.y+"] ");
+//            System.out.print("S[x:"+stepLocation.x+", y:"+stepLocation.y+"] ");
+//            System.out.print("N[x:"+nextStepLocation.x+", y:"+nextStepLocation.y+"]("+map.valueForLocation(nextStepLocation)+")   ");
 
             // Check for Doubling back
-            if (nextStepLocation.x == lastStep.x && nextStepLocation.y == lastStep.y)
+            if (nextStepLocation.x == lastStep.x && nextStepLocation.y == lastStep.y) {
                 return false;
+            }
 
             lastStep = stepLocation;
             stepLocation = nextStepLocation;
@@ -164,8 +163,8 @@ public class Path {
     {
         if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
             return false;
-        MapLocation bugEnd = origin.add(origin.directionTo(destination));
 
+        MapLocation bugEnd = origin.add(origin.directionTo(destination));
         while (map.roadMap[bugEnd.x][bugEnd.y] == RoadMap.TILE_VOID) {
             bugEnd = bugEnd.add(bugEnd.directionTo(destination));
 
