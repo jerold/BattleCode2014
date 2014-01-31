@@ -12,6 +12,7 @@ public class Headquarter {
     static RoadMap map;
     static int numbOfSoldiers = 0;
     static boolean started = false;
+    static int round = 0;
 
     static MapLocation[] rallyPoints = new MapLocation[2];
 
@@ -39,7 +40,19 @@ public class Headquarter {
                 {
                     if (rc.isActive())
                     {
-                        FightMicro.hqFire(rc);
+                        Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+                        int counter = 0;
+
+                        if (allVisibleEnemies.length > 0)
+                        {
+                            while (counter < 5)
+                            {
+                                FightMicro.hqFire(rc);
+                                counter++;
+                                rc.yield();
+                            }
+                        }
+
 
                         cache.reset();
                         map.checkForUpdates();
@@ -89,13 +102,14 @@ public class Headquarter {
 
             if (Utilities.checkHQTower(rc))
             {
-                if (numbOfSoldiers == 0)
+                if (numbOfSoldiers == 0 || (Clock.getRoundNum() - round > 100 && rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam()).length < 2))
                 {
                     type = Utilities.unitNeededHQTower;
                 }
-                else if (numbOfSoldiers == 1)
+                else if (numbOfSoldiers == 1 || (Clock.getRoundNum() - round > 100 && rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam()).length < 3))
                 {
                     type = Utilities.unitNeededHQPastr;
+                    round = Clock.getRoundNum();
                 }
                 else if (numbOfSoldiers % 2 == 0)
                 {

@@ -38,7 +38,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
 
             target = closest;
         }
-        else if (ourPastrs.length > 0)
+        else if (ourPastrs.length > 0 && ourPastrs[0].distanceSquaredTo(rc.senseHQLocation()) > 10)
         {
             MapLocation closest = ourPastrs[ourPastrs.length-1];
             int smallestDist = rc.getLocation().distanceSquaredTo(closest);
@@ -47,7 +47,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
             {
                 MapLocation current = ourPastrs[i];
                 int currentDist = rc.getLocation().distanceSquaredTo(current);
-                if (currentDist < smallestDist)
+                if (currentDist < smallestDist && current.distanceSquaredTo(rc.senseHQLocation()) > 10)
                 {
                     smallestDist = currentDist;
                     closest = current;
