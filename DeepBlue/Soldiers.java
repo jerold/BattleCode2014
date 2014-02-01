@@ -150,23 +150,23 @@ public class Soldiers {
             	{
             		if(rc.getHealth() < 50)
                     {
-                    	rc.setIndicatorString(0, "Help");
+                    	//rc.setIndicatorString(0, "Help");
                     	request.sendRequest(TowerUtil.convertIntToMapLocation(get[0]), false);
                 		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                        UnitStratReinforcement.initialize(rc);
                     }
             	}
             	else if(strategy == UnitStrategyType.PastrBuilder)
             	{
             		if(rc.getHealth() < 50)
                     {
-                    	rc.setIndicatorString(0, "Help");
+                    	//rc.setIndicatorString(0, "Help");
                     	request.sendRequest(TowerUtil.convertIntToMapLocation(get[0]), true);
                 		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
                     }
             	}
                 if (rc.isActive())
                 {
-
                     updateStrategy();
 
                     cache.reset();
@@ -192,9 +192,9 @@ public class Soldiers {
 
 
                     //rc.setIndicatorString(0, "Not fighting");
-                    if (mainFightMicro && FightMicro.fightMode(rc, null))
+                    if (!defenseMicro && FightMicro.fightMode(rc, null))
                     {
-                        //rc.setIndicatorString(0, "Fighting");
+                        rc.setIndicatorString(0, "Fighting");
                     }
                     else if (!mainFightMicro && defenseMicro && FightMicro.defenseMicro(rc, defenseSpot))
                     {
@@ -209,9 +209,46 @@ public class Soldiers {
         }
     }
 
-    public static void changeStrategy(UnitStrategyType newStrategy)
+    public static void changeStrategy(UnitStrategyType newStrategy) throws GameActionException
     {
         strategy = newStrategy;
+
+        switch (strategy)
+        {
+            case Reinforcement:
+                UnitStratReinforcement.initialize(rc);
+                break;
+            case FrontLiner:
+
+                break;
+            case PastrDefense:
+                UnitStratPastrDefense.initialize(rc);
+                break;
+            case Defector:
+                break;
+            case PastrDestroyer:
+                UnitStratPastrKiller.initialize(rc);
+                break;
+            case Scout:
+                UnitStratScout.initialize(rc);
+                break;
+            case DarkTemplar:
+                UnitStratDarkTemplar.initialize(rc);
+                break;
+            case HQSurround:
+                UnitStratHqSurround.initialize(rc);
+                break;
+            case HQPastr:
+                UnitStratHQPastr.initialize(rc);
+                break;
+            case HQTower:
+                UnitStratHQTower.initialize(rc);
+                break;
+            case BlockadeRunner:
+                BlockadeRunner.initialize(rc);
+                break;
+
+        }
     }
 
     public static void updateStrategy() throws GameActionException

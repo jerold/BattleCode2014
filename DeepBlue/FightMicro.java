@@ -512,8 +512,6 @@ public class FightMicro
         return numb;
     }
 
-
-
     //==================================================================================================\\
     //
     /////////////// These methods manage our actual fighting based on the broadcasted information \\\\\\\\\
@@ -532,7 +530,8 @@ public class FightMicro
         {
             radius = 10;
             //Robot[] enemies2 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-            enemies = findSoldiersAtDistance(rc, enemies, radius);
+            //enemies = findSoldiersAtDistance(rc, enemies, radius);
+            enemies = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
             Robot target = null;
 
             if (enemies != null && allyBots != null)
@@ -2645,8 +2644,10 @@ public class FightMicro
                      */
                     if (nearbyEnemies.length > 0)
                     {
+                        rc.setIndicatorString(0, "FightMicro");
                         if (nearbyEnemies.length == 1 && rc.getHealth() > 50)
                         {
+                            rc.setIndicatorString(0, "Fire!");
                             fire(rc, nearByEnemies10, alliedBots);
                         }
                         // based on our health it may be advantageous to retreat so we can fight another day
@@ -2661,11 +2662,11 @@ public class FightMicro
                         }
                         else if (morphBaneling(rc, enemyBotLoc, alliedBots))
                         {
-                        }
+                        }/*
                         else if (rc.readBroadcast(takeDownEnemyPastr) == 1)
                         {
                             fire(rc, nearByEnemies10, alliedBots);
-                        }
+                        }*/
                         // if there are many enemy bots attacking us then we should retreat
                         else if (numbOfRobotsOnlyAttackingUs(rc, enemyBotLoc, alliedBots) > 1 && findNumbSoldiersAtDist(rc, nearByAllies, 4) < 2)
                         {
@@ -2714,6 +2715,10 @@ public class FightMicro
                             {
                                 fire(rc, nearByEnemies10, alliedBots);
                             }
+                        }
+                        else if (nearbyEnemies.length == 1 && rc.getHealth() < 50 && rc.getHealth() < rc.senseRobotInfo(nearbyEnemies[0]).health)
+                        {
+                            MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearbyEnemies[0])).opposite(), false);
                         }
                         // in this case we have lower health than our opponent and will be killed so we should retreat
                         else
@@ -2770,15 +2775,17 @@ public class FightMicro
                         }
                         else if (enemiesWalledOff(rc, enemyBotLoc))
                         {
+                            rc.setIndicatorString(1, "Trapped");
                             return false;
                         }
                         else if (takeDownPastrNearHQ(rc, alliedBots, nearByEnemies10))
                         {
+                            rc.setIndicatorString(1, "take down hq pastr");
                         }
                         else if (runFromEnemyHQ(rc))
                         {
                         }
-                        else if (endGoal != null && rc.getLocation().add(rc.getLocation().directionTo(endGoal)).distanceSquaredTo(rc.senseLocationOf(nearByEnemies2[0])) > 10)
+                        else if (endGoal != null && numbOfRobotsAttackingTarget(rc, rc.getLocation().add(rc.getLocation().directionTo(endGoal)), enemyBotLoc, alliedBots) == 0)//rc.getLocation().add(rc.getLocation().directionTo(endGoal)).distanceSquaredTo(rc.senseLocationOf(nearByEnemies2[0])) > 10)
                         {
                             return false;
                         }
