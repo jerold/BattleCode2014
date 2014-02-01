@@ -128,7 +128,7 @@ public class Soldiers {
             {
                 UnitStratPastrKiller.initialize(rc);
             }
-
+        }
             while (true) {
                rc.setIndicatorString(1, ""+strategy);
                 if (rc == null)
@@ -203,7 +203,6 @@ public class Soldiers {
 
                 rc.yield();
             }
-        }
     }
 
     public static void changeStrategy(UnitStrategyType newStrategy) throws GameActionException
