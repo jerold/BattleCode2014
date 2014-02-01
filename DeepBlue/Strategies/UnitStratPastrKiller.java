@@ -9,7 +9,14 @@ import battlecode.common.*;
 public abstract class UnitStratPastrKiller extends UnitStrategy {
     public static RobotController rc;
     public static MapLocation target;
+    public static final MapLocation wait1 = null;
+    public static final MapLocation wait2 = null;
+    public static final MapLocation wait3 = null;
+    public static MapLocation waitLoc;
+    public static int waitLocIndex = 0;
     static final int samePastr = 35675;
+    static final int inPastr = 35780;
+    static MapLocation oldTarget;
 
     public static void initialize(RobotController rcIn) throws GameActionException
     {
@@ -18,10 +25,40 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
 
     public static void upDate() throws GameActionException
     {
-        MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+    	boolean doublePastr = false;
+    	MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
         MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
-        if(rc.readBroadcast(samePastr)==1){
-        	
+    	if(rc.readBroadcast(samePastr)==1){
+    		doublePastr = true;
+    		int loc = rc.readBroadcast(inPastr);
+    		waitLoc = DeepBlue.VectorFunctions.intToLoc(loc);
+    		for(int i = 0; i < 7; i++){
+    			waitLoc = waitLoc.add(waitLoc.directionTo(rc.senseHQLocation()));
+    		}
+    		System.out.println("waitLoc loc@: " +  waitLoc.x + ", " + waitLoc.y);
+    	}
+        if(doublePastr == true){
+        	System.out.println("Waiting..");
+        	if (enemyPastrs.length > 0 && rc.getLocation().distanceSquaredTo(enemyPastrs[0])<500)
+        	{
+        		Soldiers.nav.setSneak(false);
+        		MapLocation closest = enemyPastrs[enemyPastrs.length-1];
+        		int smallestDist = rc.getLocation().distanceSquaredTo(closest);
+        		
+        		for (int i = enemyPastrs.length - 1; --i>=0;)
+        		{
+        			MapLocation current = enemyPastrs[i];
+        			int currentDist = rc.getLocation().distanceSquaredTo(current);
+        			if (currentDist < smallestDist)
+        			{
+        				smallestDist = currentDist;
+        				closest = current;
+        			}
+        		}
+        		target = closest;
+        	} else {
+        		target = waitLoc;
+        	}
         } else {
         	if (enemyPastrs.length > 0)
         	{
@@ -71,6 +108,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
+                target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         	}
         	else
         	{
@@ -78,6 +116,15 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         	}
         }
 
-        Soldiers.nav.setDestination(target);
+        if (target == null)
+        {
+            target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+        }
+
+        if (oldTarget == null || !oldTarget.equals(target))
+        {
+            oldTarget = target;
+            Soldiers.nav.setDestination(target);
+        }
     }
 }

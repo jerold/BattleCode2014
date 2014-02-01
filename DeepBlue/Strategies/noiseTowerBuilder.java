@@ -24,9 +24,13 @@ public abstract class noiseTowerBuilder extends UnitStrategy {
     {
         if (rc.getLocation().equals(towerSpot))
         {
-        	if(rc.isActive())
+        	if(rc.isActive() && rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length == 0)
         	{
         		rc.construct(RobotType.NOISETOWER);
+        	}
+        	else
+        	{
+        		pastrBuilder.simpleFight(rc);
         	}
         }
         if(rc.getHealth() < 50)

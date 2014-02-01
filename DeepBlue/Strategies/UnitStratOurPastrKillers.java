@@ -20,6 +20,7 @@ public abstract class UnitStratOurPastrKillers extends UnitStrategy {
     static int pastr2Count = 0;
     static MapLocation[] ourPastrs;
     static int type;
+    static MapLocation oldTarget;
 
     public static void initialize(RobotController rcIn, MapLocation pastr, int ourType)
     {
@@ -231,7 +232,10 @@ public abstract class UnitStratOurPastrKillers extends UnitStrategy {
                 }
             }
         }
-
-        Soldiers.nav.setDestination(target);
+        if (oldTarget == null || !oldTarget.equals(target))
+        {
+            oldTarget = target;
+            Soldiers.nav.setDestination(target);
+        }
     }
 }

@@ -33,6 +33,11 @@ public class Headquarter {
 	static boolean waitOutSideRange = false;
 	static boolean found = false;
 	static final int samePastr = 35675;
+	static final int inPastr = 35777;
+	static final int outPastr = 35780;
+	static long[] teamMem;
+	static MapLocation[] targets = new MapLocation[5];
+	static int targetsIndex = 0;
 	
     public static void run(RobotController inRc)
     {
@@ -60,6 +65,7 @@ public class Headquarter {
                 {
                     if (rc.isActive())
                     {
+                    	teamMem = rc.getTeamMemory();
                     	MapLocation[] currentPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                         if(currentPastrs.length > 0 && currentPastrs.length > previousPastrs.length){
             				if(previousPastrs.length == 0){
@@ -67,6 +73,8 @@ public class Headquarter {
             						allPastrs[allIndex] = currentPastrs[k];
             						System.out.println("pastr added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
             						allIndex++;
+            						int loc = DeepBlue.VectorFunctions.locToInt(allPastrs[allIndex]);
+            						rc.broadcast(outPastr, loc);
             					}
             					previousPastrs = currentPastrs;
             				} else {
@@ -74,6 +82,8 @@ public class Headquarter {
             						allPastrs[allIndex] = currentPastrs[i];
             						System.out.println("PASTR added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
             						allIndex++;
+            						int loc = DeepBlue.VectorFunctions.locToInt(allPastrs[allIndex]);
+            						rc.broadcast(outPastr, loc);
             					}
             					previousPastrs = currentPastrs;
             				}		
@@ -81,7 +91,7 @@ public class Headquarter {
             				previousPastrs = currentPastrs;
             			}
             			
-            			if(allPastrs.length > 0 && sameLoc == null){
+            			if(allIndex > 0 && sameLoc == null){
             				for(int j = 0; j < allIndex; j++){
             					MapLocation search = allPastrs[j];
             					for(int n = 0; n < allIndex; n++){
@@ -91,18 +101,38 @@ public class Headquarter {
             					}
             				}
             			}
-            			if(sameLoc != null && !found){
+            			if(teamMem[0]==1){
+            				rc.broadcast(samePastr, 1);
+            			} else if(sameLoc != null && !found){
             				System.out.println("Found same pastr loc @: " + sameLoc.x + ", " + sameLoc.y);
             				found = true;
             				rc.setTeamMemory(0, 1);
             				rc.broadcast(samePastr, 1);
+            			}
+            			if(rc.readBroadcast(inPastr)!=0){
+            				int in = rc.readBroadcast(inPastr);
+            				MapLocation loc = DeepBlue.VectorFunctions.intToLoc(in);
+            				for(int i = 0; i < targetsIndex; i++){
+            					if(i == 0){
+            						targets[i] = loc;
+            						targetsIndex++;
+            					} else if(!loc.equals(targets[i])&& i <= 4){
+            						targets[i] = loc;
+            						targetsIndex++;
+            					}
+            				}
+            			}
+            			
+            			for(int i = 0; i < targetsIndex; i++){
+            				int out = DeepBlue.VectorFunctions.locToInt(targets[i]);
+            				rc.broadcast(outPastr, out);
             			}
                         Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                         int counter = 0;
 
                         if (allVisibleEnemies.length > 0)
                         {
-                            while (counter < 5)
+                            while (counter < 10)
                             {
                                 FightMicro.hqFire(rc);
                                 counter++;
@@ -144,17 +174,18 @@ public class Headquarter {
 
     public static void setUnitNeeded(Soldiers.UnitStrategyType unitType, RobotController rc) throws GameActionException
     {
-        int type = 0;
+        int type = Utilities.unitNeededPastrKiller;
         if (rc!= null)
         {
             rc.setIndicatorString(0, ""+numbOfSoldiers);
             rc.setIndicatorString(2, ""+TowerUtil.getHQSpotScore(rc, rc.senseHQLocation()));
 
-
             Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
+            Robot[] inRangeEnemies = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
+
 
             // we must not let the enemy pull off a hq surround
-            if (nearByEnemies.length > 1 || surround)
+            if (nearByEnemies.length - inRangeEnemies.length > 1 || surround)
             {
                 // our first unit tries to draw the enemy in to around our hq
                 if (count == 0)
@@ -167,7 +198,7 @@ public class Headquarter {
                     type = Utilities.unitNeededBlockadeRunner;
                 }
                 count++;
-                if (count < 8)
+                if (count < 4 && nearByEnemies.length < 0)
                 {
                     surround = true;
                 }
@@ -180,11 +211,46 @@ public class Headquarter {
             // if we are going for hq tower build
             else if (Utilities.checkHQTower(rc))
             {
-                if (numbOfSoldiers == 0 || (Clock.getRoundNum() - round > 100 && rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam()).length < 2))
+                boolean needHQTower = false;
+                boolean needHQPastr = false;
+
+                if (Clock.getRoundNum() > 100)
+                {
+                    Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 4, rc.getTeam());
+
+                    if (nearByAllies.length < 2)
+                    {
+                        needHQTower = true;
+                    }
+                    else
+                    {
+                        needHQTower = true;
+                        needHQPastr = true;
+                        for (int i = nearByAllies.length; --i>=0;)
+                        {
+                            if (rc.senseRobotInfo(nearByAllies[i]).type == RobotType.NOISETOWER)
+                            {
+                                needHQTower = false;
+                            }
+                            else if (rc.senseRobotInfo(nearByAllies[i]).type == RobotType.PASTR)
+                            {
+                                needHQPastr = false;
+                            }
+                            else if (rc.senseRobotInfo(nearByAllies[i]).isConstructing && needHQTower)
+                            {
+                                needHQTower = false;
+                            }
+                        }
+                    }
+                }
+
+
+                if (numbOfSoldiers == 0 || needHQTower)//(Clock.getRoundNum() - round > 100 && rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam()).length < 3))
                 {
                     type = Utilities.unitNeededHQTower;
+                    rc.setIndicatorString(1, "Need new noisetower");
                 }
-                else if (numbOfSoldiers == 1 || (Clock.getRoundNum() - round > 100 && rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam()).length < 3))
+                else if (numbOfSoldiers == 1 || needHQPastr) //(Clock.getRoundNum() - round > 100 && rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam()).length < 3))
                 {
                     type = Utilities.unitNeededHQPastr;
                     round = Clock.getRoundNum();
@@ -313,8 +379,7 @@ public class Headquarter {
             {
                 numbOfSoldiers++;
             }
-            
-            //type = Utilities.unitNeededPastrKiller;
+            type = Utilities.unitNeededPastrKiller;
             rc.broadcast(Utilities.unitNeededChannel, type);
         }
     }

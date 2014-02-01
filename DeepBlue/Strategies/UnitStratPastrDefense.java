@@ -11,6 +11,7 @@ import theSwarm.hiveClusters;
 public abstract class UnitStratPastrDefense extends UnitStrategy {
     static RobotController rc;
     static MapLocation target;
+    static MapLocation oldTarget;
 
     public static void initialize(RobotController rcIn)
     {
@@ -71,6 +72,11 @@ public abstract class UnitStratPastrDefense extends UnitStrategy {
         {
             Soldiers.ourPastr = target;
         }
-        Soldiers.nav.setDestination(target);
+
+        if (oldTarget == null || !oldTarget.equals(target))
+        {
+            oldTarget = target;
+            Soldiers.nav.setDestination(target);
+        }
     }
 }

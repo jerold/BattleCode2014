@@ -131,7 +131,19 @@ public class Soldiers {
             }
         }
 
+        rc.setIndicatorString(1, ""+strategy);
+
+        if (type == Utilities.unitNeededPastrKiller)
+        {
+            UnitStratPastrKiller.initialize(rc);
+        }
+
         while (true) {
+            rc.setIndicatorString(1, ""+strategy);
+            if (rc == null)
+            {
+                rc.setIndicatorString(2, "Rc is null");
+            }
             try
             {
             	if(strategy == UnitStrategyType.NoiseTowerBuilder)

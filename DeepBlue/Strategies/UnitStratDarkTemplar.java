@@ -16,6 +16,7 @@ import battlecode.common.*;
 public abstract class UnitStratDarkTemplar extends UnitStrategy {
     static RobotController rc;
     static MapLocation target;
+    static MapLocation oldTarget;
 
     public static void initialize(RobotController rcIn)
     {
@@ -146,7 +147,12 @@ public abstract class UnitStratDarkTemplar extends UnitStrategy {
             }
         }
 
-        Soldiers.nav.setDestination(target);
+
+        if (oldTarget == null || !oldTarget.equals(target))
+        {
+            oldTarget = target;
+            Soldiers.nav.setDestination(target);
+        }
     }
 
 

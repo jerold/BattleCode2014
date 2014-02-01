@@ -12,6 +12,7 @@ public class GenericTower
     private towerPastrRequest request;
     MapLocation[] lines;
     Direction[] dirs = Direction.values();
+    int[] closest;
 
     public GenericTower(RobotController rc, boolean troll)
     {
@@ -49,7 +50,7 @@ public class GenericTower
 		        			target = rc.senseRobotInfo(bot).location;
 		        			foundPastr = true;
 		        		}
-		        		else if(rc.senseRobotInfo(bot).type == RobotType.SOLDIER)
+		        		else if(rc.senseRobotInfo(bot).isConstructing)
 		        		{
 		        			target = rc.senseRobotInfo(bot).location;
 		        			foundPastr = true;
@@ -87,95 +88,118 @@ public class GenericTower
             	{
 	            	try
 	            	{
-		            	MapLocation[] enemies = rc.sensePastrLocations(rc.getTeam().opponent());
-		            	Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 16, rc.getTeam());
-		            	MapLocation pastrE = null;
-		            	boolean enemyPastr = false;
-		            	boolean allyPastr = false;
-		            	
-		            	for(int k = 0; k < enemies.length; k++)
-		            	{
-		            		if(enemies[k].distanceSquaredTo(target) < 300)
-		            		{
-		            			enemyPastr = true;
-		            			pastrE = enemies[k];
-		            		}
-		            	}
-		            	if(allies.length > 0)
-		            	{
-		            		allyPastr = true;
-		            	}
-		            	if(allyPastr || first)
-		            	{
-		            		if(type == 1)
-		                	{
-		            			int[] enemyInts = FightMicro.AllEnemyBots(rc);
-		            			MapLocation[] enemyPastrLocs = rc.sensePastrLocations(rc.getTeam().opponent());
-		            			int[] closest = new int[8];
-		            			MapLocation tempLoc;
-		            			for(int k = 0; k < enemyInts.length; k++)
-		            			{
-		            				tempLoc = FightMicro.getBotLocation(enemyInts[k]);
-		            				for(int a = 0; a < 8; a++)
-		            				{
-		            					if(target.directionTo(tempLoc) == dirs[a])
-		            					{
-		            						int dist = target.distanceSquaredTo(tempLoc);
-		            						if(closest[a] == 0 || dist < closest[a])
-		            						{
-		            							closest[a] = dist;
-		            						}
-		            					}
-		            				}
-		            			}
-		            			for(int k = 0; k < enemyPastrLocs.length; k++)
-		            			{
-		            				for(int a = 0; a < 8; a++)
-		            				{
-		            					if(target.directionTo(enemyPastrLocs[k]) == dirs[a])
-		            					{
-		            						int dist = target.distanceSquaredTo(enemyPastrLocs[k]);
-		            						if(closest[a] == 0 || dist < closest[a])
-		            						{
-		            							closest[a] = dist;
-		            						}
-		            					}
-		            				}
-		            			}
-		                		for(int k = 0; k < 8; k++)
-		                		{
-		                			MapLocation start = lines[k * 2];
-		                			while(closest[k] != 0 && start.distanceSquaredTo(target) > closest[k])
-		                			{
-		                				start = start.add(start.directionTo(lines[k * 2 + 1]));
-		                			}
-		                			TowerUtil.fireLine(rc, start, lines[k * 2 + 1], 1, request);
-		                			if(k == 4)
-		                			{
-                                        start = lines[(k + 2) * 2];
-                                        while(closest[k] != 0 && start.distanceSquaredTo(target) > closest[k])
-                                        {
-                                            start = start.add(start.directionTo(lines[(k + 2) * 2 + 1]));
-                                        }
-		                				TowerUtil.fireLine(rc, lines[(k + 2) * 2], lines[(k + 2) * 2 + 1], 1, request);
-		                			}
-		                		}
-		                	}
-		            		first = false;
-		            	}
-		            	else
-		            	{
-			            	if(enemyPastr)
+	            		if(rc.isActive())
+	            		{
+			            	MapLocation[] enemies = rc.sensePastrLocations(rc.getTeam().opponent());
+			            	Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 16, rc.getTeam());
+			            	MapLocation pastrE = null;
+			            	boolean enemyPastr = false;
+			            	boolean allyPastr = false;
+			            	boolean ally = false;
+			            	
+			            	for(MapLocation pastr : enemies)
+			            	{
+			            		if(pastr.distanceSquaredTo(target) < 300)
+			            		{
+			            			enemyPastr = true;
+			            			pastrE = pastr;
+			            		}
+			            	}
+			            	if(allies.length > 0)
+			            	{
+			            		RobotInfo info;
+			            		for(Robot bot : allies)
+			            		{
+			            			info = rc.senseRobotInfo(bot);
+			            			if(info.isConstructing || info.type == RobotType.PASTR)
+			            			{
+			            				allyPastr = true;
+			            			}
+			            			if(info.location.equals(target))
+			            			{
+			            				ally = true;
+			            			}
+			            		}
+			            	}
+			            	if(allyPastr || first || (ally && !enemyPastr))
+			            	{
+			            		if(type == 1)
+			                	{
+			                		for(int t = 0; t < 8; t++)
+			                		{
+			                			getClosest();
+			                			MapLocation start = lines[t * 2];
+			                			while(closest[t] != 0 && start.distanceSquaredTo(target) > closest[t])
+			                			{
+			                				start = start.add(start.directionTo(target));
+			                			}
+			                			TowerUtil.fireLine(rc, start, lines[t * 2 + 1], 1, request);
+			                			if(t == 4)
+			                			{
+			                				getClosest();
+	                                        start = lines[(t + 2) * 2];
+	                                        while(closest[t + 2] != 0 && start.distanceSquaredTo(target) > closest[t + 2])
+	                                        {
+	                                            start = start.add(start.directionTo(target));
+	                                        }
+			                				TowerUtil.fireLine(rc, start, lines[(t + 2) * 2 + 1], 1, request);
+			                			}
+			                		}
+			                	}
+			            		first = false;
+			            	}
+			            	else if(enemyPastr)
 			            	{
 			            		rc.attackSquare(pastrE);
 			            	}
-		            	}
-	            	}
-	            	catch(Exception e){}
+	            		}
+		            }
+		            catch(Exception e){}
 	            }
             }
 
             rc.yield();
         }
+    }
+    
+    private void getClosest()
+    {
+    	MapLocation[] enemyPastrLocs = rc.sensePastrLocations(rc.getTeam().opponent());
+		Robot[] seenEnemies = rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent());
+		closest = new int[8];
+		for(int k = 0; k < enemyPastrLocs.length; k++)
+		{
+			for(int a = 0; a < 8; a++)
+			{
+				if(target.directionTo(enemyPastrLocs[k]) == dirs[a])
+				{
+					int dist = target.distanceSquaredTo(enemyPastrLocs[k]);
+					if(closest[a] == 0 || dist < closest[a])
+					{
+						closest[a] = dist;
+					}
+					break;
+				}
+			}
+		}
+		for(int k = 0; k < seenEnemies.length; k++)
+		{
+			for(int a = 0; a < 8; a++)
+			{
+				try
+				{
+					if(target.directionTo(rc.senseRobotInfo(seenEnemies[k]).location) == dirs[a])
+					{
+						int dist = target.distanceSquaredTo(rc.senseRobotInfo(seenEnemies[k]).location);
+						if(closest[a] == 0 || dist < closest[a])
+						{
+							closest[a] = dist;
+						}
+						break;
+					}
+				}
+				catch(Exception e){}
+			}
+		}
     }
 }
