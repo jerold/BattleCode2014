@@ -75,6 +75,7 @@ public class Soldiers {
             }
             else
             {
+<<<<<<< HEAD
                 int type = rc.readBroadcast(Utilities.unitNeededChannel);
                 switch (type)
                 {
@@ -132,6 +133,60 @@ public class Soldiers {
                         changeStrategy(UnitStrategyType.PastrDestroyer);
                         UnitStratPastrKiller.initialize(rc);
                 }
+=======
+                pastrBuilder.initialize(rc, get);
+                changeStrategy(UnitStrategyType.PastrBuilder);
+            }
+        }
+        else
+        {
+            int type = rc.readBroadcast(Utilities.unitNeededChannel);
+            switch (type)
+            {
+                case Utilities.unitNeededScout:
+                    changeStrategy(UnitStrategyType.Scout);
+                    break;
+                case Utilities.unitNeededDarkTemplar:
+                    changeStrategy(UnitStrategyType.DarkTemplar);
+                    break;
+                case Utilities.unitNeededHQSurround:
+                    changeStrategy(UnitStrategyType.HQSurround);
+                    break;
+                case Utilities.unitNeededPastrDefense:
+                    changeStrategy(UnitStrategyType.PastrDefense);
+                    break;
+                case Utilities.unitNeededOurPastrKiller:
+                    changeStrategy(UnitStrategyType.OurPastrKiller);
+                    // here we must set our pastr which we should watch over to kill
+                    if (rc.readBroadcast(60002) != 0 && rc.readBroadcast(Utilities.ourPastrKillerStart) == 0)
+                    {
+                        ourPastr = TowerUtil.convertIntToMapLocation(rc.readBroadcast(60002));
+                        rc.broadcast(Utilities.ourPastrKillerStart, 1);
+                        type = Utilities.ourPastrKillerStart;
+                    }
+                    else if (rc.readBroadcast(60005) != 0 && rc.readBroadcast(Utilities.ourPastrKillerStart+1) == 0)
+                    {
+                        ourPastr = TowerUtil.convertIntToMapLocation(rc.readBroadcast(60005));
+                        rc.broadcast(Utilities.ourPastrKillerStart+1, 1);
+                        type = Utilities.ourPastrKillerStart+1;
+                    }
+                    else
+                    {
+                        changeStrategy(UnitStrategyType.PastrDestroyer);
+                    }
+                    break;
+                case Utilities.unitNeededHQPastr:
+                    changeStrategy(UnitStrategyType.HQPastr);
+                    break;
+                case Utilities.unitNeededHQTower:
+                    changeStrategy(UnitStrategyType.HQTower);
+                    break;
+                case Utilities.unitNeededBlockadeRunner:
+                    changeStrategy(UnitStrategyType.BlockadeRunner);
+                    break;
+                default:
+                    changeStrategy(UnitStrategyType.PastrDestroyer);
+>>>>>>> b71a82e056023c6ab3fd812048613c070ad36d72
             }
 
             rc.setIndicatorString(1, ""+strategy);

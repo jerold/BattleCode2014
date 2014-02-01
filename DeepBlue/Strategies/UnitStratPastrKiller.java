@@ -13,7 +13,6 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
     public static final MapLocation wait2 = null;
     public static final MapLocation wait3 = null;
     public static MapLocation waitLoc;
-    public static int waitLocIndex = 0;
     static final int samePastr = 35675;
     static final int inPastr = 35780;
     static MapLocation oldTarget;
@@ -30,15 +29,18 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
     	if(rc.readBroadcast(samePastr)==1){
     		doublePastr = true;
-    		int loc = rc.readBroadcast(inPastr);
-    		waitLoc = DeepBlue.VectorFunctions.intToLoc(loc);
-    		for(int i = 0; i < 7; i++){
-    			waitLoc = waitLoc.add(waitLoc.directionTo(rc.senseHQLocation()));
+    		if(rc.readBroadcast(inPastr)!= 0){
+    			int loc = rc.readBroadcast(inPastr);
+    			waitLoc = DeepBlue.VectorFunctions.intToLoc(loc);
+    			
+    			for(int i = 0; i < 6; i++){
+        			waitLoc = waitLoc.add(waitLoc.directionTo(rc.senseHQLocation()));
+        		}
+    		} else {
+    			waitLoc = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
     		}
-    		System.out.println("waitLoc loc@: " +  waitLoc.x + ", " + waitLoc.y);
     	}
         if(doublePastr == true){
-        	System.out.println("Waiting..");
         	if (enemyPastrs.length > 0 && rc.getLocation().distanceSquaredTo(enemyPastrs[0])<500)
         	{
         		Soldiers.nav.setSneak(false);
@@ -113,12 +115,28 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         	else
         	{
         		target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+                while(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
+                	target = target.add(target.directionTo(rc.senseHQLocation()));
+                }
+                if(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
+                	while(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
+                		target = target.add(target.directionTo(rc.senseHQLocation()).opposite());
+                	}
+                }
         	}
         }
 
         if (target == null)
         {
             target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+            while(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
+            	target = target.add(target.directionTo(rc.senseHQLocation()));
+            }
+            if(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
+            	while(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
+            		target = target.add(target.directionTo(rc.senseHQLocation()).opposite());
+            	}
+            }
         }
 
         if (oldTarget == null || !oldTarget.equals(target))

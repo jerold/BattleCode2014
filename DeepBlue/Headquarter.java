@@ -1,6 +1,7 @@
 package DeepBlue;
 
 import battlecode.common.*;
+
 import com.sun.corba.se.spi.activation._InitialNameServiceImplBase;
 
 /**
@@ -38,6 +39,7 @@ public class Headquarter {
 	static long[] teamMem;
 	static MapLocation[] targets = new MapLocation[5];
 	static int targetsIndex = 0;
+	static MapLocation firstSpot;
 	
     public static void run(RobotController inRc)
     {
@@ -63,6 +65,7 @@ public class Headquarter {
             while (true) {
                 try
                 {
+<<<<<<< HEAD
                     /*Robot[] inRangeEnemies = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
 
                     if (inRangeEnemies.length > 0)
@@ -71,71 +74,68 @@ public class Headquarter {
                     }*/
 
 
+=======
+                	MapLocation[] currentPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
+                	if(currentPastrs.length > 0 && firstSpot == null){
+                		firstSpot = currentPastrs[0];
+                	}
+                	if(currentPastrs.length > 0 && currentPastrs.length > previousPastrs.length){
+						if(previousPastrs.length == 0){
+							for(int k = 0; k < currentPastrs.length; k++){
+								allPastrs[allIndex] = currentPastrs[k];
+								System.out.println("pastr added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
+								allIndex++;
+							}
+							previousPastrs = currentPastrs;
+							System.out.println(previousPastrs.length);
+						} else {
+							System.out.println(currentPastrs.length);
+							System.out.println(previousPastrs.length);
+							for(int i = previousPastrs.length; i < currentPastrs.length; i++){
+								allPastrs[allIndex] = currentPastrs[i];
+								System.out.println("PASTR added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
+								allIndex++;
+							}
+							previousPastrs = currentPastrs;
+						}		
+					} else {
+						previousPastrs = currentPastrs;
+					}
+                	if(allPastrs.length > 0 && sameLoc == null){
+						for(int j = 0; j < allIndex; j++){
+							MapLocation search = allPastrs[j];
+							for(int n = 0; n < allIndex; n++){
+								if(search.equals(allPastrs[n]) && j != n){
+									sameLoc = search;
+								}
+							}
+						}
+					}
+                	if(sameLoc != null && !found){
+						System.out.println("Found same pastr loc @: " + sameLoc.x + ", " + sameLoc.y);
+						found = true;
+						rc.setTeamMemory(0, 1);
+						rc.broadcast(samePastr, 1);
+						int loc = DeepBlue.VectorFunctions.locToInt(sameLoc);
+						rc.broadcast(outPastr, loc);
+					}
+					teamMem = rc.getTeamMemory();
+					if(teamMem[0] == 1 && firstSpot != null){
+						//System.out.println("Setting Location...");
+						rc.broadcast(samePastr, 1);
+						int loc = DeepBlue.VectorFunctions.locToInt(firstSpot);
+						rc.broadcast(outPastr, loc);
+					}
+>>>>>>> b71a82e056023c6ab3fd812048613c070ad36d72
                     if (rc.isActive())
                     {
-                    	teamMem = rc.getTeamMemory();
-                    	MapLocation[] currentPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
-                        if(currentPastrs.length > 0 && currentPastrs.length > previousPastrs.length){
-            				if(previousPastrs.length == 0){
-            					for(int k = 0; k < currentPastrs.length; k++){
-            						allPastrs[allIndex] = currentPastrs[k];
-            						System.out.println("pastr added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
-            						allIndex++;
-            						
-            					}
-            					previousPastrs = currentPastrs;
-            				} else {
-            					for(int i = previousPastrs.length; i < currentPastrs.length; i++){
-            						allPastrs[allIndex] = currentPastrs[i];
-            						System.out.println("PASTR added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
-            						allIndex++;
-            						
-            					}
-            					previousPastrs = currentPastrs;
-            				}		
-            			} else {
-            				previousPastrs = currentPastrs;
-            			}
+                    	
+    					
+    					
             			
-            			if(allIndex > 0 && sameLoc == null){
-            				for(int j = 0; j < allIndex; j++){
-            					MapLocation search = allPastrs[j];
-            					for(int n = 0; n < allIndex; n++){
-            						if(search.equals(allPastrs[n]) && j != n){
-            							sameLoc = search;
-            						}
-            					}
-            				}
-            			}
-            			if(teamMem[0]==1){
-            				rc.broadcast(samePastr, 1);
-            			} else if(sameLoc != null && !found){
-            				System.out.println("Found same pastr loc @: " + sameLoc.x + ", " + sameLoc.y);
-            				found = true;
-            				rc.setTeamMemory(0, 1);
-            				rc.broadcast(samePastr, 1);
-            			}
-            			if(rc.readBroadcast(inPastr)!=0){
-            				int in = rc.readBroadcast(inPastr);
-            				MapLocation loc = DeepBlue.VectorFunctions.intToLoc(in);
-            				for(int i = 0; i < targetsIndex; i++){
-            					if(i == 0){
-            						targets[i] = loc;
-            						targetsIndex++;
-            					} else if(!loc.equals(targets[i])&& i <= 4){
-            						targets[i] = loc;
-            						targetsIndex++;
-            					}
-            				}
-            			}
-            			
-            			for(int i = 0; i < targetsIndex; i++){
-            				int out = DeepBlue.VectorFunctions.locToInt(targets[i]);
-            				rc.broadcast(outPastr, out);
-            			}
                         Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                         int counter = 0;
-
+                       
                         if (allVisibleEnemies.length > 0)
                         {
                             while (counter < 10 && allVisibleEnemies.length > 0)
@@ -144,14 +144,16 @@ public class Headquarter {
                                 FightMicro.hqFire(rc);
                                 counter++;
                                 rc.yield();
-                            }
+                            }                            
                         }
 
 
                         cache.reset();
                         map.checkForUpdates();
+                        
 
                         tryToSpawn(); // The first thing checked is rc.isActive()
+                        
                     }
 
                 } catch (Exception e) {e.printStackTrace();}
@@ -303,7 +305,7 @@ public class Headquarter {
                 {
                     setUpCount = numbOfSoldiers;
                     setUp = true;
-                    towerPastrRequest.startBuilding(rc);
+                    //towerPastrRequest.startBuilding(rc);
                 }
                 else if (setUp && (setUpCount-numbOfSoldiers > 1))
                 {
@@ -327,7 +329,7 @@ public class Headquarter {
                 else if (!setUp)
                 {
                     setUp = true;
-                    towerPastrRequest.startBuilding(rc);
+                    //towerPastrRequest.startBuilding(rc);
                 }
                 else if (inefficient)
                 {
@@ -344,7 +346,7 @@ public class Headquarter {
             {
                 if (!setUp)
                 {
-                    towerPastrRequest.startBuilding(rc);
+                    //towerPastrRequest.startBuilding(rc);
                     setUp = true;
                 }
                 if (inefficient)
@@ -353,7 +355,7 @@ public class Headquarter {
                 }
                 else if (inefficient && rc.senseRobotCount() > 10 && !criticalMass)
                 {
-                    towerPastrRequest.startBuilding(rc);
+                    //towerPastrRequest.startBuilding(rc);
                     criticalMass = true;
                 }
 
@@ -376,7 +378,7 @@ public class Headquarter {
                     if (!started)
                     {
                         started = true;
-                        towerPastrRequest.startBuilding(rc);
+                        //towerPastrRequest.startBuilding(rc);
                     }
                     type = Utilities.unitNeededOurPastrKiller;
                 }
