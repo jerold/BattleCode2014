@@ -39,11 +39,8 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
     		} else {
     			waitLoc = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
     		}
-    		
-    		System.out.println("waitLoc loc@: " +  waitLoc.x + ", " + waitLoc.y);
     	}
         if(doublePastr == true){
-        	System.out.println("Waiting..");
         	if (enemyPastrs.length > 0 && rc.getLocation().distanceSquaredTo(enemyPastrs[0])<500)
         	{
         		Soldiers.nav.setSneak(false);
