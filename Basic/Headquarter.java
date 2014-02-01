@@ -1,3 +1,4 @@
+/*
 package DeepBlue;
 
 import battlecode.common.*;
@@ -7,7 +8,7 @@ import com.sun.corba.se.spi.activation._InitialNameServiceImplBase;
 /**
  * Created by Jerold Albertson on 1/12/14.
  *
- */
+ 
 public class Headquarter {
     static RobotController rc;
     static UnitCache cache;
@@ -376,8 +377,9 @@ public class Headquarter {
             {
                 numbOfSoldiers++;
             }
-            //type = Utilities.unitNeededPastrKiller;
+            type = Utilities.unitNeededPastrKiller;
             rc.broadcast(Utilities.unitNeededChannel, type);
         }
     }
 }
+*/

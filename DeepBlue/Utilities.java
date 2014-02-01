@@ -263,7 +263,6 @@ public class Utilities
             MapLocation HQ = rc.senseHQLocation();
             if(TowerUtil.getHQSpotScore(rc, HQ) >= 10){
                 rc.setIndicatorString(0, "HQ Tower");
-                System.out.println("HQ tower build");
                 return true;
 
             } else {
