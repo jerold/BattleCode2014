@@ -33,6 +33,11 @@ public class Headquarter {
 	static boolean waitOutSideRange = false;
 	static boolean found = false;
 	static final int samePastr = 35675;
+	static final int inPastr = 35777;
+	static final int outPastr = 35780;
+	static long[] teamMem;
+	static MapLocation[] targets = new MapLocation[5];
+	static int targetsIndex = 0;
 	
     public static void run(RobotController inRc)
     {
@@ -59,6 +64,7 @@ public class Headquarter {
                 {
                     if (rc.isActive())
                     {
+                    	teamMem = rc.getTeamMemory();
                     	MapLocation[] currentPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                         if(currentPastrs.length > 0 && currentPastrs.length > previousPastrs.length){
             				if(previousPastrs.length == 0){
@@ -80,7 +86,7 @@ public class Headquarter {
             				previousPastrs = currentPastrs;
             			}
             			
-            			if(allPastrs.length > 0 && sameLoc == null){
+            			if(allIndex > 0 && sameLoc == null){
             				for(int j = 0; j < allIndex; j++){
             					MapLocation search = allPastrs[j];
             					for(int n = 0; n < allIndex; n++){
@@ -90,11 +96,31 @@ public class Headquarter {
             					}
             				}
             			}
-            			if(sameLoc != null && !found){
+            			if(teamMem[0]==1){
+            				rc.broadcast(samePastr, 1);
+            			} else if(sameLoc != null && !found){
             				System.out.println("Found same pastr loc @: " + sameLoc.x + ", " + sameLoc.y);
             				found = true;
             				rc.setTeamMemory(0, 1);
             				rc.broadcast(samePastr, 1);
+            			}
+            			if(rc.readBroadcast(inPastr)!=0){
+            				int in = rc.readBroadcast(inPastr);
+            				MapLocation loc = DeepBlue.VectorFunctions.intToLoc(in);
+            				for(int i = 0; i < targetsIndex; i++){
+            					if(i == 0){
+            						targets[i] = loc;
+            						targetsIndex++;
+            					} else if(!loc.equals(targets[i])&& i <= 4){
+            						targets[i] = loc;
+            						targetsIndex++;
+            					}
+            				}
+            			}
+            			
+            			for(int i = 0; i < targetsIndex; i++){
+            				int out = DeepBlue.VectorFunctions.locToInt(targets[i]);
+            				rc.broadcast(outPastr, out);
             			}
                         Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                         int counter = 0;
@@ -152,6 +178,7 @@ public class Headquarter {
 
             Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
             Robot[] inRangeEnemies = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
+
 
             // we must not let the enemy pull off a hq surround
             if (nearByEnemies.length - inRangeEnemies.length > 1 || surround)
@@ -348,8 +375,7 @@ public class Headquarter {
             {
                 numbOfSoldiers++;
             }
-            
-            //type = Utilities.unitNeededPastrKiller;
+            type = Utilities.unitNeededPastrKiller;
             rc.broadcast(Utilities.unitNeededChannel, type);
         }
     }

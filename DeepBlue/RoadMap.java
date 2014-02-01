@@ -440,7 +440,7 @@ public class RoadMap {
         rc.setIndicatorString(1, "Done with Macro");
 
 //        printMacro();
-//        printMap();
+        printMap();
 
         macroPathingUploaded = true;
         BroadcastMacro();
@@ -523,6 +523,9 @@ public class RoadMap {
 
             Headquarter.tryToSpawn();
         }
+
+        roadMap[cache.MY_HQ.x][cache.MY_HQ.y] = TILE_VOID;
+        roadMap[cache.ENEMY_HQ.x][cache.ENEMY_HQ.y] = TILE_VOID;
 
         printCows();
 

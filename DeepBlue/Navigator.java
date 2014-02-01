@@ -269,6 +269,7 @@ public class Navigator {
 
     public void smartMovement() throws GameActionException
     {
+
 //        if (!atFinalDestination()) {
 //            System.out.println("0");
 //            MapLocation newDog = new MapLocation(dog.x, dog.y);
@@ -298,7 +299,7 @@ public class Navigator {
 //                int stepCount = 4;
 //                for (int i=0; i<stepCount; i++) {
 //                    System.out.println("6");
-//                    newDogHeading = bugMove(newDog, newDogHeading);
+//                    newDogHeading = bugMoveHeading(newDog, newDogHeading);
 //                    if (map.valueForLocation(newDog.add(newDogHeading)) != RoadMap.TILE_VOID) {
 //                        System.out.println("7");
 //                        newDog = newDog.add(newDogHeading);
@@ -325,6 +326,7 @@ public class Navigator {
 //            tryMove(heading);
 //        }
 
+
         if (!atFinalDestination()) {
             if (!bugging) {
                 heading = MicroPathing.getNextDirection(map.directionTo(rc.getLocation(), destination), true, rc);
@@ -344,6 +346,7 @@ public class Navigator {
                 bugging = false;
 
             if (bugging) {
+
 //                MapLocation newDog = new MapLocation(dog.x, dog.y);
 //                Direction newDogHeading = dogHeading.opposite().opposite();
 //                int stepCount = 4;
