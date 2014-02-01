@@ -37,14 +37,11 @@ public abstract class UnitStratReinforcement extends UnitStrategy
         {
             if(get[2] == 0)
             {
-                noiseTowerBuilder.initialize(rc, get);
                 Soldiers.changeStrategy(Soldiers.UnitStrategyType.NoiseTowerBuilder);
                 noiseTowerBuilder.initialize(rc, get);
-
             }
             else
             {
-                pastrBuilder.initialize(rc, get);
                 Soldiers.changeStrategy(Soldiers.UnitStrategyType.PastrBuilder);
                 pastrBuilder.initialize(rc, get);
             }
