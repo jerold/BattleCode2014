@@ -122,11 +122,14 @@ public abstract class pastrBuilder extends UnitStrategy {
         	if(rc.getHealth() < 50)
         	{
         		rc.setIndicatorString(0, "Help");
-        		//request.sendRequest(pastrSpot, true);
-        		//Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
-                //UnitStratReinforcement.initialize(rc);
+        		request.sendRequest(pastrSpot, true);
+        		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                UnitStratReinforcement.initialize(rc);
         	}
-        	//rc.yield();
+        }
+        if(rc.isConstructing() && rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0)
+        {
+        	rc.selfDestruct();
         }
     }
 

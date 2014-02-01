@@ -8,16 +8,27 @@ import battlecode.common.*;
  */
 public abstract class UnitStratHqSurround extends UnitStrategy {
     static RobotController rc;
+    static MapLocation enemyHQ;
 
     public static void initialize(RobotController rcIn) throws GameActionException
     {
         rc = rcIn;
-        Soldiers.nav.setDestination(rc.senseEnemyHQLocation());
+        Direction[] dirs = Direction.values();
+        enemyHQ = rc.senseEnemyHQLocation();
+        for(Direction dir : dirs)
+        {
+        	if(Soldiers.map.getTileType(enemyHQ.add(dir)) != RoadMap.TileType.TTVoid)
+        	{
+        		enemyHQ = enemyHQ.add(dir);
+        		break;
+        	}
+        }
+        Soldiers.nav.setDestination(enemyHQ);
     }
 
     public static void upDate() throws GameActionException
     {
-        if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 25)
+        if (rc.getLocation().distanceSquaredTo(enemyHQ) < 25)
         {
             Soldiers.nav.setDestination(rc.getLocation());
         }
