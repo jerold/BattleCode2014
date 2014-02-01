@@ -52,6 +52,8 @@ public abstract class BlockadeRunner extends UnitStrategy {
             else
             {
                 target = ourHQ.add(toEnemyHQ.opposite());
+                target = target.add(toEnemyHQ.opposite());
+                target = target.add(toEnemyHQ.opposite());
             }
         }
         else if (rc.sensePastrLocations(rc.getTeam().opponent()).length > 0)
