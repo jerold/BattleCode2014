@@ -63,6 +63,14 @@ public class Headquarter {
             while (true) {
                 try
                 {
+                    /*Robot[] inRangeEnemies = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
+
+                    if (inRangeEnemies.length > 0)
+                    {
+                        FightMicro.hqFire(rc);
+                    }*/
+
+
                     if (rc.isActive())
                     {
                     	teamMem = rc.getTeamMemory();
@@ -130,8 +138,9 @@ public class Headquarter {
 
                         if (allVisibleEnemies.length > 0)
                         {
-                            while (counter < 10)
+                            while (counter < 10 && allVisibleEnemies.length > 0)
                             {
+                                allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                                 FightMicro.hqFire(rc);
                                 counter++;
                                 rc.yield();

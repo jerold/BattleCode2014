@@ -8,16 +8,18 @@ import battlecode.common.*;
  */
 public abstract class UnitStratHqSurround extends UnitStrategy {
     static RobotController rc;
+    static public MapLocation enemyHQ;
 
     public static void initialize(RobotController rcIn) throws GameActionException
     {
         rc = rcIn;
-        Soldiers.nav.setDestination(rc.senseEnemyHQLocation());
+        enemyHQ = rc.senseEnemyHQLocation();
+        Soldiers.nav.setDestination(enemyHQ);
     }
 
     public static void upDate() throws GameActionException
     {
-        if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 25)
+        if (rc.getLocation().distanceSquaredTo(enemyHQ) < 25)
         {
             Soldiers.nav.setDestination(rc.getLocation());
         }

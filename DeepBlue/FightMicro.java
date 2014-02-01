@@ -536,7 +536,7 @@ public class FightMicro
 
             if (enemies != null && allyBots != null)
             {
-                rc.setIndicatorString(1, "allyBots present");
+                //rc.setIndicatorString(1, "allyBots present");
                 if (allyBots.length > 1)
                 {
                     int[] alliedBotsCount = new int[enemies.length];
@@ -634,7 +634,7 @@ public class FightMicro
 
             if (enemies != null && target == null || (target != null && rc.getLocation().distanceSquaredTo(rc.senseLocationOf(target)) > 10))
             {
-                rc.setIndicatorString(1, "No allies present");
+                //rc.setIndicatorString(1, "No allies present");
                 for(int k = 0; k < enemies.length; k++)
                 {
                     if(target == null && !rc.senseRobotInfo(enemies[k]).isConstructing)
@@ -1685,7 +1685,7 @@ public class FightMicro
         {
             if (rc.readBroadcast(takeDownEnemyPastr) == 0)
             {
-                if (closeEnemySoldiers.length > 1 && ((rc.getHealth() <= 50 && rc.getHealth() <= (double) ((closeEnemySoldiers.length * 10) + 10))) || (((rc.getHealth()) % 10 != 0) && rc.getHealth() < 50))
+                if (closeEnemySoldiers.length > 0 && (rc.getHealth() <= 30 || (((rc.getHealth() <= 50 && rc.getHealth() <= (double) ((closeEnemySoldiers.length * 10) + 10))) || (((rc.getHealth()) % 10 != 0) && rc.getHealth() < 50))))
                 {
                     Direction move = null;
                     Direction dir;
@@ -2784,6 +2784,11 @@ public class FightMicro
                         }
                         else if (runFromEnemyHQ(rc))
                         {
+                        }
+                        else if (nearByEnemies3.length > 1 && nearByAllies.length == 0)
+                        {
+                            // then we wait
+                            fire(rc, nearByEnemies10, alliedBots);
                         }
                         else if (endGoal != null && numbOfRobotsAttackingTarget(rc, rc.getLocation().add(rc.getLocation().directionTo(endGoal)), enemyBotLoc, alliedBots) == 0)//rc.getLocation().add(rc.getLocation().directionTo(endGoal)).distanceSquaredTo(rc.senseLocationOf(nearByEnemies2[0])) > 10)
                         {
