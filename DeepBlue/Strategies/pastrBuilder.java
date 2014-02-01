@@ -18,6 +18,7 @@ public abstract class pastrBuilder extends UnitStrategy {
         rc = rcIn;
         request = new towerPastrRequest(rc);
         pastrSpot = TowerUtil.convertIntToMapLocation(get[0]);
+        rc.setIndicatorString(0, "" + pastrSpot.toString());
         Soldiers.nav.setDestination(pastrSpot);
         type = get[1];
     }
@@ -114,13 +115,6 @@ public abstract class pastrBuilder extends UnitStrategy {
             else
             {
             	simpleFight(rc);
-            }
-        }
-        else if (rc.getLocation().isAdjacentTo(pastrSpot))
-        {
-            if (rc.canMove(rc.getLocation().directionTo(pastrSpot)))
-            {
-                rc.move(rc.getLocation().directionTo(pastrSpot));
             }
         }
         else

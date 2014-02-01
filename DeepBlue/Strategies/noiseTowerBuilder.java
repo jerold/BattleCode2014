@@ -17,6 +17,7 @@ public abstract class noiseTowerBuilder extends UnitStrategy {
         rc = rcIn;
         request = new towerPastrRequest(rc);
         towerSpot = TowerUtil.convertIntToMapLocation(get[0]);
+        rc.setIndicatorString(0, "" + towerSpot.toString());
         Soldiers.nav.setDestination(towerSpot);
     }
 

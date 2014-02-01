@@ -123,6 +123,9 @@ public class TowerUtil
     
     public static MapLocation[] generatePullLines(RobotController rc, MapLocation center)
     {
+    	int width = rc.getMapWidth();
+    	int height = rc.getMapHeight();
+    	double[][] cows = rc.senseCowGrowth();
     	MapLocation[] lines = new MapLocation[16];
     	int numVoids = 8;
     	int distAway = 36;
@@ -140,9 +143,20 @@ public class TowerUtil
             		voids++;
             	}
             }
-            while(toFire.x < -2 || toFire.x >= rc.getMapWidth() + 2 || toFire.y < -2 || toFire.y >= rc.getMapHeight() + 2 || !rc.canAttackSquare(toFire))
+            while(toFire.x < -2 || toFire.x >= width + 2 || toFire.y < -2 || toFire.y >= width + 2 || !rc.canAttackSquare(toFire))
             {
             	toFire = toFire.add(toFire.directionTo(center));
+            }
+            if(toFire.x >= 0 && toFire.x < width && toFire.y >= 0 && toFire.y < height)
+            {
+            	int t = 0;
+	            while(cows[toFire.x][toFire.y] < 1 && !toFire.equals(center))
+	            {
+	            	toFire = toFire.add(toFire.directionTo(center));
+	            	t++;
+	            }
+	            t = Math.min(t, 4);
+	            toFire = toFire.add(toFire.directionTo(center).opposite(), t);
             }
             lines[k * 2] = toFire;
             do
