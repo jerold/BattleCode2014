@@ -66,7 +66,7 @@ public class Navigator {
             defaultMovement();
         else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
             smartMovement();
-        rc.setIndicatorString(1, "["+map.pathingStrat+"]  Dest"+destination+"  Term"+dogBugTerminal+"  Dog"+dog+"  Sit["+dogSitting+"]  DD["+(int)Utilities.distanceBetweenTwoPoints(me, destination)+"] EQ["+(int)Utilities.distanceBetweenTwoPoints(me, cache.ENEMY_HQ)+"]");
+//        rc.setIndicatorString(1, "["+map.pathingStrat+"]  Dest"+destination+"  Term"+dogBugTerminal+"  Dog"+dog+"  Sit["+dogSitting+"]  DD["+(int)Utilities.distanceBetweenTwoPoints(me, destination)+"] EQ["+(int)Utilities.distanceBetweenTwoPoints(me, cache.ENEMY_HQ)+"]");
     }
 
     public void setSneak(boolean setting)
