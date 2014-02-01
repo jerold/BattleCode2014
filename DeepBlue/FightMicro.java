@@ -536,7 +536,7 @@ public class FightMicro
 
             if (enemies != null && allyBots != null)
             {
-                rc.setIndicatorString(1, "allyBots present");
+                //rc.setIndicatorString(1, "allyBots present");
                 if (allyBots.length > 1)
                 {
                     int[] alliedBotsCount = new int[enemies.length];
@@ -634,7 +634,7 @@ public class FightMicro
 
             if (enemies != null && target == null || (target != null && rc.getLocation().distanceSquaredTo(rc.senseLocationOf(target)) > 10))
             {
-                rc.setIndicatorString(1, "No allies present");
+                //rc.setIndicatorString(1, "No allies present");
                 for(int k = 0; k < enemies.length; k++)
                 {
                     if(target == null && !rc.senseRobotInfo(enemies[k]).isConstructing)
@@ -1685,7 +1685,7 @@ public class FightMicro
         {
             if (rc.readBroadcast(takeDownEnemyPastr) == 0)
             {
-                if (closeEnemySoldiers.length > 1 && ((rc.getHealth() <= 50 && rc.getHealth() <= (double) ((closeEnemySoldiers.length * 10) + 10))) || (((rc.getHealth()) % 10 != 0) && rc.getHealth() < 50))
+                if (closeEnemySoldiers.length > 0 && (rc.getHealth() <= 30 || (((rc.getHealth() <= 50 && rc.getHealth() <= (double) ((closeEnemySoldiers.length * 10) + 10))) || (((rc.getHealth()) % 10 != 0) && rc.getHealth() < 50))))
                 {
                     Direction move = null;
                     Direction dir;
@@ -2612,7 +2612,7 @@ public class FightMicro
             nearByEnemies3 = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
             //nearByEnemies4 = nearByEnemies3;
             nearByEnemies10 = nearByEnemies3;
-            nearByEnemies3 = findSoldiers(rc, nearByEnemies4);
+            nearByEnemies3 = findSoldiers(rc, nearByEnemies3);
             //nearByEnemies4 = findNonSoldiers(rc, nearByEnemies4);
             //nearByEnemies4 = findSoldiersAtDistance(rc, nearByEnemies4, 10);
             nearByEnemies4 = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
@@ -2644,7 +2644,7 @@ public class FightMicro
                      */
                     if (nearbyEnemies.length > 0)
                     {
-                        rc.setIndicatorString(0, "FightMicro");
+                        rc.setIndicatorString(1, "enemies in range");
                         if (nearbyEnemies.length == 1 && rc.getHealth() > 50)
                         {
                             rc.setIndicatorString(0, "Fire!");
@@ -2759,6 +2759,7 @@ public class FightMicro
                         //alliesEngaged = AlliesEngaged(rc, enemyBotLoc, alliedBots);
                         //nearByAllies2 = findSoldiersAtDistance(rc, nearByAllies, 9);
                         //GameObject[] nearByAllies4 = findSoldiersAtDistance(rc, nearByAllies, 24);
+                        rc.setIndicatorString(1, "Enemies getting close");
                         Robot[] nearByAllies5 = findSoldiersAtDistance(rc, nearByAllies, 10);
                         //Direction dir = rc.getLocation().directionTo(enemyBotLoc[0]);
                         if (rc.senseRobotInfo(nearByEnemies2[0]).type == RobotType.NOISETOWER || rc.senseRobotInfo(nearByEnemies2[0]).type == RobotType.PASTR)
@@ -2773,6 +2774,10 @@ public class FightMicro
                         {
                             fire(rc, nearByEnemies10, alliedBots);
                         }
+                        else if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 35)
+                        {
+
+                        }
                         else if (enemiesWalledOff(rc, enemyBotLoc))
                         {
                             rc.setIndicatorString(1, "Trapped");
@@ -2784,6 +2789,13 @@ public class FightMicro
                         }
                         else if (runFromEnemyHQ(rc))
                         {
+                            rc.setIndicatorString(1, "Run from enemy HQ");
+                        }
+                        else if (nearByEnemies3.length - nearByAllies.length < 1)
+                        {
+                            // then we wait
+
+                            fire(rc, nearByEnemies10, alliedBots);
                         }
                         else if (endGoal != null && numbOfRobotsAttackingTarget(rc, rc.getLocation().add(rc.getLocation().directionTo(endGoal)), enemyBotLoc, alliedBots) == 0)//rc.getLocation().add(rc.getLocation().directionTo(endGoal)).distanceSquaredTo(rc.senseLocationOf(nearByEnemies2[0])) > 10)
                         {
@@ -2859,6 +2871,7 @@ public class FightMicro
                      */
                     else if (nearByEnemies3.length > 0)
                     {
+                        rc.setIndicatorString(1, "enemies seen");
                         MapLocation target = rc.senseLocationOf(nearByEnemies3[0]);
                         if (retreat(rc, nearByEnemies3, enemyBotLoc, alliedBots))
                         {
@@ -2927,6 +2940,7 @@ public class FightMicro
                     }
                     return true;
                 }
+                return true;
             }
             else if (nearByEnemies10.length > 0)
             {
@@ -2950,7 +2964,9 @@ public class FightMicro
             }
         } catch(Exception e)
         {
+
             e.printStackTrace();
+            return true;
         }
         return false;
     }

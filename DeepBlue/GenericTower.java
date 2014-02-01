@@ -58,6 +58,32 @@ public class GenericTower
 	        		}
 	        		catch(Exception e){}
 	        	}
+	        	
+	        	if(!foundPastr)
+        		{
+        			MapLocation[] enemies = rc.sensePastrLocations(rc.getTeam().opponent());
+        			boolean enemyPastr = false;
+        			MapLocation pastrE = new MapLocation(0, 0);
+        			for(MapLocation pastr : enemies)
+	            	{
+	            		if(pastr.distanceSquaredTo(target) < 300)
+	            		{
+	            			enemyPastr = true;
+	            			pastrE = pastr;
+	            			break;
+	            		}
+	            	}
+        			if(enemyPastr)
+        			{
+        				while(!rc.isActive()){rc.yield();}
+    					try
+    					{
+    						rc.attackSquare(pastrE);
+    					}
+    					catch(Exception e){}
+        			}
+        			
+        		}
 	            rc.yield();
 	        }
         }
@@ -129,18 +155,18 @@ public class GenericTower
 			                		{
 			                			getClosest();
 			                			MapLocation start = lines[t * 2];
-			                			while(closest[t] != 0 && start.distanceSquaredTo(target) > closest[t])
+			                			while(closest[t] != 0 && (start.distanceSquaredTo(target) > closest[t] && !start.equals(lines[t * 2 + 1])))
 			                			{
-			                				start = start.add(start.directionTo(target));
+			                				start = start.add(start.directionTo(lines[t * 2 + 1]));
 			                			}
 			                			TowerUtil.fireLine(rc, start, lines[t * 2 + 1], 1, request);
 			                			if(t == 4)
 			                			{
 			                				getClosest();
 	                                        start = lines[(t + 2) * 2];
-	                                        while(closest[t + 2] != 0 && start.distanceSquaredTo(target) > closest[t + 2])
+	                                        while(closest[t + 2] != 0 && start.distanceSquaredTo(target) > closest[t + 2] && !start.equals(lines[(t + 2) * 2 + 1]))
 	                                        {
-	                                            start = start.add(start.directionTo(target));
+	                                            start = start.add(start.directionTo(lines[(t + 2) * 2 + 1]));
 	                                        }
 			                				TowerUtil.fireLine(rc, start, lines[(t + 2) * 2 + 1], 1, request);
 			                			}

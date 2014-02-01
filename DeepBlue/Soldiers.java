@@ -50,6 +50,7 @@ public class Soldiers {
     public static void run(RobotController inRc) throws GameActionException
     {
         rc = inRc;
+        //int a = divideByZero(rc);
         cache = new UnitCache(rc);
         map = new RoadMap(rc, cache);
         nav = new Navigator(rc,cache, map);
@@ -77,19 +78,15 @@ public class Soldiers {
             {
                 case Utilities.unitNeededScout:
                     changeStrategy(UnitStrategyType.Scout);
-                    UnitStratScout.initialize(rc);
                     break;
                 case Utilities.unitNeededDarkTemplar:
                     changeStrategy(UnitStrategyType.DarkTemplar);
-                    UnitStratDarkTemplar.initialize(rc);
                     break;
                 case Utilities.unitNeededHQSurround:
                     changeStrategy(UnitStrategyType.HQSurround);
-                    UnitStratHqSurround.initialize(rc);
                     break;
                 case Utilities.unitNeededPastrDefense:
                     changeStrategy(UnitStrategyType.PastrDefense);
-                    UnitStratPastrDefense.initialize(rc);
                     break;
                 case Utilities.unitNeededOurPastrKiller:
                     changeStrategy(UnitStrategyType.OurPastrKiller);
@@ -109,103 +106,103 @@ public class Soldiers {
                     else
                     {
                         changeStrategy(UnitStrategyType.PastrDestroyer);
-                        UnitStratPastrKiller.initialize(rc);
                     }
-                    UnitStratOurPastrKillers.initialize(rc, ourPastr, type);
                     break;
                 case Utilities.unitNeededHQPastr:
                     changeStrategy(UnitStrategyType.HQPastr);
-                    UnitStratHQPastr.initialize(rc);
                     break;
                 case Utilities.unitNeededHQTower:
                     changeStrategy(UnitStrategyType.HQTower);
-                    UnitStratHQTower.initialize(rc);
                     break;
                 case Utilities.unitNeededBlockadeRunner:
-                    BlockadeRunner.initialize(rc);
                     changeStrategy(UnitStrategyType.BlockadeRunner);
                     break;
                 default:
                     changeStrategy(UnitStrategyType.PastrDestroyer);
-                    UnitStratPastrKiller.initialize(rc);
             }
-        }
 
-        rc.setIndicatorString(1, ""+strategy);
 
-        if (type == Utilities.unitNeededPastrKiller)
-        {
-            UnitStratPastrKiller.initialize(rc);
-        }
+            rc.setIndicatorString(1, ""+strategy);
 
-        while (true) {
-//            rc.setIndicatorString(1, ""+strategy);
-            if (rc == null)
+            if (type == Utilities.unitNeededPastrKiller)
             {
-                rc.setIndicatorString(2, "Rc is null");
+                UnitStratPastrKiller.initialize(rc);
             }
-            try
-            {
-            	if(strategy == UnitStrategyType.NoiseTowerBuilder)
-            	{
-            		if(rc.getHealth() < 50)
-                    {
-                    	//rc.setIndicatorString(0, "Help");
-                    	request.sendRequest(TowerUtil.convertIntToMapLocation(get[0]), false);
-                		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
-                        UnitStratReinforcement.initialize(rc);
-                    }
-            	}
-            	else if(strategy == UnitStrategyType.PastrBuilder)
-            	{
-            		if(rc.getHealth() < 50)
-                    {
-                    	//rc.setIndicatorString(0, "Help");
-                    	request.sendRequest(TowerUtil.convertIntToMapLocation(get[0]), true);
-                		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
-                    }
-            	}
-                if (rc.isActive())
+
+            while (true) {
+               rc.setIndicatorString(1, ""+strategy);
+                if (rc == null)
                 {
-                    updateStrategy();
-
-                    cache.reset();
-                    map.checkForUpdates();
-                    
-                    if(strategy == UnitStrategyType.PastrBuilder || strategy == UnitStrategyType.NoiseTowerBuilder)
-                    {
-                    	if(rc.getLocation().equals(TowerUtil.convertIntToMapLocation(get[0])))
-                    	{
-                    		if(strategy == UnitStrategyType.PastrBuilder)
-                    		{
-                    			request.madeIt(true);
-                    		}
-                    		else
-                    		{
-                    			request.madeIt(false);
-                    		}
-                    	}
-                    }
-
-                    // Do unit strategy picker
-                    // strategy picks destinations and performs special tasks
-
-
-                    //rc.setIndicatorString(0, "Not fighting");
-                    if (!defenseMicro && FightMicro.fightMode(rc, null))
-                    {
-                        rc.setIndicatorString(0, "Fighting");
-                    }
-                    else if (!mainFightMicro && defenseMicro && FightMicro.defenseMicro(rc, defenseSpot))
-                    {
-
-                    }
-                    else if (rc.isActive())
-                        nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
+                    rc.setIndicatorString(2, "Rc is null");
                 }
-            } catch (Exception e) {}
+                try
+                {
+                    if (strategy == UnitStrategyType.HQSurround)
+                    {
+                        rc.setIndicatorString(1, "HQ Surround: "+UnitStratHqSurround.enemyHQ);
+                    }
 
-            rc.yield();
+                    if(strategy == UnitStrategyType.NoiseTowerBuilder)
+                    {
+                        if(rc.getHealth() < 50)
+                        {
+                            //rc.setIndicatorString(0, "Help");
+                            request.sendRequest(TowerUtil.convertIntToMapLocation(get[0]), false);
+                            Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                            UnitStratReinforcement.initialize(rc);
+                        }
+                    }
+                    else if(strategy == UnitStrategyType.PastrBuilder)
+                    {
+                        if(rc.getHealth() < 50)
+                        {
+                            //rc.setIndicatorString(0, "Help");
+                            request.sendRequest(TowerUtil.convertIntToMapLocation(get[0]), true);
+                            Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                        }
+                    }
+                    if (rc.isActive())
+                    {
+                        updateStrategy();
+
+                        cache.reset();
+                        map.checkForUpdates();
+
+                        if(strategy == UnitStrategyType.PastrBuilder || strategy == UnitStrategyType.NoiseTowerBuilder)
+                        {
+                            if(rc.getLocation().equals(TowerUtil.convertIntToMapLocation(get[0])))
+                            {
+                                if(strategy == UnitStrategyType.PastrBuilder)
+                                {
+                                    request.madeIt(true);
+                                }
+                                else
+                                {
+                                    request.madeIt(false);
+                                }
+                            }
+                        }
+
+                        // Do unit strategy picker
+                        // strategy picks destinations and performs special tasks
+
+
+                        //rc.setIndicatorString(0, "Not fighting");
+                        if (!defenseMicro && FightMicro.fightMode(rc, null))
+                        {
+                            rc.setIndicatorString(0, "Fighting");
+                        }
+                        else if (!mainFightMicro && defenseMicro && FightMicro.defenseMicro(rc, defenseSpot))
+                        {
+
+                        }
+                        else if (rc.isActive())
+                            nav.maneuver(); // Goes forward with Macro Pathing to destination, and getting closer to friendly units
+                    }
+                } catch (Exception e) {e.printStackTrace();}
+
+                rc.yield();
+            }
         }
     }
 
@@ -247,7 +244,6 @@ public class Soldiers {
             case BlockadeRunner:
                 BlockadeRunner.initialize(rc);
                 break;
-
         }
     }
 
@@ -294,7 +290,6 @@ public class Soldiers {
             case BlockadeRunner:
                 BlockadeRunner.upDate();
                 break;
-
         }
         rc.setIndicatorString(2, "Strategy ["+strategy+"]");
     }

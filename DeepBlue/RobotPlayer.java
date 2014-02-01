@@ -12,12 +12,12 @@ public class RobotPlayer
 
     public static void run(RobotController rc)
     {
+        //int a = 3/0;
         while (true) {
             try {
                 if (rc.getType() == RobotType.HQ)
                 {
-                	towerPastrRequest.endBuilding(rc);
-                    // rc.wearHat();
+                    rc.wearHat();
                     Headquarter.run(rc);
                 }
                 else if (rc.getType() == RobotType.SOLDIER) Soldiers.run(rc);

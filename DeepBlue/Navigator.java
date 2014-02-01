@@ -66,7 +66,7 @@ public class Navigator {
             defaultMovement();
         else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
             smartMovement();
-        rc.setIndicatorString(1, "["+map.pathingStrat+"]  Dest"+destination+"  Term"+dogBugTerminal+"  Dog"+dog+"  Sit["+dogSitting+"]  DD["+(int)Utilities.distanceBetweenTwoPoints(me, destination)+"] EQ["+(int)Utilities.distanceBetweenTwoPoints(me, cache.ENEMY_HQ)+"]");
+//        rc.setIndicatorString(1, "["+map.pathingStrat+"]  Dest"+destination+"  Term"+dogBugTerminal+"  Dog"+dog+"  Sit["+dogSitting+"]  DD["+(int)Utilities.distanceBetweenTwoPoints(me, destination)+"] EQ["+(int)Utilities.distanceBetweenTwoPoints(me, cache.ENEMY_HQ)+"]");
     }
 
     public void setSneak(boolean setting)
@@ -124,13 +124,7 @@ public class Navigator {
         MapLocation lastStep = new MapLocation(-1, -1);
         while (!stepLocation.equals(destination)) {
             MapLocation nextStepLocation = stepLocation.add(stepLocation.directionTo(destination));
-//            System.out.print("L[x:"+lastStep.x+", y:"+lastStep.y+"] ");
-//            System.out.print("S[x:"+stepLocation.x+", y:"+stepLocation.y+"] ");
-//            System.out.print("N[x:"+nextStepLocation.x+", y:"+nextStepLocation.y+"]("+map.valueForLocation(nextStepLocation)+")   ");
-//            System.out.print(map.valueForLocation(nextStepLocation));
-
             if (nextStepLocation.equals(lastStep) || map.getTileType(nextStepLocation) == RoadMap.TileType.TTVoid) return false;
-
             lastStep = stepLocation;
             stepLocation = nextStepLocation;
         }
@@ -191,7 +185,6 @@ public class Navigator {
 
     private void walkDog()
     {
-//        System.out.println("Dog "+dog+" ["+dogHeading+"] S("+dogSitting+") T("+dogBugTerminal+") D("+destination+") M("+me+")");
         if (dogSitting) {
             if (me.equals(dog) && !dog.equals(destination)) dogSitting = false;
             else if (me.isAdjacentTo(dog) && !rc.canMove(me.directionTo(dog))) dogSitting = false;
@@ -210,7 +203,6 @@ public class Navigator {
         dogBugTerminal = loc.add(loc.directionTo(destination));
         while (map.getTileType(dogBugTerminal.add(dogBugTerminal.directionTo(destination))) == RoadMap.TileType.TTVoid) dogBugTerminal = dogBugTerminal.add(dogBugTerminal.directionTo(destination));
         dogBugTerminal = dogBugTerminal.add(dogBugTerminal.directionTo(destination));
-//        System.out.println((map.getTileType(dogBugTerminal) == RoadMap.TileType.TTVoid ? 1 : 0) + "" + dogBugTerminal + "  ");
     }
 
 

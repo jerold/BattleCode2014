@@ -17,6 +17,7 @@ public abstract class noiseTowerBuilder extends UnitStrategy {
         rc = rcIn;
         request = new towerPastrRequest(rc);
         towerSpot = TowerUtil.convertIntToMapLocation(get[0]);
+        rc.setIndicatorString(0, "" + towerSpot.toString());
         Soldiers.nav.setDestination(towerSpot);
     }
 
@@ -24,6 +25,8 @@ public abstract class noiseTowerBuilder extends UnitStrategy {
     {
         if (rc.getLocation().equals(towerSpot))
         {
+        	rc.setIndicatorString(0, "Made it");
+        	request.madeIt(false);
         	if(rc.isActive() && rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length == 0)
         	{
         		rc.construct(RobotType.NOISETOWER);

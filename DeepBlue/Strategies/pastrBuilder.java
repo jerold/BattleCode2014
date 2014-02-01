@@ -18,6 +18,7 @@ public abstract class pastrBuilder extends UnitStrategy {
         rc = rcIn;
         request = new towerPastrRequest(rc);
         pastrSpot = TowerUtil.convertIntToMapLocation(get[0]);
+        rc.setIndicatorString(0, "" + pastrSpot.toString());
         Soldiers.nav.setDestination(pastrSpot);
         type = get[1];
     }
@@ -116,23 +117,19 @@ public abstract class pastrBuilder extends UnitStrategy {
             	simpleFight(rc);
             }
         }
-        else if (rc.getLocation().isAdjacentTo(pastrSpot))
-        {
-            if (rc.canMove(rc.getLocation().directionTo(pastrSpot)))
-            {
-                rc.move(rc.getLocation().directionTo(pastrSpot));
-            }
-        }
         else
         {
         	if(rc.getHealth() < 50)
         	{
         		rc.setIndicatorString(0, "Help");
-        		//request.sendRequest(pastrSpot, true);
-        		//Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
-                //UnitStratReinforcement.initialize(rc);
+        		request.sendRequest(pastrSpot, true);
+        		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                UnitStratReinforcement.initialize(rc);
         	}
-        	//rc.yield();
+        }
+        if(rc.isConstructing() && rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length > 0)
+        {
+        	rc.selfDestruct();
         }
     }
 

@@ -118,17 +118,14 @@ public class Headquarter {
 					}
                     if (rc.isActive())
                     {
-                    	
-    					
-    					
-            			
                         Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                         int counter = 0;
                        
                         if (allVisibleEnemies.length > 0)
                         {
-                            while (counter < 10)
+                            while (counter < 10 && allVisibleEnemies.length > 0)
                             {
+                                allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                                 FightMicro.hqFire(rc);
                                 counter++;
                                 rc.yield();
@@ -175,7 +172,7 @@ public class Headquarter {
         if (rc!= null)
         {
             rc.setIndicatorString(0, ""+numbOfSoldiers);
-            rc.setIndicatorString(2, ""+TowerUtil.getHQSpotScore(rc, rc.senseHQLocation()));
+            //rc.setIndicatorString(2, ""+TowerUtil.getHQSpotScore(rc, rc.senseHQLocation()));
 
             Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
             Robot[] inRangeEnemies = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
@@ -184,6 +181,7 @@ public class Headquarter {
             // we must not let the enemy pull off a hq surround
             if (nearByEnemies.length - inRangeEnemies.length > 1 || surround)
             {
+                rc.setIndicatorString(1, "Blockade running");
                 // our first unit tries to draw the enemy in to around our hq
                 if (count == 0)
                 {
@@ -208,6 +206,7 @@ public class Headquarter {
             // if we are going for hq tower build
             else if (Utilities.checkHQTower(rc))
             {
+                rc.setIndicatorString(1, "HQ tower");
                 boolean needHQTower = false;
                 boolean needHQPastr = false;
 
@@ -272,7 +271,7 @@ public class Headquarter {
                     }
                     else
                     {
-                        towerPastrRequest.endBuilding(rc);
+                       // towerPastrRequest.endBuilding(rc);
                         type = Utilities.unitNeededPastrKiller;
                     }
                 }
@@ -284,6 +283,7 @@ public class Headquarter {
             // small map no hq tower
             else if (rc.getMapHeight() * rc.getMapWidth() < 900)
             {
+                rc.setIndicatorString(1, "Small map");
                 // set up troops until we hit critical mass
                 if (rc.senseRobotCount() < 10)
                 {
@@ -295,14 +295,15 @@ public class Headquarter {
                     setUp = true;
                     towerPastrRequest.startBuilding(rc);
                 }
-                else if (setUp && (setUpCount-numbOfSoldiers > 1))
+                else if (setUp && (setUpCount-numbOfSoldiers > 4))
                 {
-                    towerPastrRequest.endBuilding(rc);
+                    //towerPastrRequest.endBuilding(rc);
                 }
             }
             // medium map no hq tower
             else if (rc.getMapHeight() * rc.getMapWidth() < 2500)
             {
+                rc.setIndicatorString(1, "medium");
                 // first we build a group of troops
                 if (numbOfSoldiers < 6)
                 {
@@ -317,12 +318,13 @@ public class Headquarter {
                 else if (!setUp)
                 {
                     setUp = true;
+                    rc.setIndicatorString(2, "start building");
                     towerPastrRequest.startBuilding(rc);
-                }
+                }/*
                 else if (inefficient)
                 {
                     towerPastrRequest.endBuilding(rc);
-                }
+                }*/
                 else
                 {
                     type = Utilities.unitNeededPastrKiller;
@@ -332,6 +334,7 @@ public class Headquarter {
             // large map no hq tower
             else if (rc.getMapHeight() * rc.getMapWidth() < 10001)
             {
+                rc.setIndicatorString(1, "big");
                 if (!setUp)
                 {
                     towerPastrRequest.startBuilding(rc);
@@ -351,6 +354,7 @@ public class Headquarter {
             }
             else
             {
+                rc.setIndicatorString(1, "default");
                 if (numbOfSoldiers < 5)
                 {
                     type = Utilities.unitNeededScout;
