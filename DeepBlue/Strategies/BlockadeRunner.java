@@ -13,6 +13,7 @@ public abstract class BlockadeRunner extends UnitStrategy {
     static Direction toEnemyHQ;
     static MapLocation enemyHQ;
     static MapLocation rallyPoint;
+    static MapLocation oldTarget;
 
     public static void initialize(RobotController rcIn)
     {
@@ -28,6 +29,7 @@ public abstract class BlockadeRunner extends UnitStrategy {
         if (rc.getLocation().distanceSquaredTo(ourHQ) < 50)
         {
             Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam());
+            Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
 
             if (nearByAllies.length > 8)
             {
@@ -43,6 +45,10 @@ public abstract class BlockadeRunner extends UnitStrategy {
                     target = rallyPoint;
                 }
             }
+            else if (nearByEnemies.length == 0)
+            {
+                target = rallyPoint;
+            }
             else
             {
                 target = ourHQ.add(toEnemyHQ.opposite());
@@ -56,7 +62,10 @@ public abstract class BlockadeRunner extends UnitStrategy {
         {
             target = enemyHQ;
         }
-
-        Soldiers.nav.setDestination(target);
+        if (oldTarget == null || !oldTarget.equals(target))
+        {
+            oldTarget = target;
+            Soldiers.nav.setDestination(target);
+        }
     }
 }

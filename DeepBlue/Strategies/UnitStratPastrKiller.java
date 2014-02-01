@@ -10,6 +10,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
     public static RobotController rc;
     public static MapLocation target;
     static final int samePastr = 35675;
+    static MapLocation oldTarget;
 
     public static void initialize(RobotController rcIn) throws GameActionException
     {
@@ -20,7 +21,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
     {
         MapLocation[] enemyPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
         MapLocation[] ourPastrs = rc.sensePastrLocations(rc.getTeam());
-        if(rc.readBroadcast(samePastr)==1){
+        if(false) {//rc.readBroadcast(samePastr)==1){
         	
         } else {
         	if (enemyPastrs.length > 0)
@@ -71,6 +72,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
+                target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         	}
         	else
         	{
@@ -78,6 +80,15 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         	}
         }
 
-        Soldiers.nav.setDestination(target);
+        if (target == null)
+        {
+            target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+        }
+
+        if (oldTarget == null || !oldTarget.equals(target))
+        {
+            oldTarget = target;
+            Soldiers.nav.setDestination(target);
+        }
     }
 }
