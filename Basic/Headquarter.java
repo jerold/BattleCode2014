@@ -1,3 +1,4 @@
+/*
 package DeepBlue;
 
 import battlecode.common.*;
@@ -7,7 +8,7 @@ import com.sun.corba.se.spi.activation._InitialNameServiceImplBase;
 /**
  * Created by Jerold Albertson on 1/12/14.
  *
- */
+ 
 public class Headquarter {
     static RobotController rc;
     static UnitCache cache;
@@ -293,7 +294,7 @@ public class Headquarter {
                 {
                     setUpCount = numbOfSoldiers;
                     setUp = true;
-                    //towerPastrRequest.startBuilding(rc);
+                    towerPastrRequest.startBuilding(rc);
                 }
                 else if (setUp && (setUpCount-numbOfSoldiers > 1))
                 {
@@ -317,7 +318,7 @@ public class Headquarter {
                 else if (!setUp)
                 {
                     setUp = true;
-                    //towerPastrRequest.startBuilding(rc);
+                    towerPastrRequest.startBuilding(rc);
                 }
                 else if (inefficient)
                 {
@@ -334,7 +335,7 @@ public class Headquarter {
             {
                 if (!setUp)
                 {
-                    //towerPastrRequest.startBuilding(rc);
+                    towerPastrRequest.startBuilding(rc);
                     setUp = true;
                 }
                 if (inefficient)
@@ -343,7 +344,7 @@ public class Headquarter {
                 }
                 else if (inefficient && rc.senseRobotCount() > 10 && !criticalMass)
                 {
-                    //towerPastrRequest.startBuilding(rc);
+                    towerPastrRequest.startBuilding(rc);
                     criticalMass = true;
                 }
 
@@ -366,7 +367,7 @@ public class Headquarter {
                     if (!started)
                     {
                         started = true;
-                        //towerPastrRequest.startBuilding(rc);
+                        towerPastrRequest.startBuilding(rc);
                     }
                     type = Utilities.unitNeededOurPastrKiller;
                 }
@@ -376,8 +377,9 @@ public class Headquarter {
             {
                 numbOfSoldiers++;
             }
-            //type = Utilities.unitNeededPastrKiller;
+            type = Utilities.unitNeededPastrKiller;
             rc.broadcast(Utilities.unitNeededChannel, type);
         }
     }
 }
+*/

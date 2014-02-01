@@ -1,3 +1,4 @@
+/*
 package DeepBlue.Strategies;
 
 import DeepBlue.*;
@@ -5,7 +6,7 @@ import battlecode.common.*;
 
 /**
  * Created by fredkneeland on 1/28/14.
- */
+ 
 public abstract class UnitStratPastrKiller extends UnitStrategy {
     public static RobotController rc;
     public static MapLocation target;
@@ -123,7 +124,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
 
         if (target == null)
         {
-            target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+            target = new MapLocation(15, 19);
         }
 
         if (oldTarget == null || !oldTarget.equals(target))
@@ -133,3 +134,4 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         }
     }
 }
+*/
