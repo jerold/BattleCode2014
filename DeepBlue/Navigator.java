@@ -153,7 +153,8 @@ public class Navigator {
 
     public boolean tryMove() throws GameActionException
     {
-        if(rc.canMove(heading) && !directionInTrail(heading)) {
+        if(rc.canMove(heading)) {
+//        if(rc.canMove(heading) && !directionInTrail(heading)) {
             if (!rc.isActive()) rc.yield();
             if (sneaking) rc.sneak(heading);
             else rc.move(heading);
