@@ -377,7 +377,7 @@ public class Headquarter {
             {
                 numbOfSoldiers++;
             }
-            type = Utilities.unitNeededPastrKiller;
+            //type = Utilities.unitNeededPastrKiller;
             rc.broadcast(Utilities.unitNeededChannel, type);
         }
     }
