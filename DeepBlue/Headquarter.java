@@ -73,8 +73,7 @@ public class Headquarter {
             						allPastrs[allIndex] = currentPastrs[k];
             						System.out.println("pastr added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
             						allIndex++;
-            						int loc = DeepBlue.VectorFunctions.locToInt(allPastrs[allIndex]);
-            						rc.broadcast(outPastr, loc);
+            						
             					}
             					previousPastrs = currentPastrs;
             				} else {
@@ -82,8 +81,7 @@ public class Headquarter {
             						allPastrs[allIndex] = currentPastrs[i];
             						System.out.println("PASTR added at loc: " + allPastrs[allIndex].x + ", " + allPastrs[allIndex].y);
             						allIndex++;
-            						int loc = DeepBlue.VectorFunctions.locToInt(allPastrs[allIndex]);
-            						rc.broadcast(outPastr, loc);
+            						
             					}
             					previousPastrs = currentPastrs;
             				}		
