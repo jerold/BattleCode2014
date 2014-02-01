@@ -65,16 +65,6 @@ public class Headquarter {
             while (true) {
                 try
                 {
-<<<<<<< HEAD
-                    /*Robot[] inRangeEnemies = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
-
-                    if (inRangeEnemies.length > 0)
-                    {
-                        FightMicro.hqFire(rc);
-                    }*/
-
-
-=======
                 	MapLocation[] currentPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                 	if(currentPastrs.length > 0 && firstSpot == null){
                 		firstSpot = currentPastrs[0];
@@ -126,13 +116,9 @@ public class Headquarter {
 						int loc = DeepBlue.VectorFunctions.locToInt(firstSpot);
 						rc.broadcast(outPastr, loc);
 					}
->>>>>>> b71a82e056023c6ab3fd812048613c070ad36d72
+
                     if (rc.isActive())
                     {
-                    	
-    					
-    					
-            			
                         Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
                         int counter = 0;
                        
@@ -305,9 +291,9 @@ public class Headquarter {
                 {
                     setUpCount = numbOfSoldiers;
                     setUp = true;
-                    //towerPastrRequest.startBuilding(rc);
+                    towerPastrRequest.startBuilding(rc);
                 }
-                else if (setUp && (setUpCount-numbOfSoldiers > 1))
+                else if (setUp && (setUpCount-numbOfSoldiers > 4))
                 {
                     towerPastrRequest.endBuilding(rc);
                 }

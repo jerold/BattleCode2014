@@ -47,93 +47,26 @@ public class Soldiers {
         }
     }
 
-    public static void run(RobotController inRc) //throws GameActionException
+    public static void run(RobotController inRc) throws GameActionException
     {
-        try
-        {
-            rc = inRc;
-            //int a = divideByZero(rc);
-            cache = new UnitCache(rc);
-            map = new RoadMap(rc, cache);
-            nav = new Navigator(rc,cache, map);
-            //changeStrategy(UnitStrategyType.Reinforcement);
+        rc = inRc;
+        //int a = divideByZero(rc);
+        cache = new UnitCache(rc);
+        map = new RoadMap(rc, cache);
+        nav = new Navigator(rc,cache, map);
+        //changeStrategy(UnitStrategyType.Reinforcement);
 
-            request = new towerPastrRequest(rc);
-            int[] get = request.checkForNeed();
-            if(get[0] != -1)
+        request = new towerPastrRequest(rc);
+        int[] get = request.checkForNeed();
+        if(get[0] != -1)
+        {
+            if(get[2] == 0)
             {
-                if(get[2] == 0)
-                {
-                    noiseTowerBuilder.initialize(rc, get);
-                    changeStrategy(UnitStrategyType.NoiseTowerBuilder);
-                }
-                else
-                {
-                    pastrBuilder.initialize(rc, get);
-                    changeStrategy(UnitStrategyType.PastrBuilder);
-                }
+                noiseTowerBuilder.initialize(rc, get);
+                changeStrategy(UnitStrategyType.NoiseTowerBuilder);
             }
             else
             {
-<<<<<<< HEAD
-                int type = rc.readBroadcast(Utilities.unitNeededChannel);
-                switch (type)
-                {
-                    case Utilities.unitNeededScout:
-                        changeStrategy(UnitStrategyType.Scout);
-                        UnitStratScout.initialize(rc);
-                        break;
-                    case Utilities.unitNeededDarkTemplar:
-                        changeStrategy(UnitStrategyType.DarkTemplar);
-                        UnitStratDarkTemplar.initialize(rc);
-                        break;
-                    case Utilities.unitNeededHQSurround:
-                        changeStrategy(UnitStrategyType.HQSurround);
-                        UnitStratHqSurround.initialize(rc);
-                        break;
-                    case Utilities.unitNeededPastrDefense:
-                        changeStrategy(UnitStrategyType.PastrDefense);
-                        UnitStratPastrDefense.initialize(rc);
-                        break;
-                    case Utilities.unitNeededOurPastrKiller:
-                        changeStrategy(UnitStrategyType.OurPastrKiller);
-                        // here we must set our pastr which we should watch over to kill
-                        if (rc.readBroadcast(60002) != 0 && rc.readBroadcast(Utilities.ourPastrKillerStart) == 0)
-                        {
-                            ourPastr = TowerUtil.convertIntToMapLocation(rc.readBroadcast(60002));
-                            rc.broadcast(Utilities.ourPastrKillerStart, 1);
-                            type = Utilities.ourPastrKillerStart;
-                        }
-                        else if (rc.readBroadcast(60005) != 0 && rc.readBroadcast(Utilities.ourPastrKillerStart+1) == 0)
-                        {
-                            ourPastr = TowerUtil.convertIntToMapLocation(rc.readBroadcast(60005));
-                            rc.broadcast(Utilities.ourPastrKillerStart+1, 1);
-                            type = Utilities.ourPastrKillerStart+1;
-                        }
-                        else
-                        {
-                            changeStrategy(UnitStrategyType.PastrDestroyer);
-                            UnitStratPastrKiller.initialize(rc);
-                        }
-                        UnitStratOurPastrKillers.initialize(rc, ourPastr, type);
-                        break;
-                    case Utilities.unitNeededHQPastr:
-                        changeStrategy(UnitStrategyType.HQPastr);
-                        UnitStratHQPastr.initialize(rc);
-                        break;
-                    case Utilities.unitNeededHQTower:
-                        changeStrategy(UnitStrategyType.HQTower);
-                        UnitStratHQTower.initialize(rc);
-                        break;
-                    case Utilities.unitNeededBlockadeRunner:
-                        BlockadeRunner.initialize(rc);
-                        changeStrategy(UnitStrategyType.BlockadeRunner);
-                        break;
-                    default:
-                        changeStrategy(UnitStrategyType.PastrDestroyer);
-                        UnitStratPastrKiller.initialize(rc);
-                }
-=======
                 pastrBuilder.initialize(rc, get);
                 changeStrategy(UnitStrategyType.PastrBuilder);
             }
@@ -186,10 +119,9 @@ public class Soldiers {
                     break;
                 default:
                     changeStrategy(UnitStrategyType.PastrDestroyer);
->>>>>>> b71a82e056023c6ab3fd812048613c070ad36d72
             }
 
-            rc.setIndicatorString(1, ""+strategy);
+            //rc.setIndicatorString(1, ""+strategy);
 
             if (type == Utilities.unitNeededPastrKiller)
             {
@@ -270,7 +202,7 @@ public class Soldiers {
 
                 rc.yield();
             }
-        } catch (Exception e) {}
+        }
     }
 
     public static void changeStrategy(UnitStrategyType newStrategy) throws GameActionException
