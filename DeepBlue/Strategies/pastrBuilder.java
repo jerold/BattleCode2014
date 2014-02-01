@@ -43,6 +43,7 @@ public abstract class pastrBuilder extends UnitStrategy {
                 		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
                 		break;
                 	}
+                	simpleFight(rc);
                 	rc.yield();
                 }
             }
@@ -57,6 +58,7 @@ public abstract class pastrBuilder extends UnitStrategy {
                 		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
                 		break;
                 	}
+                	simpleFight(rc);
                 	rc.yield();
                 }
                 for(int k = 0; k < type; k++){rc.yield();}
@@ -72,6 +74,7 @@ public abstract class pastrBuilder extends UnitStrategy {
                 		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
                 		break;
                 	}
+                	simpleFight(rc);
                 	rc.yield();
                 }
                 for(int k = 0; k < type; k++)
@@ -83,6 +86,7 @@ public abstract class pastrBuilder extends UnitStrategy {
                 		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
                 		break;
                 	}
+                	simpleFight(rc);
                 	rc.yield();
                 }
             }
@@ -95,12 +99,17 @@ public abstract class pastrBuilder extends UnitStrategy {
             		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
             		break;
             	}
+            	simpleFight(rc);
             	rc.yield();
             }
             request.madeIt(true);
-            if(rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length == 0)
+            if(rc.isActive() && rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length == 0)
             {
                 rc.construct(RobotType.PASTR);
+            }
+            else
+            {
+            	simpleFight(rc);
             }
         }
         else if (rc.getLocation().isAdjacentTo(pastrSpot))
@@ -138,5 +147,22 @@ public abstract class pastrBuilder extends UnitStrategy {
         }
 
         return false;
+    }
+    
+    public static void simpleFight(RobotController rc)
+    {
+    	Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
+    	
+    	if(enemies.length > 0)
+    	{
+    		try
+    		{
+    			if(rc.isActive() && rc.canAttackSquare(rc.senseRobotInfo(enemies[0]).location))
+    			{
+    				rc.attackSquare(rc.senseRobotInfo(enemies[0]).location);
+    			}
+			}
+    		catch(GameActionException e){}
+    	}
     }
 }
