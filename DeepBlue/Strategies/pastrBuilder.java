@@ -107,9 +107,9 @@ public abstract class pastrBuilder extends UnitStrategy {
             	simpleFight(rc);
             	rc.yield();
             }
-            request.madeIt(true);
             if(rc.isActive() && rc.senseNearbyGameObjects(Robot.class, 100, rc.getTeam().opponent()).length == 0)
             {
+            	request.madeIt(true);
                 rc.construct(RobotType.PASTR);
             }
             else
