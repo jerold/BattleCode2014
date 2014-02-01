@@ -112,7 +112,7 @@ public class RoadMap {
 
     public TileType getTileType(MapLocation loc)
     {
-        if (loc.y >= MAP_HEIGHT && loc.y < 0 && loc.x >= MAP_WIDTH && loc.x < 0) return TileType.TTOffMap;
+        if (loc.y >= MAP_HEIGHT || loc.y < 0 || loc.x >= MAP_WIDTH || loc.x < 0) return TileType.TTOffMap;
         if (mapUploaded) return roadMap[loc.x][loc.y] == TILE_VOID ? TileType.TTVoid : TileType.TTOpen;
         return rc.senseTerrainTile(loc).ordinal() > 1 ? TileType.TTVoid : TileType.TTOpen;
     }
