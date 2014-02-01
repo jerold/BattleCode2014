@@ -12,6 +12,7 @@ public class RobotPlayer
 
     public static void run(RobotController rc)
     {
+        //int a = 3/0;
         while (true) {
             try {
                 if (rc.getType() == RobotType.HQ)

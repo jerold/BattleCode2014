@@ -8,11 +8,16 @@ import battlecode.common.*;
  */
 public abstract class UnitStratHqSurround extends UnitStrategy {
     static RobotController rc;
+<<<<<<< HEAD
     static MapLocation enemyHQ;
+=======
+    static public MapLocation enemyHQ;
+>>>>>>> cce9400f75ee768a5db6e3f01881986ef198c8e8
 
     public static void initialize(RobotController rcIn) throws GameActionException
     {
         rc = rcIn;
+<<<<<<< HEAD
         Direction[] dirs = Direction.values();
         enemyHQ = rc.senseEnemyHQLocation();
         for(Direction dir : dirs)
@@ -23,6 +28,9 @@ public abstract class UnitStratHqSurround extends UnitStrategy {
         		break;
         	}
         }
+=======
+        enemyHQ = rc.senseEnemyHQLocation();
+>>>>>>> cce9400f75ee768a5db6e3f01881986ef198c8e8
         Soldiers.nav.setDestination(enemyHQ);
     }
 
