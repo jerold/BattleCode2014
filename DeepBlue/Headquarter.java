@@ -21,6 +21,7 @@ public class Headquarter {
     static int setUpCount = 0;
     static boolean inefficient = false;
     static boolean criticalMass = false;
+    static boolean desperation = false;
 
     static MapLocation[] rallyPoints = new MapLocation[2];
 
@@ -168,6 +169,12 @@ public class Headquarter {
 
     public static void setUnitNeeded(Soldiers.UnitStrategyType unitType, RobotController rc) throws GameActionException
     {
+        if (Clock.getRoundNum() > 1500 && !desperation)
+        {
+            towerPastrRequest.startBuilding(rc);
+            desperation = true;
+        }
+
         int type = Utilities.unitNeededPastrKiller;
         if (rc!= null)
         {
