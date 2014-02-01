@@ -54,6 +54,7 @@ public class Headquarter {
 //            while (!rc.canMove(dir)) dir = dir.rotateRight();
 //            rc.spawn(dir);
 
+
             while (true) {
                 try
                 {
@@ -137,7 +138,6 @@ public class Headquarter {
 
     public static void setRallyPoint(MapLocation rally, int rpNumber) throws GameActionException
     {
-        if (rallyPoints[rpNumber] != null) System.out.println("New Rally: "+map.idForNearestNode(rally)+"["+rally+"]  Old Rally: "+map.idForNearestNode(rallyPoints[rpNumber])+"["+rallyPoints[rpNumber]+"]");
         rc.broadcast(Utilities.startRallyPointChannels+rpNumber*2, VectorFunctions.locToInt(rally));
         rallyPoints[rpNumber] = rally;
     }

@@ -1,0 +1,69 @@
+package DeepBlue;
+
+import battlecode.common.*;
+import java.util.ArrayList;
+
+/**
+ * Created by AfterHours on 1/18/14.
+ */
+public class Path {
+    public static boolean shouldBugLeft(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
+    {
+        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
+            return false;
+
+        MapLocation bugEnd = origin.add(origin.directionTo(destination));
+        while (map.roadMap[bugEnd.x][bugEnd.y] == RoadMap.TILE_VOID) {
+            bugEnd = bugEnd.add(bugEnd.directionTo(destination));
+
+        }
+
+        MapLocation[] bugLeft = getBugPath(map, origin, bugEnd, true);
+        MapLocation[] bugRight = getBugPath(map, origin, bugEnd, false);
+        if (bugLeft.length < bugRight.length)
+            return true;
+        return false;
+    }
+
+    public static MapLocation[] getBugPath(RoadMap map, MapLocation origin, MapLocation destination, boolean leftWall) throws GameActionException
+    {
+        if (map.roadMap[origin.x][origin.y] == RoadMap.TILE_VOID || map.roadMap[destination.x][destination.y] == RoadMap.TILE_VOID)
+            return null;
+
+        ArrayList<MapLocation> roughPath = new ArrayList<MapLocation>();
+        MapLocation stepLocation = origin;
+        roughPath.add(stepLocation);
+        Direction direction = stepLocation.directionTo(destination);
+        int failIn = 30;
+        while (failIn>0 && !(stepLocation.x == destination.x && stepLocation.y == destination.y)) {
+//            System.out.print("VOID "+failIn);
+            if (leftWall) {
+                // If we run into a wall
+                while (!validMove(map, stepLocation, direction))
+                    direction = direction.rotateRight();
+
+                // keep in contact with left wall
+                if (validMove(map, stepLocation, direction.rotateLeft()))
+                    direction = direction.rotateLeft();
+            } else {
+                // If we run into a wall
+                while (!validMove(map, stepLocation, direction))
+                    direction = direction.rotateLeft();
+
+                // keep in contact with left wall
+                if (validMove(map, stepLocation, direction.rotateRight()))
+                    direction = direction.rotateRight();
+            }
+
+            stepLocation = stepLocation.add(direction);
+            roughPath.add(stepLocation);
+            failIn--;
+        }
+
+        MapLocation[] returnPath = new MapLocation[roughPath.size()];
+        for (int i=0; i<roughPath.size();i++)
+            returnPath[i] = roughPath.get(i);
+
+        return returnPath;
+    }
+}

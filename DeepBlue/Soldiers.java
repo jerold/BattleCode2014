@@ -12,7 +12,6 @@ public class Soldiers {
     static public UnitCache cache;
     static public RoadMap map;
     static public Navigator nav;
-    static public Engine engine;
     static public UnitStrategyType strategy;
     static public towerPastrRequest request;
     static public boolean mainFightMicro = true;
@@ -54,7 +53,6 @@ public class Soldiers {
         cache = new UnitCache(rc);
         map = new RoadMap(rc, cache);
         nav = new Navigator(rc,cache, map);
-        engine = new Engine(rc, cache, map, nav);
         //changeStrategy(UnitStrategyType.Reinforcement);
 
         request = new towerPastrRequest(rc);
