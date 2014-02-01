@@ -77,19 +77,15 @@ public class Soldiers {
             {
                 case Utilities.unitNeededScout:
                     changeStrategy(UnitStrategyType.Scout);
-                    UnitStratScout.initialize(rc);
                     break;
                 case Utilities.unitNeededDarkTemplar:
                     changeStrategy(UnitStrategyType.DarkTemplar);
-                    UnitStratDarkTemplar.initialize(rc);
                     break;
                 case Utilities.unitNeededHQSurround:
                     changeStrategy(UnitStrategyType.HQSurround);
-                    UnitStratHqSurround.initialize(rc);
                     break;
                 case Utilities.unitNeededPastrDefense:
                     changeStrategy(UnitStrategyType.PastrDefense);
-                    UnitStratPastrDefense.initialize(rc);
                     break;
                 case Utilities.unitNeededOurPastrKiller:
                     changeStrategy(UnitStrategyType.OurPastrKiller);
@@ -109,25 +105,19 @@ public class Soldiers {
                     else
                     {
                         changeStrategy(UnitStrategyType.PastrDestroyer);
-                        UnitStratPastrKiller.initialize(rc);
                     }
-                    UnitStratOurPastrKillers.initialize(rc, ourPastr, type);
                     break;
                 case Utilities.unitNeededHQPastr:
                     changeStrategy(UnitStrategyType.HQPastr);
-                    UnitStratHQPastr.initialize(rc);
                     break;
                 case Utilities.unitNeededHQTower:
                     changeStrategy(UnitStrategyType.HQTower);
-                    UnitStratHQTower.initialize(rc);
                     break;
                 case Utilities.unitNeededBlockadeRunner:
-                    BlockadeRunner.initialize(rc);
                     changeStrategy(UnitStrategyType.BlockadeRunner);
                     break;
                 default:
                     changeStrategy(UnitStrategyType.PastrDestroyer);
-                    UnitStratPastrKiller.initialize(rc);
             }
         }
 
