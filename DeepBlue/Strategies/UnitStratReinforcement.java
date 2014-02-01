@@ -15,6 +15,7 @@ public abstract class UnitStratReinforcement extends UnitStrategy
     static RobotController rc;
     static MapLocation target;
     static MapLocation rallyPoint;
+    static MapLocation oldTarget;
 
     public static void initialize(RobotController rcIn)
     {
@@ -30,6 +31,7 @@ public abstract class UnitStratReinforcement extends UnitStrategy
         if (enemyPastrs.length > 0)
         {
             Soldiers.changeStrategy(Soldiers.UnitStrategyType.PastrDestroyer);
+            UnitStratPastrKiller.initialize(rc);
         }
         else if(get[0] != -1)
         {
@@ -37,11 +39,14 @@ public abstract class UnitStratReinforcement extends UnitStrategy
             {
                 noiseTowerBuilder.initialize(rc, get);
                 Soldiers.changeStrategy(Soldiers.UnitStrategyType.NoiseTowerBuilder);
+                noiseTowerBuilder.initialize(rc, get);
+
             }
             else
             {
                 pastrBuilder.initialize(rc, get);
                 Soldiers.changeStrategy(Soldiers.UnitStrategyType.PastrBuilder);
+                pastrBuilder.initialize(rc, get);
             }
         }
         else
@@ -49,6 +54,10 @@ public abstract class UnitStratReinforcement extends UnitStrategy
             target = rallyPoint;
         }
 
-        Soldiers.nav.setDestination(target);
+        if (oldTarget == null || !oldTarget.equals(target))
+        {
+            oldTarget = target;
+            Soldiers.nav.setDestination(target);
+        }
     }
 }

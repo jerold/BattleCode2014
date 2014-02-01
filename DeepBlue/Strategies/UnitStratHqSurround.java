@@ -15,8 +15,11 @@ public abstract class UnitStratHqSurround extends UnitStrategy {
         Soldiers.nav.setDestination(rc.senseEnemyHQLocation());
     }
 
-    public static void upDate()
+    public static void upDate() throws GameActionException
     {
-
+        if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 25)
+        {
+            Soldiers.nav.setDestination(rc.getLocation());
+        }
     }
 }

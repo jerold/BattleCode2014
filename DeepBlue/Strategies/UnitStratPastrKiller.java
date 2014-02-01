@@ -16,6 +16,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
     public static int waitLocIndex = 0;
     static final int samePastr = 35675;
     static final int inPastr = 35780;
+    static MapLocation oldTarget;
 
     public static void initialize(RobotController rcIn) throws GameActionException
     {
@@ -36,7 +37,6 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
     		}
     		System.out.println("waitLoc loc@: " +  waitLoc.x + ", " + waitLoc.y);
     	}
-    	
         if(doublePastr == true){
         	System.out.println("Waiting..");
         	if (enemyPastrs.length > 0 && rc.getLocation().distanceSquaredTo(enemyPastrs[0])<500)
@@ -108,6 +108,7 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
+                target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         	}
         	else
         	{
@@ -115,6 +116,15 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         	}
         }
 
-        Soldiers.nav.setDestination(target);
+        if (target == null)
+        {
+            target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+        }
+
+        if (oldTarget == null || !oldTarget.equals(target))
+        {
+            oldTarget = target;
+            Soldiers.nav.setDestination(target);
+        }
     }
 }

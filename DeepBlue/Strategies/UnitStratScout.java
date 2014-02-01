@@ -9,6 +9,7 @@ import battlecode.common.*;
 public abstract class UnitStratScout extends UnitStrategy {
     static RobotController rc;
     static MapLocation target;
+    static MapLocation oldTarget;
 
     public static void initialize(RobotController rcIn)
     {
@@ -39,7 +40,6 @@ public abstract class UnitStratScout extends UnitStrategy {
         }
         else if (time % 75 == 0)
         {
-
             target = rc.getLocation();
             while ((target.distanceSquaredTo(rc.senseEnemyHQLocation()) < 50 || target.distanceSquaredTo(rc.getLocation()) < 50))
             {
@@ -92,8 +92,9 @@ public abstract class UnitStratScout extends UnitStrategy {
             target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
         }
 
-        Soldiers.nav.setDestination(target);
+        if (oldTarget == null || !oldTarget.equals(target))
+        {
+            Soldiers.nav.setDestination(target);
+        }
     }
-
-
 }

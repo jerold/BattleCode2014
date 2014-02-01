@@ -41,6 +41,7 @@ public abstract class pastrBuilder extends UnitStrategy {
                 		rc.setIndicatorString(0, "Help");
                 		request.sendRequest(pastrSpot, true);
                 		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                        UnitStratReinforcement.initialize(rc);
                 		break;
                 	}
                 	simpleFight(rc);
@@ -56,6 +57,7 @@ public abstract class pastrBuilder extends UnitStrategy {
                 		rc.setIndicatorString(0, "Help");
                 		request.sendRequest(pastrSpot, true);
                 		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                        UnitStratReinforcement.initialize(rc);
                 		break;
                 	}
                 	simpleFight(rc);
@@ -72,6 +74,7 @@ public abstract class pastrBuilder extends UnitStrategy {
                 		rc.setIndicatorString(0, "Help");
                 		request.sendRequest(pastrSpot, true);
                 		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                        UnitStratReinforcement.initialize(rc);
                 		break;
                 	}
                 	simpleFight(rc);
@@ -97,6 +100,7 @@ public abstract class pastrBuilder extends UnitStrategy {
             		rc.setIndicatorString(0, "Help");
             		request.sendRequest(pastrSpot, true);
             		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                    UnitStratReinforcement.initialize(rc);
             		break;
             	}
             	simpleFight(rc);
@@ -126,6 +130,7 @@ public abstract class pastrBuilder extends UnitStrategy {
         		rc.setIndicatorString(0, "Help");
         		request.sendRequest(pastrSpot, true);
         		Soldiers.changeStrategy(UnitStrategyType.Reinforcement);
+                UnitStratReinforcement.initialize(rc);
         	}
         	rc.yield();
         }

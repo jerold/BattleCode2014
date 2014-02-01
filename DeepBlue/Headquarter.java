@@ -131,7 +131,7 @@ public class Headquarter {
 
                         if (allVisibleEnemies.length > 0)
                         {
-                            while (counter < 5)
+                            while (counter < 10)
                             {
                                 FightMicro.hqFire(rc);
                                 counter++;
@@ -174,17 +174,18 @@ public class Headquarter {
 
     public static void setUnitNeeded(Soldiers.UnitStrategyType unitType, RobotController rc) throws GameActionException
     {
-        int type = 0;
+        int type = Utilities.unitNeededPastrKiller;
         if (rc!= null)
         {
             rc.setIndicatorString(0, ""+numbOfSoldiers);
             rc.setIndicatorString(2, ""+TowerUtil.getHQSpotScore(rc, rc.senseHQLocation()));
 
-
             Robot[] nearByEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());
-            /*
+            Robot[] inRangeEnemies = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
+
+
             // we must not let the enemy pull off a hq surround
-            if (nearByEnemies.length > 1 || surround)
+            if (nearByEnemies.length - inRangeEnemies.length > 1 || surround)
             {
                 // our first unit tries to draw the enemy in to around our hq
                 if (count == 0)
@@ -197,7 +198,7 @@ public class Headquarter {
                     type = Utilities.unitNeededBlockadeRunner;
                 }
                 count++;
-                if (count < 8)
+                if (count < 4 && nearByEnemies.length < 0)
                 {
                     surround = true;
                 }
@@ -210,11 +211,46 @@ public class Headquarter {
             // if we are going for hq tower build
             else if (Utilities.checkHQTower(rc))
             {
-                if (numbOfSoldiers == 0 || (Clock.getRoundNum() - round > 100 && rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam()).length < 2))
+                boolean needHQTower = false;
+                boolean needHQPastr = false;
+
+                if (Clock.getRoundNum() > 100)
+                {
+                    Robot[] nearByAllies = rc.senseNearbyGameObjects(Robot.class, 4, rc.getTeam());
+
+                    if (nearByAllies.length < 2)
+                    {
+                        needHQTower = true;
+                    }
+                    else
+                    {
+                        needHQTower = true;
+                        needHQPastr = true;
+                        for (int i = nearByAllies.length; --i>=0;)
+                        {
+                            if (rc.senseRobotInfo(nearByAllies[i]).type == RobotType.NOISETOWER)
+                            {
+                                needHQTower = false;
+                            }
+                            else if (rc.senseRobotInfo(nearByAllies[i]).type == RobotType.PASTR)
+                            {
+                                needHQPastr = false;
+                            }
+                            else if (rc.senseRobotInfo(nearByAllies[i]).isConstructing && needHQTower)
+                            {
+                                needHQTower = false;
+                            }
+                        }
+                    }
+                }
+
+
+                if (numbOfSoldiers == 0 || needHQTower)//(Clock.getRoundNum() - round > 100 && rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam()).length < 3))
                 {
                     type = Utilities.unitNeededHQTower;
+                    rc.setIndicatorString(1, "Need new noisetower");
                 }
-                else if (numbOfSoldiers == 1 || (Clock.getRoundNum() - round > 100 && rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam()).length < 3))
+                else if (numbOfSoldiers == 1 || needHQPastr) //(Clock.getRoundNum() - round > 100 && rc.senseNearbyGameObjects(Robot.class, 2, rc.getTeam()).length < 3))
                 {
                     type = Utilities.unitNeededHQPastr;
                     round = Clock.getRoundNum();
@@ -343,7 +379,6 @@ public class Headquarter {
             {
                 numbOfSoldiers++;
             }
-            */
             type = Utilities.unitNeededPastrKiller;
             rc.broadcast(Utilities.unitNeededChannel, type);
         }

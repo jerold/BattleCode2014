@@ -50,8 +50,9 @@ public abstract class UnitStratHQTower extends UnitStrategy {
                     Soldiers.changeStrategy(UnitStrategyType.PastrDestroyer);
                 }
             }
-
         }
+
+
         Soldiers.nav.setDestination(target);
     }
 
