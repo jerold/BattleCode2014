@@ -113,7 +113,6 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         		target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
-                target = target.add(target.directionTo(rc.senseEnemyHQLocation()));
         	}
         	else
         	{

@@ -2770,6 +2770,11 @@ public class FightMicro
                         {
                             rc.setIndicatorString(1, "Fly you fools");
                         }
+                        else if ((nearByEnemies3.length * 2) <= nearByAllies.length)
+                        {
+                            rc.setIndicatorString(2, "kill them");
+                            MoveDirection(rc, rc.getLocation().directionTo(rc.senseLocationOf(nearByEnemies3[0])), false);
+                        }
                         else if (nearByEnemies4.length > 0)
                         {
                             fire(rc, nearByEnemies10, alliedBots);
@@ -2797,6 +2802,7 @@ public class FightMicro
 
                             fire(rc, nearByEnemies10, alliedBots);
                         }
+
                         else if (endGoal != null && numbOfRobotsAttackingTarget(rc, rc.getLocation().add(rc.getLocation().directionTo(endGoal)), enemyBotLoc, alliedBots) == 0)//rc.getLocation().add(rc.getLocation().directionTo(endGoal)).distanceSquaredTo(rc.senseLocationOf(nearByEnemies2[0])) > 10)
                         {
                             return false;

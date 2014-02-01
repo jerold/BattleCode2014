@@ -271,7 +271,7 @@ public class Headquarter {
                     }
                     else
                     {
-                       // towerPastrRequest.endBuilding(rc);
+                        towerPastrRequest.endBuilding(rc);
                         type = Utilities.unitNeededPastrKiller;
                     }
                 }
@@ -297,7 +297,7 @@ public class Headquarter {
                 }
                 else if (setUp && (setUpCount-numbOfSoldiers > 4))
                 {
-                    //towerPastrRequest.endBuilding(rc);
+                    towerPastrRequest.endBuilding(rc);
                 }
             }
             // medium map no hq tower
@@ -320,11 +320,11 @@ public class Headquarter {
                     setUp = true;
                     rc.setIndicatorString(2, "start building");
                     towerPastrRequest.startBuilding(rc);
-                }/*
+                }
                 else if (inefficient)
                 {
                     towerPastrRequest.endBuilding(rc);
-                }*/
+                }
                 else
                 {
                     type = Utilities.unitNeededPastrKiller;
@@ -380,7 +380,7 @@ public class Headquarter {
             {
                 numbOfSoldiers++;
             }
-            //type = Utilities.unitNeededPastrKiller;
+
             rc.broadcast(Utilities.unitNeededChannel, type);
         }
     }

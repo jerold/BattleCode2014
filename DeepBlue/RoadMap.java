@@ -214,7 +214,7 @@ public class RoadMap {
         mapUploaded = rc.readBroadcast(Utilities.mapUploadedChannel) == 1;
         if (mapUploaded) {
             pathingStrat = PathingStrategy.SmartBug;
-            rc.setIndicatorString(0, "Pulling Map");
+            //rc.setIndicatorString(0, "Pulling Map");
 //            System.out.println("START PULLING MAP");
 
             readMapWithUnknownSymmetry();
@@ -222,7 +222,8 @@ public class RoadMap {
 //            printMap();
 
 //            System.out.println("FINISH PULLING MAP");
-            rc.setIndicatorString(0, "Finished Pulling Map");
+          //
+          //  rc.setIndicatorString(0, "Finished Pulling Map");
             if (observingNavigator != null) observingNavigator.pathingStrategyChanged();
         }
     }
