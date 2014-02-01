@@ -65,7 +65,6 @@ public class Headquarter {
             while (true) {
                 try
                 {
-<<<<<<< HEAD
                     /*Robot[] inRangeEnemies = rc.senseNearbyGameObjects(Robot.class, 24, rc.getTeam().opponent());
 
                     if (inRangeEnemies.length > 0)
@@ -74,7 +73,6 @@ public class Headquarter {
                     }*/
 
 
-=======
                 	MapLocation[] currentPastrs = rc.sensePastrLocations(rc.getTeam().opponent());
                 	if(currentPastrs.length > 0 && firstSpot == null){
                 		firstSpot = currentPastrs[0];
@@ -126,7 +124,6 @@ public class Headquarter {
 						int loc = DeepBlue.VectorFunctions.locToInt(firstSpot);
 						rc.broadcast(outPastr, loc);
 					}
->>>>>>> b71a82e056023c6ab3fd812048613c070ad36d72
                     if (rc.isActive())
                     {
                     	
