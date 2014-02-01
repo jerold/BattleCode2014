@@ -238,16 +238,11 @@ public class Navigator {
             } else sitDog();
         } else if (!newDog.equals(destination)) {
             while (!newDog.equals(destination) && map.getTileType(newDog.add(newDog.directionTo(destination))) != RoadMap.TileType.TTVoid) newDog = newDog.add(newDog.directionTo(destination));
+            newDogHeading = newDog.directionTo(destination);
             if (canSimplyPath(map, me, newDog)) {
                 if (!newDog.equals(destination)) {
-
                     dogBugging = true;
-                    newDogHeading = newDog.directionTo(destination);
-                    dogBugTerminal = newDog.add(newDogHeading);
-                    while (map.getTileType(dogBugTerminal.add(dogBugTerminal.directionTo(destination))) == RoadMap.TileType.TTVoid) dogBugTerminal = dogBugTerminal.add(dogBugTerminal.directionTo(destination));
-                    dogBugTerminal = dogBugTerminal.add(dogBugTerminal.directionTo(destination));
-//                    System.out.println((map.valueForLocation(dogBugTerminal) == RoadMap.TILE_VOID ? 1 : 0) + "" + dogBugTerminal + "  ");
-
+                    setTerminal(newDog);
                 } else sitDog();
                 dog = newDog;
                 dogHeading = newDogHeading.rotateRight().rotateRight();
@@ -255,6 +250,13 @@ public class Navigator {
         }
     }
 
+    private void setTerminal(MapLocation loc) throws GameActionException
+    {
+        dogBugTerminal = loc.add(loc.directionTo(destination));
+        while (map.getTileType(dogBugTerminal.add(dogBugTerminal.directionTo(destination))) == RoadMap.TileType.TTVoid) dogBugTerminal = dogBugTerminal.add(dogBugTerminal.directionTo(destination));
+        dogBugTerminal = dogBugTerminal.add(dogBugTerminal.directionTo(destination));
+//        System.out.println((map.getTileType(dogBugTerminal) == RoadMap.TileType.TTVoid ? 1 : 0) + "" + dogBugTerminal + "  ");
+    }
 
 
 
