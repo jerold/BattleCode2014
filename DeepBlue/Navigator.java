@@ -83,18 +83,6 @@ public class Navigator {
         sneaking = setting;
     }
 
-    public boolean tryMove() throws GameActionException
-    {
-        if(rc.canMove(heading)) {
-            if (!rc.isActive()) rc.yield();
-            if (sneaking) rc.sneak(heading);
-            else rc.move(heading);
-            addLocationToTrail(rc.getLocation());
-            return true;
-        }
-        return false;
-    }
-
     public void pathingStrategyChanged() throws GameActionException
     {
         resetDog();
@@ -161,6 +149,27 @@ public class Navigator {
     //================================================================================
     // Movement Assistance Methods
     //================================================================================
+
+    public boolean tryMove() throws GameActionException
+    {
+        if(rc.canMove(heading)) {
+            if (!rc.isActive()) rc.yield();
+            if (sneaking) rc.sneak(heading);
+            else rc.move(heading);
+            addLocationToTrail(rc.getLocation());
+            return true;
+        }
+        return false;
+    }
+
+    private void moveWithGuidance() throws GameActionException
+    {
+        int forwardInt = heading.ordinal();
+        for(int directionalOffset:directionalLooks){
+            heading = allDirections[(forwardInt+directionalOffset+8)%8];
+            if (tryMove()) break;
+        }
+    }
 
     public boolean canSimplyPath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
     {
@@ -270,6 +279,6 @@ public class Navigator {
     {
         walkDog();
         heading = me.directionTo(dog);
-        tryMove();
+        moveWithGuidance();
     }
 }
