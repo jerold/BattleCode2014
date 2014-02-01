@@ -139,7 +139,7 @@ public class Soldiers {
         }
 
         while (true) {
-            rc.setIndicatorString(1, ""+strategy);
+//            rc.setIndicatorString(1, ""+strategy);
             if (rc == null)
             {
                 rc.setIndicatorString(2, "Rc is null");

@@ -56,7 +56,7 @@ public class Navigator {
 
         sneaking = false;
 
-        maxTrailLength = 10;
+        maxTrailLength = 3;
         resetTrail();
         resetDog();
     }
@@ -76,6 +76,7 @@ public class Navigator {
             defaultMovement();
         else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
             smartMovement();
+        rc.setIndicatorString(1, "["+map.pathingStrat+"]  Dest"+destination+"  Term"+dogBugTerminal+"  Dog"+dog+"  Sit["+dogSitting+"]  ["+Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination)+"]");
     }
 
     public void setSneak(boolean setting)
@@ -152,7 +153,7 @@ public class Navigator {
 
     public boolean tryMove() throws GameActionException
     {
-        if(rc.canMove(heading)) {
+        if(rc.canMove(heading) && !directionInTrail(heading)) {
             if (!rc.isActive()) rc.yield();
             if (sneaking) rc.sneak(heading);
             else rc.move(heading);
@@ -224,7 +225,7 @@ public class Navigator {
         if (dogBugging) {
             dogSteps++;
             for (int i=0; i<dogSteps; i++) {
-                if (newDog.equals(dogBugTerminal)) {dogBugging = false; break;}
+                if (newDog.isAdjacentTo(dogBugTerminal)) {dogBugging = false; break;}
                 if (map.getTileType(newDog.add(newDogHeading.rotateLeft().rotateLeft().rotateLeft())) == RoadMap.TileType.TTVoid) newDogHeading = newDogHeading.rotateLeft().rotateLeft().rotateLeft();
                 else if (map.getTileType(newDog.add(newDogHeading.rotateLeft().rotateLeft())) == RoadMap.TileType.TTVoid) newDogHeading = newDogHeading.rotateLeft().rotateLeft();
                 while (map.getTileType(newDog.add(newDogHeading)) == RoadMap.TileType.TTVoid) newDogHeading = newDogHeading.rotateRight();

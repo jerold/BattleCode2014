@@ -480,7 +480,7 @@ public class TowerUtil
     			    rc.canAttackSquare(pastr))
 	    		{
 	    			spokes[0] = false;
-	    			rc.setIndicatorString(1, "1");
+//	    			rc.setIndicatorString(1, "1");
 	    		}
     			else if((target.directionTo(pastr) == Direction.NORTH_EAST ||
     					target.directionTo(pastr) == Direction.NORTH ||
@@ -488,7 +488,7 @@ public class TowerUtil
     					rc.canAttackSquare(pastr))
 	    		{
 	    			spokes[1] = false;
-	    			rc.setIndicatorString(1, "2");
+//	    			rc.setIndicatorString(1, "2");
 	    		}
     			else if((target.directionTo(pastr) == Direction.SOUTH_WEST ||
     					target.directionTo(pastr) == Direction.SOUTH ||
@@ -496,7 +496,7 @@ public class TowerUtil
     					rc.canAttackSquare(pastr))
 	    		{
 	    			spokes[2] = false;
-	    			rc.setIndicatorString(1, "3");
+//	    			rc.setIndicatorString(1, "3");
 	    		}
     			else if((target.directionTo(pastr) == Direction.SOUTH_EAST ||
     					target.directionTo(pastr) == Direction.SOUTH ||
@@ -504,7 +504,7 @@ public class TowerUtil
     					rc.canAttackSquare(pastr))
 	    		{
 	    			spokes[3] = false;
-	    			rc.setIndicatorString(1, "4");
+//	    			rc.setIndicatorString(1, "4");
 	    		}
     		}
     		catch(Exception e){}

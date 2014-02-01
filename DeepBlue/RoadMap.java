@@ -135,7 +135,7 @@ public class RoadMap {
     private void assessMap() throws GameActionException
     {
         System.out.println("START MAP ASSESSMENT");
-        rc.setIndicatorString(1, "Working On Map");
+        rc.setIndicatorString(0, "Working On Map");
         cowGrowthMap = rc.senseCowGrowth();
 
         // Map Details are read in from the game board
@@ -164,7 +164,7 @@ public class RoadMap {
         printCows();
 
         System.out.println("FINISH MAP ASSESSMENT");
-        rc.setIndicatorString(1, "Done with Map");
+        rc.setIndicatorString(0, "Done with Map");
 
         mapUploaded = true;
         broadcastMap();
@@ -175,7 +175,7 @@ public class RoadMap {
         mapUploaded = rc.readBroadcast(Utilities.mapUploadedChannel) == 1;
         if (mapUploaded) {
             pathingStrat = PathingStrategy.SmartBug;
-            rc.setIndicatorString(1, "Pulling Map");
+            rc.setIndicatorString(0, "Pulling Map");
 
             int totalTiles = MAP_WIDTH*MAP_HEIGHT;
             for (int p=0; p<=(totalTiles/MAX_PACKED_VALUES); p++) {
@@ -188,14 +188,14 @@ public class RoadMap {
                 }
             }
 
-            rc.setIndicatorString(1, "Finished Pulling Map");
+            rc.setIndicatorString(0, "Finished Pulling Map");
             if (observingNavigator != null) observingNavigator.pathingStrategyChanged();
         }
     }
 
     public void broadcastMap() throws GameActionException
     {
-        rc.setIndicatorString(1, "Broadcasting Map");
+        rc.setIndicatorString(0, "Broadcasting Map");
 
         for (int y=0; y<MAP_HEIGHT; y++) {
             for (int x=0; x<MAP_WIDTH; x++) {
@@ -204,7 +204,7 @@ public class RoadMap {
         }
         sendLastPacket();
 
-        rc.setIndicatorString(1, "Finished Broadcasting Map");
+        rc.setIndicatorString(0, "Finished Broadcasting Map");
         broadcastFlags();
     }
 
