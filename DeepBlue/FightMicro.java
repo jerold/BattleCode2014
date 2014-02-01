@@ -2774,6 +2774,10 @@ public class FightMicro
                         {
                             fire(rc, nearByEnemies10, alliedBots);
                         }
+                        else if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) < 35)
+                        {
+
+                        }
                         else if (enemiesWalledOff(rc, enemyBotLoc))
                         {
                             rc.setIndicatorString(1, "Trapped");
@@ -2787,7 +2791,7 @@ public class FightMicro
                         {
                             rc.setIndicatorString(1, "Run from enemy HQ");
                         }
-                        else if (nearByEnemies3.length > 1 && nearByAllies.length == 0)
+                        else if (nearByEnemies3.length - nearByAllies.length < 1)
                         {
                             // then we wait
 

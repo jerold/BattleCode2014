@@ -17,8 +17,6 @@ public class RobotPlayer
             try {
                 if (rc.getType() == RobotType.HQ)
                 {
-                	towerPastrRequest.startBuilding(rc);
-                	//towerPastrRequest.endBuilding(rc);
                     rc.wearHat();
                     Headquarter.run(rc);
                 }
