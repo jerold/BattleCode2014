@@ -145,6 +145,11 @@ public class Navigator {
     private void sitDog()
     {
         dogSitting = true;
+        slowDog();
+    }
+
+    private void slowDog()
+    {
         dogSteps = 0;
     }
 
@@ -164,7 +169,7 @@ public class Navigator {
         if (canSimplyPath(map, me, newDog)) {
             dog = newDog;
             dogHeading = newDogHeading;
-        } else sitDog();
+        } else slowDog();
     }
 
     private void dogRun()
