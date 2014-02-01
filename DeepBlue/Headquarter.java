@@ -116,7 +116,6 @@ public class Headquarter {
 						int loc = DeepBlue.VectorFunctions.locToInt(firstSpot);
 						rc.broadcast(outPastr, loc);
 					}
-
                     if (rc.isActive())
                     {
                         Robot[] allVisibleEnemies = rc.senseNearbyGameObjects(Robot.class, 35, rc.getTeam().opponent());

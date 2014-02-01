@@ -121,7 +121,8 @@ public class Soldiers {
                     changeStrategy(UnitStrategyType.PastrDestroyer);
             }
 
-            //rc.setIndicatorString(1, ""+strategy);
+
+            rc.setIndicatorString(1, ""+strategy);
 
             if (type == Utilities.unitNeededPastrKiller)
             {
@@ -129,7 +130,7 @@ public class Soldiers {
             }
 
             while (true) {
-    //            rc.setIndicatorString(1, ""+strategy);
+               rc.setIndicatorString(1, ""+strategy);
                 if (rc == null)
                 {
                     rc.setIndicatorString(2, "Rc is null");
@@ -243,7 +244,6 @@ public class Soldiers {
             case BlockadeRunner:
                 BlockadeRunner.initialize(rc);
                 break;
-
         }
     }
 
