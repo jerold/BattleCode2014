@@ -28,13 +28,6 @@ public class Navigator {
     MapLocation dogBugTerminal;
     int dogSteps;
 
-
-    // Trail Values used as breadcrumbs
-    int maxTrailLength;
-    MapLocation[] trail;
-    int headIndex;
-    int trailLength;
-
     // Keepers
     static Direction allDirections[] = Direction.values();
     static int directionalLooks[] = new int[]{0,1,-1,2,-2,3,-3,4};
@@ -55,9 +48,6 @@ public class Navigator {
         directionalForces = new double[]{0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,};
 
         sneaking = false;
-
-        maxTrailLength = 3;
-        resetTrail();
         resetDog();
     }
 
@@ -76,7 +66,7 @@ public class Navigator {
             defaultMovement();
         else if (map.pathingStrat == RoadMap.PathingStrategy.SmartBug)
             smartMovement();
-        rc.setIndicatorString(1, "["+map.pathingStrat+"]  Dest"+destination+"  Term"+dogBugTerminal+"  Dog"+dog+"  Sit["+dogSitting+"]  ["+Utilities.distanceBetweenTwoPoints(rc.getLocation(), destination)+"]");
+        rc.setIndicatorString(1, "["+map.pathingStrat+"]  Dest"+destination+"  Term"+dogBugTerminal+"  Dog"+dog+"  Sit["+dogSitting+"]  DD["+(int)Utilities.distanceBetweenTwoPoints(me, destination)+"] EQ["+(int)Utilities.distanceBetweenTwoPoints(me, cache.ENEMY_HQ)+"]");
     }
 
     public void setSneak(boolean setting)
@@ -93,55 +83,8 @@ public class Navigator {
     public void setDestination(MapLocation location)
     {
         destination = location;
-        resetTrail();
     }
 
-
-
-
-
-    //================================================================================
-    // Trail Keeping Methods
-    //================================================================================
-
-    public void resetTrail()
-    {
-        trail = new MapLocation[maxTrailLength];
-        headIndex = 0;
-        trailLength = 0;
-        while(trailLength<2) addLocationToTrail(new MapLocation(-1, -1));
-    }
-
-    public boolean directionInTrail(Direction dir)
-    {
-        MapLocation resultingLocation = me.add(dir);
-        for(int i=0;i<trailLength;i++){
-            MapLocation m = getLocationFromTrail(i);
-            if(!m.equals(me) && resultingLocation.equals(m)) return true;
-        }
-        return false;
-    }
-
-    public boolean didDoubleBack()
-    {
-        for(int i=1; i<trailLength; i++){
-            MapLocation m = getLocationFromTrail(i);
-            if(m.equals(me)) return true;
-        }
-        return false;
-    }
-
-    public MapLocation getLocationFromTrail(int index)
-    {
-        return trail[(headIndex-index)%maxTrailLength];
-    }
-
-    public void addLocationToTrail(MapLocation loc)
-    {
-        trailLength = trailLength+1 < maxTrailLength ? trailLength+1 : maxTrailLength;
-        headIndex++;
-        trail[headIndex%maxTrailLength] = loc;
-    }
 
 
 
@@ -153,12 +96,10 @@ public class Navigator {
 
     public boolean tryMove() throws GameActionException
     {
-        if(rc.canMove(heading)) {
-//        if(rc.canMove(heading) && !directionInTrail(heading)) {
+        if(rc.canMove(heading) && Utilities.distanceBetweenTwoPoints(me, cache.ENEMY_HQ) > 6) {
             if (!rc.isActive()) rc.yield();
             if (sneaking) rc.sneak(heading);
             else rc.move(heading);
-            addLocationToTrail(rc.getLocation());
             return true;
         }
         return false;
@@ -173,7 +114,7 @@ public class Navigator {
         }
     }
 
-    public boolean canSimplyPath(RoadMap map, MapLocation origin, MapLocation destination) throws GameActionException
+    public boolean canSimplyPath(RoadMap map, MapLocation origin, MapLocation destination)
     {
         if (origin.x < 0 || origin.x >= map.MAP_WIDTH || origin.y < 0 || origin.y >= map.MAP_HEIGHT) return false;
         if (destination.x < 0 || destination.x >= map.MAP_WIDTH || destination.y < 0 || destination.y >= map.MAP_HEIGHT) return false;
@@ -203,7 +144,7 @@ public class Navigator {
         dogOnWall = false;
         dogBugging = false;
         dogSitting = false;
-        dogBugTerminal = null;
+        dogBugTerminal = dog;
         dogSteps = 0;
     }
 
@@ -213,44 +154,58 @@ public class Navigator {
         dogSteps = 0;
     }
 
-    private void walkDog() throws GameActionException
+    private void dogBug()
+    {
+        MapLocation newDog = new MapLocation(dog.x, dog.y);
+        Direction newDogHeading = allDirections[dogHeading.ordinal()];
+
+        dogSteps++;
+        for (int i=0; i<dogSteps; i++) {
+            if (newDog.isAdjacentTo(dogBugTerminal)) {dogBugging = false; break;}
+            if (map.getTileType(newDog.add(newDogHeading.rotateLeft().rotateLeft().rotateLeft())) == RoadMap.TileType.TTVoid) newDogHeading = newDogHeading.rotateLeft().rotateLeft().rotateLeft();
+            else if (map.getTileType(newDog.add(newDogHeading.rotateLeft().rotateLeft())) == RoadMap.TileType.TTVoid) newDogHeading = newDogHeading.rotateLeft().rotateLeft();
+            while (map.getTileType(newDog.add(newDogHeading)) == RoadMap.TileType.TTVoid) newDogHeading = newDogHeading.rotateRight();
+            newDog = newDog.add(newDogHeading);
+        }
+        if (canSimplyPath(map, me, newDog)) {
+            dog = newDog;
+            dogHeading = newDogHeading;
+        } else sitDog();
+    }
+
+    private void dogRun()
+    {
+        MapLocation newDog = new MapLocation(dog.x, dog.y);
+
+        while (!newDog.equals(destination) && map.getTileType(newDog.add(newDog.directionTo(destination))) != RoadMap.TileType.TTVoid) newDog = newDog.add(newDog.directionTo(destination));
+        Direction newDogHeading = newDog.directionTo(destination);
+        if (canSimplyPath(map, me, newDog)) {
+            if (!newDog.equals(destination)) {
+                dogBugging = true;
+                setTerminal(newDog);
+            } else sitDog();
+            dog = newDog;
+            dogHeading = newDogHeading.rotateRight().rotateRight();
+        }
+    }
+
+    private void walkDog()
     {
 //        System.out.println("Dog "+dog+" ["+dogHeading+"] S("+dogSitting+") T("+dogBugTerminal+") D("+destination+") M("+me+")");
         if (dogSitting) {
             if (me.equals(dog) && !dog.equals(destination)) dogSitting = false;
+            else if (me.isAdjacentTo(dog) && !rc.canMove(me.directionTo(dog))) dogSitting = false;
             else return;
         }
 
-        MapLocation newDog = new MapLocation(dog.x, dog.y);
-        Direction newDogHeading = allDirections[dogHeading.ordinal()];
         if (dogBugging) {
-            dogSteps++;
-            for (int i=0; i<dogSteps; i++) {
-                if (newDog.isAdjacentTo(dogBugTerminal)) {dogBugging = false; break;}
-                if (map.getTileType(newDog.add(newDogHeading.rotateLeft().rotateLeft().rotateLeft())) == RoadMap.TileType.TTVoid) newDogHeading = newDogHeading.rotateLeft().rotateLeft().rotateLeft();
-                else if (map.getTileType(newDog.add(newDogHeading.rotateLeft().rotateLeft())) == RoadMap.TileType.TTVoid) newDogHeading = newDogHeading.rotateLeft().rotateLeft();
-                while (map.getTileType(newDog.add(newDogHeading)) == RoadMap.TileType.TTVoid) newDogHeading = newDogHeading.rotateRight();
-                newDog = newDog.add(newDogHeading);
-            }
-            if (canSimplyPath(map, me, newDog)) {
-                dog = newDog;
-                dogHeading = newDogHeading;
-            } else sitDog();
-        } else if (!newDog.equals(destination)) {
-            while (!newDog.equals(destination) && map.getTileType(newDog.add(newDog.directionTo(destination))) != RoadMap.TileType.TTVoid) newDog = newDog.add(newDog.directionTo(destination));
-            newDogHeading = newDog.directionTo(destination);
-            if (canSimplyPath(map, me, newDog)) {
-                if (!newDog.equals(destination)) {
-                    dogBugging = true;
-                    setTerminal(newDog);
-                } else sitDog();
-                dog = newDog;
-                dogHeading = newDogHeading.rotateRight().rotateRight();
-            }
+            dogBug();
+        } else if (!dog.equals(destination)) {
+            dogRun();
         }
     }
 
-    private void setTerminal(MapLocation loc) throws GameActionException
+    private void setTerminal(MapLocation loc)
     {
         dogBugTerminal = loc.add(loc.directionTo(destination));
         while (map.getTileType(dogBugTerminal.add(dogBugTerminal.directionTo(destination))) == RoadMap.TileType.TTVoid) dogBugTerminal = dogBugTerminal.add(dogBugTerminal.directionTo(destination));

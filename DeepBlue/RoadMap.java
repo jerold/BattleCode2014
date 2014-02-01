@@ -40,7 +40,8 @@ public class RoadMap {
     public static enum SymmetryType {
         Horizontal,
         Vertical,
-        Diagonal
+        Diagonal,
+        Unknown
     }
 
     SymmetryType symmetry;
@@ -71,11 +72,12 @@ public class RoadMap {
         mapUploaded = false;
         mapProgress = 0;
 
+
         // Initialize Map and Pathing signal Flags
         if (rc.getType() == RobotType.HQ) {
-            System.out.println("Map Size: " + MAP_WIDTH + ", " + MAP_HEIGHT + "  (" + MAP_WIDTH*MAP_HEIGHT + ")");
+            System.out.println("Map Size: " + MAP_WIDTH + ", " + MAP_HEIGHT + "  (" + MAP_WIDTH * MAP_HEIGHT + ")");
             discoverSymmetry();
-            broadcastFlags();
+            broadcastMapFlag();
         }
     }
 
@@ -90,13 +92,10 @@ public class RoadMap {
 
     public void discoverSymmetry() throws GameActionException
     {
-        if (cache.MY_HQ.x == MAP_WIDTH-cache.ENEMY_HQ.x-1 && cache.MY_HQ.y == MAP_HEIGHT-cache.ENEMY_HQ.y-1) symmetry = SymmetryType.Diagonal;
-        if (cache.MY_HQ.x == cache.ENEMY_HQ.x) {
-            if (MAP_WIDTH%2==0) symmetry = SymmetryType.Horizontal;
-        }
-        if (cache.MY_HQ.y == cache.ENEMY_HQ.y) {
-            if (MAP_HEIGHT%2==0) symmetry = SymmetryType.Vertical;
-        }
+        if (cache.MY_HQ.x == MAP_WIDTH-cache.ENEMY_HQ.x-1 && cache.MY_HQ.y == MAP_HEIGHT-cache.ENEMY_HQ.y-1 && cache.MY_HQ.x != MAP_WIDTH/2 && cache.MY_HQ.y != MAP_HEIGHT/2) symmetry = SymmetryType.Diagonal;
+        else if (cache.MY_HQ.x == cache.ENEMY_HQ.x && (MAP_WIDTH%2==0 || cache.MY_HQ.x != MAP_WIDTH/2)) symmetry = SymmetryType.Horizontal;
+        else if (cache.MY_HQ.y == cache.ENEMY_HQ.y && (MAP_HEIGHT%2==0 || cache.MY_HQ.y != MAP_HEIGHT/2)) symmetry = SymmetryType.Vertical;
+        else symmetry = SymmetryType.Unknown;
         System.out.println("Symmetry: "+symmetry);
     }
 
@@ -111,16 +110,56 @@ public class RoadMap {
         }
     }
 
-    public void broadcastFlags() throws GameActionException
-    {
-        broadcastMapFlag();
-    }
-
-    public TileType getTileType(MapLocation loc) throws GameActionException
+    public TileType getTileType(MapLocation loc)
     {
         if (loc.y >= MAP_HEIGHT && loc.y < 0 && loc.x >= MAP_WIDTH && loc.x < 0) return TileType.TTOffMap;
         if (mapUploaded) return roadMap[loc.x][loc.y] == TILE_VOID ? TileType.TTVoid : TileType.TTOpen;
         return rc.senseTerrainTile(loc).ordinal() > 1 ? TileType.TTVoid : TileType.TTOpen;
+    }
+
+
+
+
+
+
+    //================================================================================
+    // Symmetry Based Reading & Broadcasting Methods
+    //================================================================================
+
+    private void readMapWithHorizontalSymmetry() throws GameActionException {}
+
+    private void readMapWithVerticalSymmetry() throws GameActionException {}
+
+    private void readMapWithDiagonalSymmetry() throws GameActionException {}
+
+    private void readMapWithUnknownSymmetry() throws GameActionException
+    {
+        int totalTiles = MAP_WIDTH*MAP_HEIGHT;
+        for (int p=0; p<=(totalTiles/MAX_PACKED_VALUES); p++) {
+            int packet = readPacket(p);
+            for (int i=0; i<MAX_PACKED_VALUES; i++) {
+                int tileNumber = p*MAX_PACKED_VALUES+(MAX_PACKED_VALUES-i-1);
+                if (tileNumber < totalTiles) roadMap[tileNumber%MAP_WIDTH][tileNumber/MAP_WIDTH] = Utilities.packetPeek(packet) ? 0 : TILE_VOID;
+                else break;
+                packet = Utilities.packetPitch(packet);
+            }
+        }
+    }
+
+    private void broadcastMapWithHorizontalSymmetry() throws GameActionException {}
+
+    private void broadcastMapWithVerticalSymmetry() throws GameActionException {}
+
+    private void broadcastMapWithDiagonalSymmetry() throws GameActionException {}
+
+    private void broadcastMapWithUnknownSymmetry() throws GameActionException
+    {
+        for (int y=0; y<MAP_HEIGHT; y++) {
+            for (int x=0; x<MAP_WIDTH; x++) {
+                addToPacket(roadMap[x][y]);
+            }
+        }
+        sendLastPacket();
     }
 
 
@@ -134,11 +173,11 @@ public class RoadMap {
 
     private void assessMap() throws GameActionException
     {
-        System.out.println("START MAP ASSESSMENT");
         rc.setIndicatorString(0, "Working On Map");
-        cowGrowthMap = rc.senseCowGrowth();
+//        System.out.println("START MAP ASSESSMENT");
 
         // Map Details are read in from the game board
+        cowGrowthMap = rc.senseCowGrowth();
         for (int x=0; x<MAP_WIDTH;x++) {
             int lowResX = (int)(x/((float)MAP_WIDTH/COW_GROWTH_MAP_RESOLUTION));
 
@@ -163,7 +202,7 @@ public class RoadMap {
 
         printCows();
 
-        System.out.println("FINISH MAP ASSESSMENT");
+//        System.out.println("FINISH MAP ASSESSMENT");
         rc.setIndicatorString(0, "Done with Map");
 
         mapUploaded = true;
@@ -176,18 +215,13 @@ public class RoadMap {
         if (mapUploaded) {
             pathingStrat = PathingStrategy.SmartBug;
             rc.setIndicatorString(0, "Pulling Map");
+//            System.out.println("START PULLING MAP");
 
-            int totalTiles = MAP_WIDTH*MAP_HEIGHT;
-            for (int p=0; p<=(totalTiles/MAX_PACKED_VALUES); p++) {
-                int packet = readPacket(p);
-                for (int i=0; i<MAX_PACKED_VALUES; i++) {
-                    int tileNumber = p*MAX_PACKED_VALUES+(MAX_PACKED_VALUES-i-1);
-                    if (tileNumber < totalTiles) roadMap[tileNumber%MAP_WIDTH][tileNumber/MAP_WIDTH] = Utilities.packetPeek(packet) ? 0 : TILE_VOID;
-                    else break;
-                    packet = Utilities.packetPitch(packet);
-                }
-            }
+            readMapWithUnknownSymmetry();
 
+//            printMap();
+
+//            System.out.println("FINISH PULLING MAP");
             rc.setIndicatorString(0, "Finished Pulling Map");
             if (observingNavigator != null) observingNavigator.pathingStrategyChanged();
         }
@@ -196,16 +230,13 @@ public class RoadMap {
     public void broadcastMap() throws GameActionException
     {
         rc.setIndicatorString(0, "Broadcasting Map");
+//        System.out.println("START BROADCASTING MAP");
 
-        for (int y=0; y<MAP_HEIGHT; y++) {
-            for (int x=0; x<MAP_WIDTH; x++) {
-                addToPacket(roadMap[x][y]);
-            }
-        }
-        sendLastPacket();
+        broadcastMapWithUnknownSymmetry();
 
+//        System.out.println("FINISH BROADCASTING MAP");
         rc.setIndicatorString(0, "Finished Broadcasting Map");
-        broadcastFlags();
+        broadcastMapFlag();
     }
 
     public void broadcastMapFlag() throws GameActionException
@@ -305,16 +336,14 @@ public class RoadMap {
             }
             System.out.println("");
         }
-        System.out.println("");
     }
 
     public void printMap()
     {
         for (int y=0; y<MAP_HEIGHT;y++) {
             for (int x=0; x<MAP_WIDTH;x++) {
-                MapLocation tileValue = VectorFunctions.intToLoc(roadMap[x][y]);
                 if (roadMap[x][y] != TILE_VOID)
-                    System.out.print(asciiValue((int)cowGrowthMap[x][y]) + "" + asciiValue((int)cowGrowthMap[x][y])); // System.out.print(asciiValue(roadMap[x][y]+cowGrowthMap[x][y]) + "" + asciiValue(roadMap[x][y]+cowGrowthMap[x][y]));
+                    System.out.print(asciiValue(roadMap[x][y])+""+asciiValue(roadMap[x][y])); // System.out.print(asciiValue(roadMap[x][y]+cowGrowthMap[x][y]) + "" + asciiValue(roadMap[x][y]+cowGrowthMap[x][y]));
                 else
                     System.out.print("[]");
             }
