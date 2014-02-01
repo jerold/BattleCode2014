@@ -38,6 +38,9 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         		}
     		} else {
     			waitLoc = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+                while(Soldiers.map.getTileType(waitLoc)==RoadMap.TileType.TTVoid || waitLoc.equals(rc.senseHQLocation())){
+                	waitLoc = waitLoc.add(waitLoc.directionTo(rc.senseEnemyHQLocation()).opposite());
+                }
     		}
     	}
         if(doublePastr == true){
@@ -115,27 +118,18 @@ public abstract class UnitStratPastrKiller extends UnitStrategy {
         	else
         	{
         		target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
-                while(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
-                	target = target.add(target.directionTo(rc.senseHQLocation()));
+                while(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || target.equals(rc.senseHQLocation())){
+                	target = target.add(target.directionTo(rc.senseEnemyHQLocation()).opposite());
                 }
-                if(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
-                	while(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
-                		target = target.add(target.directionTo(rc.senseHQLocation()).opposite());
-                	}
-                }
+                
         	}
         }
 
         if (target == null)
         {
-            target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
-            while(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
-            	target = target.add(target.directionTo(rc.senseHQLocation()));
-            }
-            if(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
-            	while(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || Soldiers.map.getTileType(target)==RoadMap.TileType.TTOffMap || target.equals(rc.senseHQLocation())){
-            		target = target.add(target.directionTo(rc.senseHQLocation()).opposite());
-            	}
+        	target = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+            while(Soldiers.map.getTileType(target)==RoadMap.TileType.TTVoid || target.equals(rc.senseHQLocation())){
+            	target = target.add(target.directionTo(rc.senseEnemyHQLocation()).opposite());
             }
         }
 
