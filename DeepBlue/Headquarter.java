@@ -2,8 +2,6 @@ package DeepBlue;
 
 import battlecode.common.*;
 
-import com.sun.corba.se.spi.activation._InitialNameServiceImplBase;
-
 /**
  * Created by Jerold Albertson on 1/12/14.
  *

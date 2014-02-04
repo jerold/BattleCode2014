@@ -1,9 +1,6 @@
 package DeepBlue;
 
 import battlecode.common.MapLocation;
-
-import java.util.ArrayList;
-
 /**
  * Directly from the BattleCode 2014 Lectures
  */
@@ -43,13 +40,7 @@ public class VectorFunctions {
 	public static MapLocation intToLoc(int i){
 		return new MapLocation(i/LOC_MOD,i%LOC_MOD);
 	}
-	
-	public static void printPath(ArrayList<MapLocation> path, int bigBoxSize){
-		for(MapLocation m:path){
-			MapLocation actualLoc = bigBoxCenter(m,bigBoxSize);
-			System.out.println("("+actualLoc.x+","+actualLoc.y+")");
-		}
-	}
+
 	public static MapLocation bigBoxCenter(MapLocation bigBoxLoc, int bigBoxSize){
 		return mladd(mlmultiply(bigBoxLoc,bigBoxSize),new MapLocation(bigBoxSize/2,bigBoxSize/2));
 	}

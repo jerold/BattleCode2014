@@ -1,11 +1,7 @@
 package DeepBlue.Strategies;
 
-import DeepBlue.Headquarter;
-import DeepBlue.Soldiers;
-import DeepBlue.UnitStrategy;
-import DeepBlue.Utilities;
+import DeepBlue.*;
 import battlecode.common.*;
-import firstjoshua.Soldier;
 
 /**
  * Created by AfterHours on 1/22/14.

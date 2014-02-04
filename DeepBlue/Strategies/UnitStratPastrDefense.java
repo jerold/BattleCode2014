@@ -2,8 +2,6 @@ package DeepBlue.Strategies;
 
 import DeepBlue.*;
 import battlecode.common.*;
-import firstjoshua.Soldier;
-import theSwarm.hiveClusters;
 
 /**
  * Created by fredkneeland on 1/28/14.

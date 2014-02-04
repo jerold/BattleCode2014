@@ -6,8 +6,6 @@ package DeepBlue;
 
 import battlecode.common.*;
 
-import java.util.Random;
-
 public class Utilities
 {
     static Direction[] directions = Direction.values();
